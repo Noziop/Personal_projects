@@ -1,0 +1,13 @@
+{% extends "layout.twig" %}
+
+{% block title %}Erreur {{ statusCode }}{% endblock %}
+
+{% block header_title %}Erreur {{ statusCode }} ¯\_(ツ)_/¯{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h1 class="neumorphic-title-red">Erreur {{ statusCode }} ¯\_(ツ)_/¯</h1>
+    <p>{{ errorMessage }}</p>
+    <a href="{{ url_for('home') }}" class="neumorphic-button">Retour à l'accueil</a>
+</div>
+{% endblock %}
