@@ -12,6 +12,7 @@ use App\Models\Student;
 use App\Services\StudentService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 
 class StudentController
 {
@@ -21,13 +22,20 @@ class StudentController
     private $studentService;
 
     /**
+     * @var LoggerInterface The logger
+     */
+    private $logger;
+
+    /**
      * StudentController constructor.
      *
      * @param StudentService $studentService The student service
+     * @param LoggerInterface $logger The logger
      */
-    public function __construct(StudentService $studentService)
+    public function __construct(StudentService $studentService, LoggerInterface $logger)
     {
         $this->studentService = $studentService;
+        $this->logger = $logger;
     }
 
     /**
@@ -39,9 +47,16 @@ class StudentController
      */
     public function getAllStudents(Request $request, Response $response): Response
     {
-        $students = $this->studentService->getAllStudents();
-        $response->getBody()->write(json_encode($students));
-        return $response->withHeader('Content-Type', 'application/json');
+        $this->logger->info('Request received for getting all students');
+        try {
+            $students = $this->studentService->getAllStudents();
+            $this->logger->info('Successfully retrieved all students', ['count' => count($students)]);
+            $response->getBody()->write(json_encode($students));
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $this->logger->error('Error retrieving all students', ['error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while retrieving students']);
+        }
     }
 
     /**
@@ -54,12 +69,21 @@ class StudentController
      */
     public function getStudent(Request $request, Response $response, array $args): Response
     {
-        $student = $this->studentService->getStudentById((int)$args['id']);
-        if (!$student) {
-            return $response->withStatus(404)->withJson(['error' => 'Student not found']);
+        $id = (int)$args['id'];
+        $this->logger->info('Request received for getting student', ['id' => $id]);
+        try {
+            $student = $this->studentService->getStudentById($id);
+            if (!$student) {
+                $this->logger->warning('Student not found', ['id' => $id]);
+                return $response->withStatus(404)->withJson(['error' => 'Student not found']);
+            }
+            $this->logger->info('Successfully retrieved student', ['id' => $id]);
+            $response->getBody()->write(json_encode($student));
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $this->logger->error('Error retrieving student', ['id' => $id, 'error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while retrieving the student']);
         }
-        $response->getBody()->write(json_encode($student));
-        return $response->withHeader('Content-Type', 'application/json');
     }
 
     /**
@@ -71,16 +95,23 @@ class StudentController
      */
     public function createStudent(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody();
-        $student = new Student(
-            $data['first_name'],
-            $data['last_name'],
-            $data['email'],
-            (int)$data['cohort_id']
-        );
-        $id = $this->studentService->createStudent($student);
-        $response->getBody()->write(json_encode(['id' => $id]));
-        return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
+        $this->logger->info('Request received for creating a new student');
+        try {
+            $data = $request->getParsedBody();
+            $student = new Student(
+                $data['first_name'],
+                $data['last_name'],
+                $data['email'],
+                (int)$data['cohort_id']
+            );
+            $id = $this->studentService->createStudent($student);
+            $this->logger->info('Successfully created new student', ['id' => $id]);
+            $response->getBody()->write(json_encode(['id' => $id]));
+            return $response->withStatus(201)->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $this->logger->error('Error creating new student', ['error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while creating the student']);
+        }
     }
 
     /**
@@ -93,17 +124,26 @@ class StudentController
      */
     public function updateStudent(Request $request, Response $response, array $args): Response
     {
-        $data = $request->getParsedBody();
-        $student = $this->studentService->getStudentById((int)$args['id']);
-        if (!$student) {
-            return $response->withStatus(404)->withJson(['error' => 'Student not found']);
+        $id = (int)$args['id'];
+        $this->logger->info('Request received for updating student', ['id' => $id]);
+        try {
+            $data = $request->getParsedBody();
+            $student = $this->studentService->getStudentById($id);
+            if (!$student) {
+                $this->logger->warning('Student not found for update', ['id' => $id]);
+                return $response->withStatus(404)->withJson(['error' => 'Student not found']);
+            }
+            $student->setFirstName($data['first_name']);
+            $student->setLastName($data['last_name']);
+            $student->setEmail($data['email']);
+            $student->setCohortId((int)$data['cohort_id']);
+            $success = $this->studentService->updateStudent($student);
+            $this->logger->info('Successfully updated student', ['id' => $id, 'success' => $success]);
+            return $response->withJson(['success' => $success]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error updating student', ['id' => $id, 'error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while updating the student']);
         }
-        $student->setFirstName($data['first_name']);
-        $student->setLastName($data['last_name']);
-        $student->setEmail($data['email']);
-        $student->setCohortId((int)$data['cohort_id']);
-        $success = $this->studentService->updateStudent($student);
-        return $response->withJson(['success' => $success]);
     }
 
     /**
@@ -116,8 +156,16 @@ class StudentController
      */
     public function deleteStudent(Request $request, Response $response, array $args): Response
     {
-        $success = $this->studentService->deleteStudent((int)$args['id']);
-        return $response->withJson(['success' => $success]);
+        $id = (int)$args['id'];
+        $this->logger->info('Request received for deleting student', ['id' => $id]);
+        try {
+            $success = $this->studentService->deleteStudent($id);
+            $this->logger->info('Student deletion attempt completed', ['id' => $id, 'success' => $success]);
+            return $response->withJson(['success' => $success]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error deleting student', ['id' => $id, 'error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while deleting the student']);
+        }
     }
 
     /**
@@ -130,8 +178,16 @@ class StudentController
      */
     public function getStudentsByCohort(Request $request, Response $response, array $args): Response
     {
-        $students = $this->studentService->getStudentsByCohort((int)$args['cohort_id']);
-        $response->getBody()->write(json_encode($students));
-        return $response->withHeader('Content-Type', 'application/json');
+        $cohortId = (int)$args['cohort_id'];
+        $this->logger->info('Request received for getting students by cohort', ['cohort_id' => $cohortId]);
+        try {
+            $students = $this->studentService->getStudentsByCohort($cohortId);
+            $this->logger->info('Successfully retrieved students by cohort', ['cohort_id' => $cohortId, 'count' => count($students)]);
+            $response->getBody()->write(json_encode($students));
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            $this->logger->error('Error retrieving students by cohort', ['cohort_id' => $cohortId, 'error' => $e->getMessage()]);
+            return $response->withStatus(500)->withJson(['error' => 'An error occurred while retrieving students for the cohort']);
+        }
     }
 }
