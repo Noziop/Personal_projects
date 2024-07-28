@@ -1,0 +1,25 @@
+{
+    "name": "noziop/tirage-au-sort",
+    "description": "Application de tirage au sort pour le SOD de l'école Holberton Thonon",
+    "type": "project",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "slim/slim": "^4.9",
+        "slim/psr7": "^1.5",
+        "php-di/php-di": "^6.3",
+        "monolog/monolog": "^2.3",
+        "vlucas/phpdotenv": "^5.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Fassih Belmokhtar",
+            "email": "contact@fassih.ch"
+        }
+    ],
+    "minimum-stability": "stable"
+}
