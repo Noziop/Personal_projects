@@ -1,14 +1,36 @@
 <?php
 
+/**
+ * Application Settings
+ *
+ * This file defines the settings for the Slim application.
+ * It includes configurations for error display, logging, and database connection.
+ */
+
 use DI\ContainerBuilder;
+use Monolog\Logger;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
         'settings' => [
-            'displayErrorDetails' => $_ENV['DISPLAY_ERROR_DETAILS'] ?? true,  // Set to false in production
-            'addContentLengthHeader' => $_ENV['ADD_CONTENT_LENGTH_HEADER'] ?? true,  // Allow the web server to send the content-length header
-            'logError'            => $_ENV['LOG_ERRORS'] ?? true,  // log errors to a file
-            'logErrorDetails'     => $_ENV['LOG_ERROR_DETAILS'] ?? true, // log error details
+            // Display error details
+            'displayErrorDetails' => filter_var($_ENV['DISPLAY_ERROR_DETAILS'] ?? true, FILTER_VALIDATE_BOOLEAN),
+
+            // Add content length header
+            'addContentLengthHeader' => filter_var($_ENV['ADD_CONTENT_LENGTH_HEADER'] ?? true, FILTER_VALIDATE_BOOLEAN),
+
+            // Error Logging
+            'logError'  => filter_var($_ENV['LOG_ERRORS'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'logErrorDetails' => filter_var($_ENV['LOG_ERROR_DETAILS'] ?? true, FILTER_VALIDATE_BOOLEAN),
+
+            // Monolog settings
+            'logger' => [
+                'name' => $_ENV['APP_NAME'] ?? 'app',
+                'path' => __DIR__ . '/../logs/app.log',
+                'level' => Logger::DEBUG,
+            ],
+
+            // Database settings
             'db' => [
                 'driver' => $_ENV['DB_DRIVER'] ?? 'mysql',
                 'host' => $_ENV['DB_HOST'] ?? 'localhost',
@@ -19,6 +41,9 @@ return function (ContainerBuilder $containerBuilder) {
                 'collation' => $_ENV['DB_COLLATION'] ?? 'utf8mb4_unicode_ci',
                 'prefix' => $_ENV['DB_PREFIX'] ?? '',
             ],
+
+            // Application Secret
+            'app_secret' => $_ENV['APP_SECRET'] ?? 'your-secret-key',
         ],
     ]);
 };
