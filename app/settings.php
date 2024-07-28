@@ -20,7 +20,7 @@ return function (ContainerBuilder $containerBuilder) {
             'addContentLengthHeader' => filter_var($_ENV['ADD_CONTENT_LENGTH_HEADER'] ?? true, FILTER_VALIDATE_BOOLEAN),
 
             // Error Logging
-            'logError'  => filter_var($_ENV['LOG_ERRORS'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'logErrors'  => filter_var($_ENV['LOG_ERRORS'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'logErrorDetails' => filter_var($_ENV['LOG_ERROR_DETAILS'] ?? true, FILTER_VALIDATE_BOOLEAN),
 
             // Monolog settings

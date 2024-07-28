@@ -9,7 +9,8 @@
         "php-di/php-di": "^6.3",
         "monolog/monolog": "^2.3",
         "vlucas/phpdotenv": "^5.3",
-        "guzzlehttp/guzzle": "^7.9"
+        "guzzlehttp/guzzle": "^7.9",
+        "slim/twig-view": "^3.4"
     },
     "autoload": {
         "psr-4": {

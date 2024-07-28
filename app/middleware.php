@@ -19,9 +19,10 @@ return function (App $app) {
         $settings['logErrorDetails']
     );
 
-    $errorHandler = new ErrorHandler($container->get(Twig::class), $container->get('logger'));
+    $twig = $container->get(Twig::class);
+    $errorHandler = new ErrorHandler($twig, $container->get('logger'));
     $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
     // Add Twig-View Middleware
-    $app->add(TwigMiddleware::createFromContainer($app));
+    $app->add(TwigMiddleware::createFromContainer($app, Twig::class));
 };
