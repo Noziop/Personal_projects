@@ -13,6 +13,7 @@ use App\Models\PublicHoliday;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use PDO;
+use Psr\Log\LoggerInterface;
 
 class FetchHolidaysService
 {
@@ -27,6 +28,11 @@ class FetchHolidaysService
     private $db;
 
     /**
+     * @var LoggerInterface The logger
+     */
+    private $logger;
+
+    /**
      * @var string The base URL for the French government's public holiday API
      */
     private const API_BASE_URL = 'https://calendrier.api.gouv.fr/jours-feries/';
@@ -35,11 +41,13 @@ class FetchHolidaysService
      * FetchHolidaysService constructor.
      *
      * @param PDO $db The database connection
+     * @param LoggerInterface $logger The logger
      */
-    public function __construct(PDO $db)
+    public function __construct(PDO $db, LoggerInterface $logger)
     {
         $this->client = new Client();
         $this->db = $db;
+        $this->logger = $logger;
     }
 
     /**
@@ -51,13 +59,14 @@ class FetchHolidaysService
      */
     public function fetchAndStoreHolidays(int $year): array
     {
+        $this->logger->info('Starting to fetch and store holidays', ['year' => $year]);
         try {
             $holidays = $this->fetchHolidays($year);
             $this->storeHolidays($holidays, $year);
+            $this->logger->info('Successfully fetched and stored holidays', ['year' => $year, 'count' => count($holidays)]);
             return $holidays;
         } catch (\Exception $e) {
-            // Log the error
-            error_log("Error fetching or storing holidays for year $year: " . $e->getMessage());
+            $this->logger->error('Error fetching or storing holidays', ['year' => $year, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -71,15 +80,26 @@ class FetchHolidaysService
      */
     private function fetchHolidays(int $year): array
     {
-        $response = $this->client->request('GET', self::API_BASE_URL . "metropole/$year.json");
-        $data = json_decode($response->getBody(), true);
+        $this->logger->info('Fetching holidays from API', ['year' => $year]);
+        try {
+            $response = $this->client->request('GET', self::API_BASE_URL . "metropole/$year.json");
+            $data = json_decode($response->getBody(), true);
 
-        $holidays = [];
-        foreach ($data as $date => $name) {
-            $holidays[] = new PublicHoliday($name, new \DateTime($date), $year);
+            if (!is_array($data)) {
+                throw new \RuntimeException('Invalid API response format');
+            }
+
+            $holidays = [];
+            foreach ($data as $date => $name) {
+                $holidays[] = new PublicHoliday($name, new \DateTime($date), $year);
+            }
+
+            $this->logger->info('Successfully fetched holidays from API', ['year' => $year, 'count' => count($holidays)]);
+            return $holidays;
+        } catch (GuzzleException $e) {
+            $this->logger->error('Error fetching holidays from API', ['year' => $year, 'error' => $e->getMessage()]);
+            throw $e;
         }
-
-        return $holidays;
     }
 
     /**
@@ -91,14 +111,45 @@ class FetchHolidaysService
      */
     private function storeHolidays(array $holidays, int $year): void
     {
-        $stmt = $this->db->prepare("INSERT INTO public_holidays (name, date, year) VALUES (:name, :date, :year)");
+        $this->logger->info('Storing holidays in database', ['year' => $year, 'count' => count($holidays)]);
+        try {
+            $this->db->beginTransaction();
 
-        foreach ($holidays as $holiday) {
-            $stmt->execute([
-                ':name' => $holiday->getName(),
-                ':date' => $holiday->getDate()->format('Y-m-d'),
-                ':year' => $year
-            ]);
+            $stmt = $this->db->prepare("INSERT INTO public_holidays (name, date, year) VALUES (:name, :date, :year)");
+
+            foreach ($holidays as $holiday) {
+                $stmt->execute([
+                    ':name' => $holiday->getName(),
+                    ':date' => $holiday->getDate()->format('Y-m-d'),
+                    ':year' => $year
+                ]);
+            }
+
+            $this->db->commit();
+            $this->logger->info('Successfully stored holidays in database', ['year' => $year, 'count' => count($holidays)]);
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            $this->logger->error('Error storing holidays in database', ['year' => $year, 'error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Clear existing holidays for a specific year from the database.
+     *
+     * @param int $year The year for which to clear holidays
+     * @throws \PDOException If there's an error deleting from the database
+     */
+    public function clearHolidays(int $year): void
+    {
+        $this->logger->info('Clearing existing holidays from database', ['year' => $year]);
+        try {
+            $stmt = $this->db->prepare("DELETE FROM public_holidays WHERE year = :year");
+            $stmt->execute([':year' => $year]);
+            $this->logger->info('Successfully cleared existing holidays', ['year' => $year]);
+        } catch (\PDOException $e) {
+            $this->logger->error('Error clearing existing holidays', ['year' => $year, 'error' => $e->getMessage()]);
+            throw $e;
         }
     }
 }
