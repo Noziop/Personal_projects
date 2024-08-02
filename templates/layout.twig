@@ -12,14 +12,15 @@
 <body>
 <header class="neumorphic-header">
     <h1 class="neumorphic-title">{% block header_title %}{% endblock %}</h1>
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('home') }}">Accueil</a></li>
-            <li><a href="{{ url_for('tirage.index') }}">Tirage au sort</a></li>
-            <li><a href="{{ url_for('configuration.index') }}">Configuration</a></li>
-			<li><a href="{{ url_for('tableau_de_bord') }}">Tableau de bord</a></li>
-        </ul>
-    </nav>
+		<nav>
+			<ul>
+				<li><a href="{{ url_for('home') }}">Accueil</a></li>
+				<li><a href="{{ url_for('tirage.index') }}">Tirage au sort</a></li>
+				<li><a href="{{ url_for('configuration.index') }}">Configuration</a></li>
+				<li><a href="{{ url_for('tableau_de_bord') }}">Tableau de bord</a></li>
+				<li><a href="{{ url_for('rapports.index') }}">Rapports SOD</a></li>
+			</ul>
+		</nav>
 </header>
 
 
