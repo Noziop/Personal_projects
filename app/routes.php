@@ -7,8 +7,7 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 return function (App $app) {
     $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Coming soon : Drawing app for Speaker of the Day ritual @Holberton_School Thonon-les-bains!');
-        return $response;
+        return $this->get('view')->render($response, 'home/index.twig');
     });
 
     $app->group('/cohorts', function (Group $group) {
