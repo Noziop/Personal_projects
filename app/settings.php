@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Application Settings
- *
- * This file defines the settings for the Slim application.
- * It includes configurations for error display, logging, database connection, and view rendering.
- */
-
 use DI\ContainerBuilder;
 use Monolog\Logger;
 
@@ -27,7 +20,7 @@ return function (ContainerBuilder $containerBuilder) {
             'logger' => [
                 'name' => $_ENV['APP_NAME'] ?? 'app',
                 'path' => __DIR__ . '/../logs/app.log',
-				'level' => \Monolog\Logger::DEBUG,
+                'level' => \Monolog\Logger::DEBUG,
             ],
 
             // View settings
