@@ -16,7 +16,7 @@ Logger::info('Application starting');
 $container = new Container();
 AppFactory::setContainer($container);
 
-// Create Slim app
+// Create App
 $app = AppFactory::create();
 
 // Create Twig
