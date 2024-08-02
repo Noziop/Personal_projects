@@ -1,55 +1,48 @@
 <?php
 
 /**
- * Application Entry Point
- *
- * This file serves as the entry point for the Slim application.
- * It sets up error reporting, loads dependencies, and runs the application.
+ * index.php
+ * 
+ * This is the entry point of the application. It sets up the Slim application,
+ * initializes the logger, and includes the necessary route definitions.
  */
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
+use App\Logging\Logger;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+// Initialize logger
+Logger::init();
+Logger::info('Application starting');
 
-// Instantiate PHP-DI ContainerBuilder
-$containerBuilder = new ContainerBuilder();
-
-// Set up settings
-$settings = require __DIR__ . '/../app/settings.php';
-$settings($containerBuilder);
-
-// Set up dependencies
-$dependencies = require __DIR__ . '/../app/dependencies.php';
-$dependencies($containerBuilder);
-
-// Build PHP-DI Container instance
-$container = $containerBuilder->build();
-
-// Instantiate the app
-AppFactory::setContainer($container);
+// Create Slim app
 $app = AppFactory::create();
 
-//$container = $app->getContainer();
-//var_dump($container->has(LoggerInterface::class));
-//var_dump($container->get(LoggerInterface::class));
+// Create Twig
+$twig = Twig::create(__DIR__ . '/../templates', ['cache' => false]);
 
-// Register middleware
-$middleware = require __DIR__ . '/../app/middleware.php';
-$middleware($app);
+// Add Twig-View Middleware
+$app->add(TwigMiddleware::create($app, $twig));
 
-// Register routes
-$routes = require __DIR__ . '/../app/routes.php';
-$routes($app);
+// Add routing middleware
+$app->addRoutingMiddleware();
+
+// Add error middleware
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
+// Define app routes
+require __DIR__ . '/../app/routes.php';
+
+Logger::info('Routes defined, starting application');
 
 // Run app
 $app->run();
 
+Logger::info('Application finished');
