@@ -15,9 +15,11 @@
     <nav>
         <ul>
             <li><a href="{{ url_for('home') }}">Accueil</a></li>
-            <li><a href="{{ url_for('tirage.index') }}">Tirage au sort</a></li>
-            <li><a href="{{ url_for('configuration.index') }}">Configuration</a></li>
-            <li><a href="{{ url_for('tableau_de_bord') }}">Tableau de bord</a></li>
+            {% if user and (user.role == 'directrice' or user.role == 'swe' or user.role == 'ssm') %}
+                <li><a href="{{ url_for('cohorts.index') }}">Modifier les Cohortes</a></li>
+                <li><a href="{{ url_for('students.index') }}">Modifier les Étudiants</a></li>
+                <li><a href="{{ url_for('vacations.index') }}">Modifier les Vacances</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>

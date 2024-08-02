@@ -7,6 +7,8 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use App\Middleware\AuthMiddleware;
 
 return function (App $app) {
+    $container = $app->getContainer();
+
     // Route accessible sans authentification
     $app->get('/', function (Request $request, Response $response) {
         return $this->get('view')->render($response, 'home/index.twig');
@@ -70,5 +72,5 @@ return function (App $app) {
 
         $group->get('/tirage', \App\Controllers\DrawingController::class . ':index')->setName('tirage.index')
             ->add(AuthMiddleware::requireRole(['directrice', 'swe', 'ssm']));
-    })->add(new AuthMiddleware($app->getContainer()->get('userService')));
+    })->add(new AuthMiddleware($container->get('userService')));
 };

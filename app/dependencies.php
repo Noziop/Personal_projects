@@ -1,12 +1,11 @@
 <?php
 
-use Psr\Log\LoggerInterface;
+use Psr\Container\ContainerInterface;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Monolog\Processor\UidProcessor; 
-use Psr\Container\ContainerInterface;
+use Monolog\Processor\UidProcessor;
+use Psr\Log\LoggerInterface;
 use Slim\Views\Twig;
-use Twig\Loader\FilesystemLoader;
 use DI\ContainerBuilder;
 
 return function (ContainerBuilder $containerBuilder) {
@@ -16,15 +15,11 @@ return function (ContainerBuilder $containerBuilder) {
             $settings = $c->get('settings');
             $dbSettings = $settings['db'];
             $dsn = "{$dbSettings['driver']}:host={$dbSettings['host']};dbname={$dbSettings['database']};charset={$dbSettings['charset']}";
-            try {
-                return new PDO($dsn, $dbSettings['username'], $dbSettings['password'], [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                ]);
-            } catch (\PDOException $e) {
-                throw new \Exception("Could not connect to the database: " . $e->getMessage());
-            }
+            return new PDO($dsn, $dbSettings['username'], $dbSettings['password'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
         },
 
         // Monolog logger
@@ -42,16 +37,17 @@ return function (ContainerBuilder $containerBuilder) {
         // Twig templating engine
         Twig::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
-            $viewSettings = $settings['view'] ?? [];
-            $loader = new FilesystemLoader($viewSettings['template_path'] ?? __DIR__ . '/../templates');
-            $twig = new Twig($loader, [
-                'cache' => $viewSettings['cache_path'] ?? false,
-                'debug' => $settings['displayErrorDetails'] ?? false,
+            $twig = Twig::create($settings['view']['template_path'], [
+                'cache' => $settings['view']['cache_path'],
                 'auto_reload' => true,
+                'debug' => $settings['displayErrorDetails'],
             ]);
-            if ($settings['displayErrorDetails'] ?? false) {
+            
+            // Add Debug extension if display error details is true
+            if ($settings['displayErrorDetails']) {
                 $twig->addExtension(new \Twig\Extension\DebugExtension());
             }
+            
             return $twig;
         },
 
@@ -82,6 +78,9 @@ return function (ContainerBuilder $containerBuilder) {
         App\Services\FetchHolidaysService::class => function (ContainerInterface $c) {
             return new App\Services\FetchHolidaysService($c->get(PDO::class), $c->get(LoggerInterface::class));
         },
+        'userService' => function (ContainerInterface $c) {
+            return new App\Services\UserService($c->get(PDO::class), $c->get(LoggerInterface::class));
+        },
 
         // Controllers
         App\Controllers\CohortController::class => function (ContainerInterface $c) {
@@ -91,17 +90,19 @@ return function (ContainerBuilder $containerBuilder) {
             return new App\Controllers\StudentController($c->get(App\Services\StudentService::class), $c->get(LoggerInterface::class));
         },
         App\Controllers\DrawingController::class => function (ContainerInterface $c) {
-            return new App\Controllers\DrawingController(
-                $c->get(App\Services\DrawingService::class),
-                $c->get(LoggerInterface::class),
-                $c->get(Twig::class)
-            );
+            return new App\Controllers\DrawingController($c->get(App\Services\DrawingService::class), $c->get(LoggerInterface::class));
         },
         App\Controllers\UnavailabilityController::class => function (ContainerInterface $c) {
             return new App\Controllers\UnavailabilityController($c->get(App\Services\UnavailabilityService::class), $c->get(LoggerInterface::class));
         },
         App\Controllers\VacationController::class => function (ContainerInterface $c) {
             return new App\Controllers\VacationController($c->get(App\Services\VacationService::class), $c->get(LoggerInterface::class));
+        },
+        App\Controllers\UserController::class => function (ContainerInterface $c) {
+            return new App\Controllers\UserController($c->get('userService'), $c->get(LoggerInterface::class), $c->get(Twig::class));
+        },
+        App\Controllers\AuthController::class => function (ContainerInterface $c) {
+            return new App\Controllers\AuthController($c->get('userService'), $c->get(Twig::class));
         },
     ]);
 };

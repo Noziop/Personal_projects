@@ -2,15 +2,20 @@
 
 {% block title %}Accueil - SOD Tirage au Sort{% endblock %}
 
+{% block header_title %}Holberton Ritual Management (I promess : we cast no spells, only varaiables){% endblock %}
+
 {% block content %}
-    <h1>Bienvenue sur l'application de tirage au sort SOD</h1>
-    <p>Cette application gère le rituel du Speaker of the Day pour l'école Holberton Thonon-les-Bains.</p>
+<div class="neumorphic-container">
+
+    <h1 class="neumorphic-title">Bienvenue sur l'application de gestion des rituels sataniques d'Holberton Thonon-les-bains</h1>
+    <p>Cette application gère les rituels pour l'école Holberton Thonon-les-Bains. (si Monsieur Seguin a perdu sa chèvre, que la mère Michel a perdu son chat, toussa toussa...)</p>
     
     {% if user %}
         <p>Vous êtes connecté en tant que {{ user.username }}.</p>
         <a href="{{ url_for('auth.logout') }}">Se déconnecter</a>
     {% else %}
-        <p>Veuillez vous connecter pour accéder à toutes les fonctionnalités.</p>
-        <a href="{{ url_for('auth.loginForm') }}">Se connecter</a>
+        <p>Si vous jurez solennelement que vos intentions sont mauvaises, pour accéder à toutes les fonctionnalités : <a href="{{ url_for('auth.loginForm') }}">Se connecter</a></p>
+		<p>(non, non, pas besoin de pentagrame ou table de ouija, promis !)</p>
+		<p>(tout ça, c'est la faute de José)</p>
     {% endif %}
 {% endblock %}
