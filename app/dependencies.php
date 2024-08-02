@@ -1,16 +1,9 @@
 <?php
 
-/**
- * Dependencies Configuration
- *
- * This file defines the dependencies for the Slim application.
- * It includes configurations for database, logging, view rendering, and services.
- */
-
- use Psr\Log\LoggerInterface;
- use Monolog\Logger;
- use Monolog\Handler\StreamHandler;
- use Monolog\Processor\UidProcessor; 
+use Psr\Log\LoggerInterface;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Processor\UidProcessor; 
 use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
 use Twig\Loader\FilesystemLoader;
@@ -23,25 +16,28 @@ return function (ContainerBuilder $containerBuilder) {
             $settings = $c->get('settings');
             $dbSettings = $settings['db'];
             $dsn = "{$dbSettings['driver']}:host={$dbSettings['host']};dbname={$dbSettings['database']};charset={$dbSettings['charset']}";
-            return new PDO($dsn, $dbSettings['username'], $dbSettings['password'], [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]);
+            try {
+                return new PDO($dsn, $dbSettings['username'], $dbSettings['password'], [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+            } catch (\PDOException $e) {
+                throw new \Exception("Could not connect to the database: " . $e->getMessage());
+            }
         },
 
         // Monolog logger
-		LoggerInterface::class => function (ContainerInterface $c) {
-			$settings = $c->get('settings');
-			$loggerSettings = $settings['logger'];
-			$logger = new Logger($loggerSettings['name']);
-			$processor = new UidProcessor();
-			$logger->pushProcessor($processor);
-			$handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
-			$logger->pushHandler($handler);
-			return $logger;
-		},
-		
+        LoggerInterface::class => function (ContainerInterface $c) {
+            $settings = $c->get('settings');
+            $loggerSettings = $settings['logger'];
+            $logger = new Logger($loggerSettings['name']);
+            $processor = new UidProcessor();
+            $logger->pushProcessor($processor);
+            $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+            $logger->pushHandler($handler);
+            return $logger;
+        },
 
         // Twig templating engine
         Twig::class => function (ContainerInterface $c) {
@@ -95,7 +91,11 @@ return function (ContainerBuilder $containerBuilder) {
             return new App\Controllers\StudentController($c->get(App\Services\StudentService::class), $c->get(LoggerInterface::class));
         },
         App\Controllers\DrawingController::class => function (ContainerInterface $c) {
-            return new App\Controllers\DrawingController($c->get(App\Services\DrawingService::class), $c->get(LoggerInterface::class));
+            return new App\Controllers\DrawingController(
+                $c->get(App\Services\DrawingService::class),
+                $c->get(LoggerInterface::class),
+                $c->get(Twig::class)
+            );
         },
         App\Controllers\UnavailabilityController::class => function (ContainerInterface $c) {
             return new App\Controllers\UnavailabilityController($c->get(App\Services\UnavailabilityService::class), $c->get(LoggerInterface::class));

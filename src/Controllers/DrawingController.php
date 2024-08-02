@@ -1,12 +1,4 @@
 <?php
-/**
- * DrawingController.php
- * 
- * This file contains the DrawingController class which handles all drawing-related
- * HTTP requests and responses for the Speaker of the Day application.
- * 
- * @package App\Controllers
- */
 
 namespace App\Controllers;
 
@@ -15,23 +7,25 @@ use App\Exceptions\HttpException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
 
 class DrawingController
 {
     private $drawingService;
     private $logger;
+    private $view;
 
-    /**
-     * DrawingController constructor.
-     * 
-     * @param DrawingService $drawingService The drawing service
-     * @param LoggerInterface $logger The logger interface
-     */
-    public function __construct(DrawingService $drawingService, LoggerInterface $logger)
+    public function __construct(DrawingService $drawingService, LoggerInterface $logger, Twig $view)
     {
         $this->drawingService = $drawingService;
         $this->logger = $logger;
-        $this->logger->debug('DrawingController initialized');
+        $this->view = $view;
+    }
+
+    public function index(Request $request, Response $response): Response
+    {
+        $this->logger->info('Accessing drawing page');
+        return $this->view->render($response, 'tirage/index.twig');
     }
 
     /**
