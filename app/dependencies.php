@@ -4,17 +4,17 @@
  * Dependencies Configuration
  *
  * This file defines the dependencies for the Slim application.
- * It includes configurations for database, logging, and view rendering.
+ * It includes configurations for database, logging, view rendering, and services.
  */
 
-use DI\ContainerBuilder;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Monolog\Processor\UidProcessor;
+ use Psr\Log\LoggerInterface;
+ use Monolog\Logger;
+ use Monolog\Handler\StreamHandler;
+ use Monolog\Processor\UidProcessor; 
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use Slim\Views\Twig;
 use Twig\Loader\FilesystemLoader;
+use DI\ContainerBuilder;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -31,27 +31,29 @@ return function (ContainerBuilder $containerBuilder) {
         },
 
         // Monolog logger
-        LoggerInterface::class => function (ContainerInterface $c) {
-            $settings = $c->get('settings');
-            $loggerSettings = $settings['logger'];
-            $logger = new Logger($loggerSettings['name']);
-            $processor = new UidProcessor();
-            $logger->pushProcessor($processor);
-            $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
-            $logger->pushHandler($handler);
-            return $logger;
-        },
+		LoggerInterface::class => function (ContainerInterface $c) {
+			$settings = $c->get('settings');
+			$loggerSettings = $settings['logger'];
+			$logger = new Logger($loggerSettings['name']);
+			$processor = new UidProcessor();
+			$logger->pushProcessor($processor);
+			$handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+			$logger->pushHandler($handler);
+			return $logger;
+		},
+		
 
         // Twig templating engine
         Twig::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
-            $loader = new FilesystemLoader($settings['view']['template_path']);
+            $viewSettings = $settings['view'] ?? [];
+            $loader = new FilesystemLoader($viewSettings['template_path'] ?? __DIR__ . '/../templates');
             $twig = new Twig($loader, [
-                'cache' => $settings['view']['cache_path'],
+                'cache' => $viewSettings['cache_path'] ?? false,
+                'debug' => $settings['displayErrorDetails'] ?? false,
                 'auto_reload' => true,
-                'debug' => $settings['displayErrorDetails'],
             ]);
-            if ($settings['displayErrorDetails']) {
+            if ($settings['displayErrorDetails'] ?? false) {
                 $twig->addExtension(new \Twig\Extension\DebugExtension());
             }
             return $twig;

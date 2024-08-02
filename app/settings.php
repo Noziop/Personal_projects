@@ -4,7 +4,7 @@
  * Application Settings
  *
  * This file defines the settings for the Slim application.
- * It includes configurations for error display, logging, and database connection.
+ * It includes configurations for error display, logging, database connection, and view rendering.
  */
 
 use DI\ContainerBuilder;
@@ -20,14 +20,20 @@ return function (ContainerBuilder $containerBuilder) {
             'addContentLengthHeader' => filter_var($_ENV['ADD_CONTENT_LENGTH_HEADER'] ?? true, FILTER_VALIDATE_BOOLEAN),
 
             // Error Logging
-            'logErrors'  => filter_var($_ENV['LOG_ERRORS'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'logErrors' => filter_var($_ENV['LOG_ERRORS'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'logErrorDetails' => filter_var($_ENV['LOG_ERROR_DETAILS'] ?? true, FILTER_VALIDATE_BOOLEAN),
 
             // Monolog settings
             'logger' => [
                 'name' => $_ENV['APP_NAME'] ?? 'app',
                 'path' => __DIR__ . '/../logs/app.log',
-                'level' => Logger::DEBUG,
+				'level' => \Monolog\Logger::DEBUG,
+            ],
+
+            // View settings
+            'view' => [
+                'template_path' => __DIR__ . '/../templates',
+                'cache_path' => __DIR__ . '/../var/cache/twig',
             ],
 
             // Database settings

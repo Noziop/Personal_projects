@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Speaker Of The Day{% endblock %}</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_red.css">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+</head>
+<body>
+<header class="neumorphic-header">
+    <h1 class="neumorphic-title">{% block header_title %}{% endblock %}</h1>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Accueil</a></li>
+            <li><a href="{{ url_for('tirage.index') }}">Tirage au sort</a></li>
+            <li><a href="{{ url_for('configuration.index') }}">Configuration</a></li>
+			<li><a href="{{ url_for('tableau_de_bord') }}">Tableau de bord</a></li>
+        </ul>
+    </nav>
+</header>
+
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ "now"|date("Y") }} - Fassih Belmokhtar - Speaker Of The Day. Tous droits réservés.</p>
+    </footer>
+
+    {% block javascripts %}
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script type="module" src="/assets/js/cohortManager.js"></script>
+	<script type="module" src="/assets/js/studentAPI.js"></script>
+	<script type="module" src="/assets/js/studentForm.js"></script>
+	<script type="module" src="/assets/js/StudentList.js"></script>
+	<script type="module" src="/assets/js/studentManager.js"></script>
+	<script type="module" src="/assets/js/main.js"></script>
+	{% endblock %}
+
+</body>
+</html>
