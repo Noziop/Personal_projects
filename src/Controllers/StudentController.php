@@ -1,4 +1,12 @@
 <?php
+/**
+ * StudentController.php
+ * 
+ * This file contains the StudentController class which handles all student-related
+ * HTTP requests and responses.
+ * 
+ * @package App\Controllers
+ */
 
 namespace App\Controllers;
 
@@ -14,12 +22,27 @@ class StudentController
     private $studentService;
     private $logger;
 
+    /**
+     * StudentController constructor.
+     * 
+     * @param StudentService $studentService The student service
+     * @param LoggerInterface $logger The logger interface
+     */
     public function __construct(StudentService $studentService, LoggerInterface $logger)
     {
         $this->studentService = $studentService;
         $this->logger = $logger;
+        $this->logger->debug('StudentController initialized');
     }
 
+    /**
+     * Get all students
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function getAllStudents(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for getting all students');
@@ -34,6 +57,15 @@ class StudentController
         }
     }
 
+    /**
+     * Get a specific student by ID
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function getStudent(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
@@ -55,19 +87,29 @@ class StudentController
         }
     }
 
+    /**
+     * Create a new student
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function createStudent(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for creating a new student');
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['first_name']) || !isset($data['last_name']) || !isset($data['email']) || !isset($data['cohort_id'])) {
+            $this->logger->debug('Received data for new student', ['data' => $data]);
+            if (!isset($data['last_name']) || !isset($data['first_name']) || !isset($data['email']) || !isset($data['cohort_id'])) {
+                $this->logger->warning('Invalid data for student creation', ['data' => $data]);
                 throw new HttpException('Données invalides pour la création de l\'étudiant', 400);
             }
             $student = new Student(
-                $data['first_name'],
                 $data['last_name'],
+                $data['first_name'],
                 $data['email'],
-                (int)$data['cohort_id']
+                $data['cohort_id']
             );
             $id = $this->studentService->createStudent($student);
             $this->logger->info('Successfully created new student', ['id' => $id]);
@@ -81,13 +123,24 @@ class StudentController
         }
     }
 
+    /**
+     * Update an existing student
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function updateStudent(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for updating student', ['id' => $id]);
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['first_name']) || !isset($data['last_name']) || !isset($data['email']) || !isset($data['cohort_id'])) {
+            $this->logger->debug('Received data for student update', ['id' => $id, 'data' => $data]);
+            if (!isset($data['last_name']) || !isset($data['first_name']) || !isset($data['email']) || !isset($data['cohort_id'])) {
+                $this->logger->warning('Invalid data for student update', ['id' => $id, 'data' => $data]);
                 throw new HttpException('Données invalides pour la mise à jour de l\'étudiant', 400);
             }
             $student = $this->studentService->getStudentById($id);
@@ -95,10 +148,10 @@ class StudentController
                 $this->logger->warning('Student not found for update', ['id' => $id]);
                 throw new HttpException('Étudiant non trouvé', 404);
             }
-            $student->setFirstName($data['first_name']);
             $student->setLastName($data['last_name']);
+            $student->setFirstName($data['first_name']);
             $student->setEmail($data['email']);
-            $student->setCohortId((int)$data['cohort_id']);
+            $student->setCohortId($data['cohort_id']);
             $success = $this->studentService->updateStudent($student);
             $this->logger->info('Successfully updated student', ['id' => $id, 'success' => $success]);
             return $response->withJson(['success' => $success]);
@@ -110,6 +163,15 @@ class StudentController
         }
     }
 
+    /**
+     * Delete a student
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function deleteStudent(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
@@ -131,21 +193,6 @@ class StudentController
         } catch (\Exception $e) {
             $this->logger->error('Error deleting student', ['id' => $id, 'error' => $e->getMessage()]);
             throw new HttpException('Une erreur est survenue lors de la suppression de l\'étudiant', 500);
-        }
-    }
-
-    public function getStudentsByCohort(Request $request, Response $response, array $args): Response
-    {
-        $cohortId = (int)$args['cohort_id'];
-        $this->logger->info('Request received for getting students by cohort', ['cohort_id' => $cohortId]);
-        try {
-            $students = $this->studentService->getStudentsByCohort($cohortId);
-            $this->logger->info('Successfully retrieved students by cohort', ['cohort_id' => $cohortId, 'count' => count($students)]);
-            $response->getBody()->write(json_encode($students));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (\Exception $e) {
-            $this->logger->error('Error retrieving students by cohort', ['cohort_id' => $cohortId, 'error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la récupération des étudiants pour cette cohorte', 500);
         }
     }
 }

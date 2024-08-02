@@ -1,4 +1,12 @@
 <?php
+/**
+ * CohortController.php
+ * 
+ * This file contains the CohortController class which handles all cohort-related
+ * HTTP requests and responses.
+ * 
+ * @package App\Controllers
+ */
 
 namespace App\Controllers;
 
@@ -14,12 +22,27 @@ class CohortController
     private $cohortService;
     private $logger;
 
+    /**
+     * CohortController constructor.
+     * 
+     * @param CohortService $cohortService The cohort service
+     * @param LoggerInterface $logger The logger interface
+     */
     public function __construct(CohortService $cohortService, LoggerInterface $logger)
     {
         $this->cohortService = $cohortService;
         $this->logger = $logger;
+        $this->logger->debug('CohortController initialized');
     }
 
+    /**
+     * Get all cohorts
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function getAllCohorts(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for getting all cohorts');
@@ -34,6 +57,15 @@ class CohortController
         }
     }
 
+    /**
+     * Get a specific cohort by ID
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function getCohort(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
@@ -55,12 +87,22 @@ class CohortController
         }
     }
 
+    /**
+     * Create a new cohort
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function createCohort(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for creating a new cohort');
         try {
             $data = $request->getParsedBody();
+            $this->logger->debug('Received data for new cohort', ['data' => $data]);
             if (!isset($data['name']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for cohort creation', ['data' => $data]);
                 throw new HttpException('Données invalides pour la création de la cohorte', 400);
             }
             $cohort = new Cohort(
@@ -80,13 +122,24 @@ class CohortController
         }
     }
 
+    /**
+     * Update an existing cohort
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function updateCohort(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for updating cohort', ['id' => $id]);
         try {
             $data = $request->getParsedBody();
+            $this->logger->debug('Received data for cohort update', ['id' => $id, 'data' => $data]);
             if (!isset($data['name']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for cohort update', ['id' => $id, 'data' => $data]);
                 throw new HttpException('Données invalides pour la mise à jour de la cohorte', 400);
             }
             $cohort = $this->cohortService->getCohortById($id);
@@ -108,6 +161,15 @@ class CohortController
         }
     }
 
+    /**
+     * Delete a cohort
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function deleteCohort(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
