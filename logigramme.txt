@@ -1,0 +1,73 @@
+[Début]
+|
++--- [Authentification et Gestion des Utilisateurs] (Directrice + SWE)
+|    |
+|    +--- [Création/Modification des Utilisateurs] 
+|    |    |--- Création individuelle
+|    |    |--- Création en batch (CSV, PDF, TXT)
+|    |
+|    +--- [Gestion des Rôles] 
+|         |--- Directrice
+|         |--- SWE
+|         |--- SSM
+|         |--- Élèves
+|
++--- [Gestion des Cohortes] (Directrice + SWE + SSM)
+|    |
+|    +--- [CRUD Cohortes]
+|    |
+|    +--- [Gestion des Vacances]
+|    |
+|    +--- [Import Jours Fériés (API)]
+|    |
+|    +--- [Gestion Jours de Tirage]
+|
++--- [Gestion des Élèves] (Directrice + SWE + SSM)
+|    |
+|    +--- [CRUD Élèves]
+|    |
+|    +--- [Gestion des Indisponibilités]
+|
++--- [Tirages au Sort] (Directrice + SWE + SSM)
+|    |
+|    +--- [SOD (Speaker of the Day)]
+|    |
+|    +--- [Scribe Stand-up]
+|    |
+|    +--- [Scribe Wrap-up]
+|    |
+|    +--- [Scribe PLD]
+|    |
+|    +--- [Projets de Groupe]
+|
++--- [Formulaires] (Directrice + SWE + SSM + Eleves)
+|    |
+|    +--- [Appréciation SOD]
+|    |
+|    +--- [Compte-rendu Stand-up]
+|    |    |--- État d'avancement
+|    |    |--- Objectifs
+|    |    |--- Difficultés
+|    |    |--- Demande de Wrap-up
+|    |
+|    +--- [Compte-rendu Wrap-up]
+|    |
+|    +--- [Compte-rendu PLD]
+|
++--- [Tableau de Bord] 
+|    |
+|    +--- [Vue Directrice/SWE/SSM]
+|    |    |--- Statistiques
+|    |    |--- Rapports
+|    |
+|    +--- [Vue Élève]
+|         |--- Prochains tirages
+|         |--- Tâches en attente
+|
++--- [Système de Notifications]
+     |
+     +--- [Notifications Email]
+     |
+     +--- [Notifications In-App]
+
+[Fin]
