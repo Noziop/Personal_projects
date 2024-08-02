@@ -1,4 +1,12 @@
 <?php
+/**
+ * UnavailabilityController.php
+ * 
+ * This file contains the UnavailabilityController class which handles all unavailability-related
+ * HTTP requests and responses for the Speaker of the Day application.
+ * 
+ * @package App\Controllers
+ */
 
 namespace App\Controllers;
 
@@ -14,12 +22,27 @@ class UnavailabilityController
     private $unavailabilityService;
     private $logger;
 
+    /**
+     * UnavailabilityController constructor.
+     * 
+     * @param UnavailabilityService $unavailabilityService The unavailability service
+     * @param LoggerInterface $logger The logger interface
+     */
     public function __construct(UnavailabilityService $unavailabilityService, LoggerInterface $logger)
     {
         $this->unavailabilityService = $unavailabilityService;
         $this->logger = $logger;
+        $this->logger->debug('UnavailabilityController initialized');
     }
 
+    /**
+     * Get all unavailabilities
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function getAllUnavailabilities(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for getting all unavailabilities');
@@ -34,6 +57,15 @@ class UnavailabilityController
         }
     }
 
+    /**
+     * Get a specific unavailability by ID
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function getUnavailability(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
@@ -55,19 +87,28 @@ class UnavailabilityController
         }
     }
 
+    /**
+     * Create a new unavailability
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function createUnavailability(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for creating a new unavailability');
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['student_id']) || !isset($data['start_date_time']) || !isset($data['end_date_time'])) {
+            $this->logger->debug('Received data for new unavailability', ['data' => $data]);
+            if (!isset($data['student_id']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for unavailability creation', ['data' => $data]);
                 throw new HttpException('Données invalides pour la création de l\'indisponibilité', 400);
             }
             $unavailability = new Unavailability(
-                (int)$data['student_id'],
-                new \DateTime($data['start_date_time']),
-                new \DateTime($data['end_date_time']),
-                $data['reason'] ?? null
+                $data['student_id'],
+                new \DateTime($data['start_date']),
+                new \DateTime($data['end_date'])
             );
             $id = $this->unavailabilityService->createUnavailability($unavailability);
             $this->logger->info('Successfully created new unavailability', ['id' => $id]);
@@ -81,13 +122,24 @@ class UnavailabilityController
         }
     }
 
+    /**
+     * Update an existing unavailability
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function updateUnavailability(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for updating unavailability', ['id' => $id]);
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['student_id']) || !isset($data['start_date_time']) || !isset($data['end_date_time'])) {
+            $this->logger->debug('Received data for unavailability update', ['id' => $id, 'data' => $data]);
+            if (!isset($data['student_id']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for unavailability update', ['id' => $id, 'data' => $data]);
                 throw new HttpException('Données invalides pour la mise à jour de l\'indisponibilité', 400);
             }
             $unavailability = $this->unavailabilityService->getUnavailabilityById($id);
@@ -95,10 +147,9 @@ class UnavailabilityController
                 $this->logger->warning('Unavailability not found for update', ['id' => $id]);
                 throw new HttpException('Indisponibilité non trouvée', 404);
             }
-            $unavailability->setStudentId((int)$data['student_id']);
-            $unavailability->setStartDateTime(new \DateTime($data['start_date_time']));
-            $unavailability->setEndDateTime(new \DateTime($data['end_date_time']));
-            $unavailability->setReason($data['reason'] ?? null);
+            $unavailability->setStudentId($data['student_id']);
+            $unavailability->setStartDate(new \DateTime($data['start_date']));
+            $unavailability->setEndDate(new \DateTime($data['end_date']));
             $success = $this->unavailabilityService->updateUnavailability($unavailability);
             $this->logger->info('Successfully updated unavailability', ['id' => $id, 'success' => $success]);
             return $response->withJson(['success' => $success]);
@@ -110,16 +161,20 @@ class UnavailabilityController
         }
     }
 
+    /**
+     * Delete an unavailability
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function deleteUnavailability(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for deleting unavailability', ['id' => $id]);
         try {
-            $unavailability = $this->unavailabilityService->getUnavailabilityById($id);
-            if (!$unavailability) {
-                $this->logger->warning('Unavailability not found for deletion', ['id' => $id]);
-                throw new HttpException('Indisponibilité non trouvée', 404);
-            }
             $success = $this->unavailabilityService->deleteUnavailability($id);
             $this->logger->info('Unavailability deletion attempt completed', ['id' => $id, 'success' => $success]);
             if (!$success) {
@@ -131,21 +186,6 @@ class UnavailabilityController
         } catch (\Exception $e) {
             $this->logger->error('Error deleting unavailability', ['id' => $id, 'error' => $e->getMessage()]);
             throw new HttpException('Une erreur est survenue lors de la suppression de l\'indisponibilité', 500);
-        }
-    }
-
-    public function getUnavailabilitiesByStudent(Request $request, Response $response, array $args): Response
-    {
-        $studentId = (int)$args['student_id'];
-        $this->logger->info('Request received for getting unavailabilities by student', ['student_id' => $studentId]);
-        try {
-            $unavailabilities = $this->unavailabilityService->getUnavailabilitiesByStudent($studentId);
-            $this->logger->info('Successfully retrieved unavailabilities by student', ['student_id' => $studentId, 'count' => count($unavailabilities)]);
-            $response->getBody()->write(json_encode($unavailabilities));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (\Exception $e) {
-            $this->logger->error('Error retrieving unavailabilities by student', ['student_id' => $studentId, 'error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la récupération des indisponibilités pour cet étudiant', 500);
         }
     }
 }

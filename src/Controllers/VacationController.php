@@ -1,4 +1,12 @@
 <?php
+/**
+ * VacationController.php
+ * 
+ * This file contains the VacationController class which handles all vacation-related
+ * HTTP requests and responses for the Speaker of the Day application.
+ * 
+ * @package App\Controllers
+ */
 
 namespace App\Controllers;
 
@@ -14,12 +22,27 @@ class VacationController
     private $vacationService;
     private $logger;
 
+    /**
+     * VacationController constructor.
+     * 
+     * @param VacationService $vacationService The vacation service
+     * @param LoggerInterface $logger The logger interface
+     */
     public function __construct(VacationService $vacationService, LoggerInterface $logger)
     {
         $this->vacationService = $vacationService;
         $this->logger = $logger;
+        $this->logger->debug('VacationController initialized');
     }
 
+    /**
+     * Get all vacations
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function getAllVacations(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for getting all vacations');
@@ -34,6 +57,15 @@ class VacationController
         }
     }
 
+    /**
+     * Get a specific vacation by ID
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function getVacation(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
@@ -55,17 +87,26 @@ class VacationController
         }
     }
 
+    /**
+     * Create a new vacation
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     * @throws HttpException
+     */
     public function createVacation(Request $request, Response $response): Response
     {
         $this->logger->info('Request received for creating a new vacation');
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['cohort_id']) || !isset($data['name']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+            $this->logger->debug('Received data for new vacation', ['data' => $data]);
+            if (!isset($data['cohort_id']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for vacation creation', ['data' => $data]);
                 throw new HttpException('Données invalides pour la création des vacances', 400);
             }
             $vacation = new Vacation(
-                (int)$data['cohort_id'],
-                $data['name'],
+                $data['cohort_id'],
                 new \DateTime($data['start_date']),
                 new \DateTime($data['end_date'])
             );
@@ -81,13 +122,24 @@ class VacationController
         }
     }
 
+    /**
+     * Update an existing vacation
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function updateVacation(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for updating vacation', ['id' => $id]);
         try {
             $data = $request->getParsedBody();
-            if (!isset($data['cohort_id']) || !isset($data['name']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+            $this->logger->debug('Received data for vacation update', ['id' => $id, 'data' => $data]);
+            if (!isset($data['cohort_id']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+                $this->logger->warning('Invalid data for vacation update', ['id' => $id, 'data' => $data]);
                 throw new HttpException('Données invalides pour la mise à jour des vacances', 400);
             }
             $vacation = $this->vacationService->getVacationById($id);
@@ -95,8 +147,7 @@ class VacationController
                 $this->logger->warning('Vacation not found for update', ['id' => $id]);
                 throw new HttpException('Vacances non trouvées', 404);
             }
-            $vacation->setCohortId((int)$data['cohort_id']);
-            $vacation->setName($data['name']);
+            $vacation->setCohortId($data['cohort_id']);
             $vacation->setStartDate(new \DateTime($data['start_date']));
             $vacation->setEndDate(new \DateTime($data['end_date']));
             $success = $this->vacationService->updateVacation($vacation);
@@ -110,16 +161,20 @@ class VacationController
         }
     }
 
+    /**
+     * Delete a vacation
+     * 
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @param array $args Route arguments
+     * @return Response
+     * @throws HttpException
+     */
     public function deleteVacation(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $this->logger->info('Request received for deleting vacation', ['id' => $id]);
         try {
-            $vacation = $this->vacationService->getVacationById($id);
-            if (!$vacation) {
-                $this->logger->warning('Vacation not found for deletion', ['id' => $id]);
-                throw new HttpException('Vacances non trouvées', 404);
-            }
             $success = $this->vacationService->deleteVacation($id);
             $this->logger->info('Vacation deletion attempt completed', ['id' => $id, 'success' => $success]);
             if (!$success) {
@@ -131,21 +186,6 @@ class VacationController
         } catch (\Exception $e) {
             $this->logger->error('Error deleting vacation', ['id' => $id, 'error' => $e->getMessage()]);
             throw new HttpException('Une erreur est survenue lors de la suppression des vacances', 500);
-        }
-    }
-
-    public function getVacationsByCohort(Request $request, Response $response, array $args): Response
-    {
-        $cohortId = (int)$args['cohort_id'];
-        $this->logger->info('Request received for getting vacations by cohort', ['cohort_id' => $cohortId]);
-        try {
-            $vacations = $this->vacationService->getVacationsByCohort($cohortId);
-            $this->logger->info('Successfully retrieved vacations by cohort', ['cohort_id' => $cohortId, 'count' => count($vacations)]);
-            $response->getBody()->write(json_encode($vacations));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (\Exception $e) {
-            $this->logger->error('Error retrieving vacations by cohort', ['cohort_id' => $cohortId, 'error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la récupération des vacances pour cette cohorte', 500);
         }
     }
 }
