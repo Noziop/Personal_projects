@@ -12,4 +12,3 @@ return function (App $app) {
 
     // Ajoutez ici vos autres routes
 };
-g
