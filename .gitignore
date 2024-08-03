@@ -1,3 +1,6 @@
 /vendor/
 .env
 logs/
+logs/app.log
+var/cache/twig/*
+*.old
