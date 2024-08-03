@@ -15,18 +15,25 @@ class DrawingController
     private $logger;
     private $view;
 
-    public function __construct(DrawingService $drawingService, LoggerInterface $logger, Twig $view)
-    {
-        $this->drawingService = $drawingService;
-        $this->logger = $logger;
-        $this->view = $view;
-    }
+	private $container;
 
-    public function index(Request $request, Response $response): Response
-    {
-        $this->logger->info('Accessing drawing page');
-        return $this->view->render($response, 'tirage/index.twig');
-    }
+	public function __construct(DrawingService $drawingService, LoggerInterface $logger, Twig $view, ContainerInterface $container)
+	{
+		$this->drawingService = $drawingService;
+		$this->logger = $logger;
+		$this->view = $view;
+		$this->container = $container;
+	}
+	public function index(Request $request, Response $response): Response
+	{
+		$this->logger->info('Accessing drawing page');
+		$settings = $this->container->get('settings');
+		var_dump($settings['view']['template_path']);
+		var_dump($this->view->getLoader()->getPaths());
+		var_dump($this->view->getEnvironment()->getCache());
+		die();
+		// return $this->view->render($response, 'tirage/index.twig');
+	}
 
     /**
      * Perform a drawing for Speaker of the Day

@@ -1,12 +1,16 @@
 <?php
 
 use Slim\Factory\AppFactory;
-use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use App\Logging\Logger;
 use DI\ContainerBuilder;
 
 require __DIR__ . '/../vendor/autoload.php';
+
+// Display Errors
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 // Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
@@ -31,12 +35,7 @@ $dependencies($containerBuilder);
 $container = $containerBuilder->build();
 
 // Instantiate the app
-AppFactory::setContainer($container);
-$app = AppFactory::create();
-
-// Create Twig
-$twig = Twig::create(__DIR__ . '/../templates', ['cache' => false]);
-$container->set('view', $twig);
+$app = $container->get(Slim\App::class);
 
 // Add Twig-View Middleware
 $app->add(TwigMiddleware::createFromContainer($app));

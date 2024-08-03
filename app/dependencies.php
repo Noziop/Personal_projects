@@ -1,16 +1,29 @@
 <?php
 
 use Psr\Container\ContainerInterface;
+use Twig\Loader\FilesystemLoader;
+use Twig\Loader\LoaderInterface;
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Processor\UidProcessor;
 use Psr\Log\LoggerInterface;
 use Slim\Views\Twig;
 use DI\ContainerBuilder;
+use Slim\App;
+use Slim\Factory\AppFactory;
+use Slim\Psr7\Factory\ResponseFactory;
+use Psr\Http\Message\ResponseFactoryInterface;
+use App\Services\AuthService;
+use App\Controllers\AuthController;
+use App\Middleware\AuthMiddleware;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
-        // Database connection
+        ResponseFactoryInterface::class => function (ContainerInterface $c) {
+            return new ResponseFactory();
+        },
+
         PDO::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
             $dbSettings = $settings['db'];
@@ -22,7 +35,6 @@ return function (ContainerBuilder $containerBuilder) {
             ]);
         },
 
-        // Monolog logger
         LoggerInterface::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
             $loggerSettings = $settings['logger'];
@@ -34,21 +46,30 @@ return function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
 
-        // Twig templating engine
-        Twig::class => function (ContainerInterface $c) {
+        'view' => function (ContainerInterface $c) {
             $settings = $c->get('settings');
-            $twig = Twig::create($settings['view']['template_path'], [
+            return Twig::create($settings['view']['template_path'], [
                 'cache' => $settings['view']['cache_path'],
                 'auto_reload' => true,
                 'debug' => $settings['displayErrorDetails'],
             ]);
-            
-            // Add Debug extension if display error details is true
-            if ($settings['displayErrorDetails']) {
-                $twig->addExtension(new \Twig\Extension\DebugExtension());
-            }
-            
-            return $twig;
+        },
+
+        AuthService::class => function (ContainerInterface $c) {
+            return new AuthService($c->get(PDO::class));
+        },
+
+        AuthController::class => function (ContainerInterface $c) {
+            return new AuthController($c->get(AuthService::class), $c->get('view'));
+        },
+
+        AuthMiddleware::class => function (ContainerInterface $c) {
+            return new AuthMiddleware($c->get(AuthService::class));
+        },
+
+        App::class => function (ContainerInterface $c) {
+            AppFactory::setContainer($c);
+            return AppFactory::create();
         },
 
         // Services
@@ -78,9 +99,6 @@ return function (ContainerBuilder $containerBuilder) {
         App\Services\FetchHolidaysService::class => function (ContainerInterface $c) {
             return new App\Services\FetchHolidaysService($c->get(PDO::class), $c->get(LoggerInterface::class));
         },
-        'userService' => function (ContainerInterface $c) {
-            return new App\Services\UserService($c->get(PDO::class), $c->get(LoggerInterface::class));
-        },
 
         // Controllers
         App\Controllers\CohortController::class => function (ContainerInterface $c) {
@@ -99,10 +117,7 @@ return function (ContainerBuilder $containerBuilder) {
             return new App\Controllers\VacationController($c->get(App\Services\VacationService::class), $c->get(LoggerInterface::class));
         },
         App\Controllers\UserController::class => function (ContainerInterface $c) {
-            return new App\Controllers\UserController($c->get('userService'), $c->get(LoggerInterface::class), $c->get(Twig::class));
-        },
-        App\Controllers\AuthController::class => function (ContainerInterface $c) {
-            return new App\Controllers\AuthController($c->get('userService'), $c->get(Twig::class));
+            return new App\Controllers\UserController($c->get(AuthService::class), $c->get(LoggerInterface::class), $c->get(Twig::class));
         },
     ]);
 };
