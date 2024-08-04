@@ -1,0 +1,12 @@
+{% extends "layout.twig" %}
+
+{% block title %}Error 500 - Internal Server Error{% endblock %}
+
+{% block content %}
+    <h1>500 - Internal Server Error</h1>
+    <p>Oops! Something went wrong on our end. We're working to fix it.</p>
+    {% if displayErrorDetails %}
+        <h2>Error Details:</h2>
+        <pre>{{ exception.getMessage() }}</pre>
+    {% endif %}
+{% endblock %}

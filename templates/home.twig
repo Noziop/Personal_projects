@@ -1,0 +1,35 @@
+{% extends "layout.twig" %}
+
+{% block title %}Holberton Rituals Manager{% endblock %}
+
+{% block header_title %}Holberton Rituals Manager{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title">Bienvenue sur l'Application de gestion des rituels d'Holberton Thonon-les-Bains</h2>
+    
+    <div class="neumorphic-card">
+        <h3>À propos de l'application</h3>
+        <p>Cette application a été conçue pour faciliter l'organisation des différents rituels à Holberton School Thonon.</p>
+        
+        <h3>Fonctionnalités principales :</h3>
+        <ul>
+            <li>Tirage au sort automatisé des élèves pour les présentations S.O.D.</li>
+            <li>Gestion des cohortes et de leurs calendriers spécifiques</li>
+            <li>Prise en compte des vacances et jours fériés</li>
+            <li>Gestion des indisponibilités individuelles des élèves</li>
+        </ul>
+        
+        <h3>Comment ça marche :</h3>
+        <ol>
+            <li>Configurez les cohortes et leurs jours de tirage autorisés</li>
+            <li>Ajoutez les périodes de vacances pour chaque cohorte</li>
+            <li>Enregistrez les contraintes de calendrier (jours fériés, événements spéciaux)</li>
+            <li>Lancez un tirage au sort en sélectionnant les cohortes concernées et la date de début</li>
+            <li>Obtenez un planning de passages optimisé pour le S.O.D.</li>
+        </ol>
+        
+        <p>Utilisez le menu de navigation pour accéder aux différentes fonctionnalités de l'application.</p>
+    </div>
+</div>
+{% endblock %}

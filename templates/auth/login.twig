@@ -1,0 +1,23 @@
+{% extends "layout.twig" %}
+
+{% block title %}Login - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Login</h2>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form action="{{ url_for('auth.login') }}" method="post" class="neumorphic-form">
+        <div class="neumorphic-input-group">
+            <label for="username" class="neumorphic-label">Username:</label>
+            <input type="text" id="username" name="username" required class="neumorphic-input" autocomplete="username">
+        </div>
+        <div class="neumorphic-input-group">
+            <label for="password" class="neumorphic-label">Password:</label>
+            <input type="password" id="password" name="password" required class="neumorphic-input" autocomplete="current-password">
+        </div>
+        <button type="submit" class="neumorphic-button">Login</button>
+    </form>
+</div>
+{% endblock %}
