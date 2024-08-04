@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\User;
+use Psr\Log\LoggerInterface;
+
+class UserService
+{
+    private $userModel;
+    private $logger;
+
+    public function __construct(User $userModel, LoggerInterface $logger)
+    {
+        $this->userModel = $userModel;
+        $this->logger = $logger;
+    }
+
+    public function createUser($username, $firstName, $lastName, $email, $password, $role)
+    {
+        $this->logger->info('Creating new user', [
+            'username' => $username,
+            'email' => $email,
+            'role' => $role
+        ]);
+
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        return $this->userModel->create($username, $firstName, $lastName, $email, $hashedPassword, $role);
+    }
+
+    public function getUserById($id)
+    {
+        $this->logger->info('Fetching user by ID', ['id' => $id]);
+        return $this->userModel->findById($id);
+    }
+
+    public function getUserByUsername($username)
+    {
+        $this->logger->info('Fetching user by username', ['username' => $username]);
+        return $this->userModel->findByUsername($username);
+    }
+
+    public function getUserByEmail($email)
+    {
+        $this->logger->info('Fetching user by email', ['email' => $email]);
+        return $this->userModel->findByEmail($email);
+    }
+
+    public function updateUser($id, $username, $firstName, $lastName, $email, $role)
+    {
+        $this->logger->info('Updating user', [
+            'id' => $id,
+            'username' => $username,
+            'email' => $email,
+            'role' => $role
+        ]);
+
+        return $this->userModel->update($id, $username, $firstName, $lastName, $email, $role);
+    }
+
+    public function updatePassword($id, $newPassword)
+    {
+        $this->logger->info('Updating user password', ['id' => $id]);
+
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        return $this->userModel->updatePassword($id, $hashedPassword);
+    }
+
+    public function deleteUser($id)
+    {
+        $this->logger->info('Deleting user', ['id' => $id]);
+        return $this->userModel->delete($id);
+    }
+
+    public function getAllUsers()
+    {
+        $this->logger->info('Fetching all users');
+        return $this->userModel->findAll();
+    }
+
+    public function getUsersByRole($role)
+    {
+        $this->logger->info('Fetching users by role', ['role' => $role]);
+        return $this->userModel->findByRole($role);
+    }
+
+    public function authenticateUser($username, $password)
+    {
+        $this->logger->info('Authenticating user', ['username' => $username]);
+
+        $user = $this->userModel->findByUsername($username);
+        if ($user && password_verify($password, $user->getPassword())) {
+            $this->logger->info('User authenticated successfully', ['username' => $username]);
+            return $user;
+        }
+
+        $this->logger->warning('Authentication failed', ['username' => $username]);
+        return null;
+    }
+
+    public function isUsernameAvailable($username)
+    {
+        return $this->userModel->findByUsername($username) === null;
+    }
+
+    public function isEmailAvailable($email)
+    {
+        return $this->userModel->findByEmail($email) === null;
+    }
+}

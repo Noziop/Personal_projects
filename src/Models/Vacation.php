@@ -51,12 +51,30 @@ class Vacation
     }
 
     /**
+     * Get all vacations
+     *
+     * @return array An array of Vacation objects
+     */
+    public function findAll()
+    {
+        $stmt = $this->db->query("SELECT * FROM vacations ORDER BY start_date");
+        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $vacations = [];
+        foreach ($vacationsData as $vacationData) {
+            $vacations[] = $this->hydrate($vacationData);
+        }
+
+        return $vacations;
+    }
+
+    /**
      * Get all vacations for a specific cohort
      *
      * @param int $cohortId The cohort ID
      * @return array An array of Vacation objects
      */
-    public function getAllForCohort($cohortId)
+    public function findByCohort($cohortId)
     {
         $stmt = $this->db->prepare("SELECT * FROM vacations WHERE cohort_id = :cohort_id ORDER BY start_date");
         $stmt->execute(['cohort_id' => $cohortId]);
@@ -64,7 +82,35 @@ class Vacation
 
         $vacations = [];
         foreach ($vacationsData as $vacationData) {
-            $vacations[] = (new Vacation($this->db))->hydrate($vacationData);
+            $vacations[] = $this->hydrate($vacationData);
+        }
+
+        return $vacations;
+    }
+
+    /**
+     * Find vacations by date range
+     *
+     * @param DateTime $startDate
+     * @param DateTime $endDate
+     * @return array An array of Vacation objects
+     */
+    public function findByDateRange(DateTime $startDate, DateTime $endDate)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE 
+            (start_date BETWEEN :start_date AND :end_date) OR
+            (end_date BETWEEN :start_date AND :end_date) OR
+            (start_date <= :start_date AND end_date >= :end_date)
+            ORDER BY start_date");
+        $stmt->execute([
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
+        ]);
+        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $vacations = [];
+        foreach ($vacationsData as $vacationData) {
+            $vacations[] = $this->hydrate($vacationData);
         }
 
         return $vacations;
@@ -73,46 +119,55 @@ class Vacation
     /**
      * Create a new vacation
      *
-     * @param array $data The vacation data
+     * @param int $cohortId
+     * @param string $name
+     * @param DateTime $startDate
+     * @param DateTime $endDate
      * @return bool True if the vacation was created successfully, false otherwise
      */
-    public function create($data)
+    public function create($cohortId, $name, DateTime $startDate, DateTime $endDate)
     {
         $stmt = $this->db->prepare("INSERT INTO vacations (cohort_id, name, start_date, end_date) VALUES (:cohort_id, :name, :start_date, :end_date)");
         return $stmt->execute([
-            'cohort_id' => $data['cohort_id'],
-            'name' => $data['name'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date']
+            'cohort_id' => $cohortId,
+            'name' => $name,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
         ]);
     }
 
     /**
      * Update an existing vacation
      *
-     * @param array $data The vacation data to update
+     * @param int $id
+     * @param int $cohortId
+     * @param string $name
+     * @param DateTime $startDate
+     * @param DateTime $endDate
      * @return bool True if the vacation was updated successfully, false otherwise
      */
-    public function update($data)
+    public function update($id, $cohortId, $name, DateTime $startDate, DateTime $endDate)
     {
-        $stmt = $this->db->prepare("UPDATE vacations SET name = :name, start_date = :start_date, end_date = :end_date WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE vacations SET cohort_id = :cohort_id, name = :name, start_date = :start_date, end_date = :end_date WHERE id = :id");
         return $stmt->execute([
-            'id' => $this->id,
-            'name' => $data['name'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date']
+            'id' => $id,
+            'cohort_id' => $cohortId,
+            'name' => $name,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
         ]);
     }
 
     /**
      * Delete the vacation
      *
+     * @param int $id
      * @return bool True if the vacation was deleted successfully, false otherwise
      */
-    public function delete()
+    public function delete($id)
     {
         $stmt = $this->db->prepare("DELETE FROM vacations WHERE id = :id");
-        return $stmt->execute(['id' => $this->id]);
+        return $stmt->execute(['id' => $id]);
     }
 
     /**
@@ -134,13 +189,26 @@ class Vacation
     }
 
     /**
-     * Get the cohort associated with this vacation
+     * Find the next vacation period for a cohort after a given date
      *
-     * @return Cohort|null The Cohort object if found, null otherwise
+     * @param int $cohortId
+     * @param DateTime $fromDate
+     * @return Vacation|null The next vacation period if found, null otherwise
      */
-    public function getCohort()
+    public function findNextVacation($cohortId, DateTime $fromDate)
     {
-        return (new Cohort($this->db))->findById($this->cohortId);
+        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE cohort_id = :cohort_id AND start_date > :from_date ORDER BY start_date LIMIT 1");
+        $stmt->execute([
+            'cohort_id' => $cohortId,
+            'from_date' => $fromDate->format('Y-m-d')
+        ]);
+        $vacationData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($vacationData) {
+            return $this->hydrate($vacationData);
+        }
+
+        return null;
     }
 
     /**

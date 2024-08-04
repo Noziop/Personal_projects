@@ -20,6 +20,9 @@ use Slim\Views\Twig;
 use Slim\Psr7\Factory\ResponseFactory;
 use App\Models\User;
 use App\Controllers\AuthController;
+use GuzzleHttp\Client;
+use App\Services\HolidayService;
+
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -66,7 +69,15 @@ return function (ContainerBuilder $containerBuilder) {
             AppFactory::setContainer($c);
             return AppFactory::create();
         },
-
+		
+		HolidayService::class => function (ContainerInterface $c) {
+			return new HolidayService(
+				$c->get(Holiday::class),
+				$c->get(LoggerInterface::class),
+				new Client()
+			);
+		},
+	
         RouteParserInterface::class => fn(ContainerInterface $c) => $c->get(App::class)->getRouteCollector()->getRouteParser(),
     ]);
 };
