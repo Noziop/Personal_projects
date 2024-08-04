@@ -1,25 +1,39 @@
+{# 
+ # File: templates/auth/login.twig
+ # 
+ # This template serves as the home page and login page for the Holberton Thonon Ritual Manager.
+ # It displays a welcome message, a brief description of the app, and a login form.
+ #}
+
 {% extends "layout.twig" %}
 
-{% block title %}Login - {{ parent() }}{% endblock %}
-
-{% block header_title %}Login{% endblock %}
+{% block title %}Welcome - Holberton Thonon Ritual Manager{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">Login</h2>
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
-    <form action="{{ url_for('auth.login') }}" method="post" class="neumorphic-form">
-        <div class="neumorphic-input-group">
-            <label for="username" class="neumorphic-label">Username:</label>
-            <input type="text" id="username" name="username" required class="neumorphic-input" autocomplete="username">
-        </div>
-        <div class="neumorphic-input-group">
-            <label for="password" class="neumorphic-label">Password:</label>
-            <input type="password" id="password" name="password" required class="neumorphic-input" autocomplete="current-password">
-        </div>
-        <button type="submit" class="neumorphic-button">Login</button>
-    </form>
+    <h1 class="neumorphic-title">Welcome to Holberton Thonon: Ritual Manager</h1>
+    
+    <div class="app-description">
+        <p>Streamline your Holberton School rituals with our comprehensive management tool. 
+        Efficiently organize Speaker of the Day, manage cohorts, and track student participation.</p>
+    </div>
+
+    <div class="login-section">
+        <h2 class="neumorphic-title-red">Login</h2>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <form action="{{ url_for('auth.login') }}" method="post" class="neumorphic-form">
+            <div class="neumorphic-input-group">
+                <label for="username" class="neumorphic-label">Username:</label>
+                <input type="text" id="username" name="username" required class="neumorphic-input">
+            </div>
+            <div class="neumorphic-input-group">
+                <label for="password" class="neumorphic-label">Password:</label>
+                <input type="password" id="password" name="password" required class="neumorphic-input">
+            </div>
+            <button type="submit" class="neumorphic-button">Login</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
