@@ -14,6 +14,7 @@ error_reporting(E_ALL);
 
  use DI\ContainerBuilder;
  use Slim\Factory\AppFactory;
+ use Slim\Views\Twig;
  use Slim\Views\TwigMiddleware;
  use Dotenv\Dotenv;
  
@@ -42,11 +43,13 @@ error_reporting(E_ALL);
  $container = $containerBuilder->build();
  
  // Instantiate the app
- AppFactory::setContainer($container);
- $app = AppFactory::create();
+ $app = $container->get(Slim\App::class);
+ 
+ // Create Twig
+ $twig = $container->get(Twig::class);
  
  // Add Twig-View Middleware
- $app->add(TwigMiddleware::createFromContainer($app, 'view'));
+ $app->add(TwigMiddleware::create($app, $twig));
  
  // Register routes
  $routes = require __DIR__ . '/../config/routes.php';
@@ -55,12 +58,6 @@ error_reporting(E_ALL);
  // Register middleware
  $middleware = require __DIR__ . '/../config/middleware.php';
  $middleware($app);
- 
- // Add Error Middleware
- $displayErrorDetails = $_ENV['APP_DEBUG'] ?? false;
- $logErrors = true;
- $logErrorDetails = true;
- $app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
  
  // Run app
  $app->run();

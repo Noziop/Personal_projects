@@ -13,4 +13,5 @@ return function (App $app) {
     $app->get('/login', [AuthController::class, 'loginPage'])->setName('auth.loginPage');
     $app->post('/login', [AuthController::class, 'login'])->setName('auth.login');
     $app->get('/logout', [AuthController::class, 'logout'])->setName('auth.logout');
+    $app->get('/dashboard', [AuthController::class, 'dashboard'])->setName('dashboard');
 };

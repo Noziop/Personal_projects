@@ -43,6 +43,10 @@ class AuthController
      */
     public function loginPage(Request $request, Response $response): Response
     {
+        // If user is already logged in, redirect to dashboard
+        if (isset($_SESSION['user'])) {
+            return $response->withHeader('Location', '/dashboard')->withStatus(302);
+        }
         return $this->view->render($response, 'auth/login.twig');
     }
 
@@ -53,28 +57,27 @@ class AuthController
      * @param Response $response The response object
      * @return Response
      */
-    public function login(Request $request, Response $response): Response
-    {
-        $data = $request->getParsedBody();
-        $username = $data['username'] ?? '';
-        $password = $data['password'] ?? '';
-
-        $this->logger->info('Login attempt', ['username' => $username]);
-
-        $user = $this->user->findByUsername($username);
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user'] = $user;
-            $this->logger->info('Login successful', ['username' => $username]);
-            $routeParser = RouteContext::fromRequest($request)->getRouteParser();
-            return $response->withHeader('Location', $routeParser->urlFor('home'))->withStatus(302);
-        }
-
-        $this->logger->warning('Login failed', ['username' => $username]);
-        return $this->view->render($response, 'auth/login.twig', [
-            'error' => 'Invalid username or password'
-        ]);
-    }
+	public function login(Request $request, Response $response): Response
+	{
+		$data = $request->getParsedBody();
+		$username = $data['username'] ?? '';
+		$password = $data['password'] ?? '';
+	
+		$this->logger->info('Login attempt', ['username' => $username]);
+	
+		$user = $this->user->findByUsername($username);
+	
+		if ($user && password_verify($password, $user['password'])) {
+			$_SESSION['user'] = $user;
+			$this->logger->info('Login successful', ['username' => $username]);
+			return $response->withHeader('Location', '/')->withStatus(302);
+		}
+	
+		$this->logger->warning('Login failed', ['username' => $username]);
+		return $this->view->render($response->withStatus(401), 'auth/login.twig', [
+			'error' => 'Invalid username or password'
+		]);
+	}
 
     /**
      * Handle the logout process
@@ -87,7 +90,24 @@ class AuthController
     {
         unset($_SESSION['user']);
         $this->logger->info('User logged out');
-        $routeParser = RouteContext::fromRequest($request)->getRouteParser();
-        return $response->withHeader('Location', $routeParser->urlFor('home'))->withStatus(302);
+        return $response->withHeader('Location', '/login')->withStatus(302);
+    }
+
+    /**
+     * Display the dashboard
+     *
+     * @param Request $request The request object
+     * @param Response $response The response object
+     * @return Response
+     */
+    public function dashboard(Request $request, Response $response): Response
+    {
+        // Ensure user is logged in
+        if (!isset($_SESSION['user'])) {
+            return $response->withHeader('Location', '/login')->withStatus(302);
+        }
+        return $this->view->render($response, 'dashboard.twig', [
+            'user' => $_SESSION['user']
+        ]);
     }
 }

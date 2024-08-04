@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
+use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
 use Slim\Psr7\Factory\ResponseFactory;
 use App\Models\User;
@@ -22,9 +23,7 @@ use App\Controllers\AuthController;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
-        ResponseFactoryInterface::class => function (ContainerInterface $c) {
-            return new ResponseFactory();
-        },
+        ResponseFactoryInterface::class => fn() => new ResponseFactory(),
 
         LoggerInterface::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
@@ -36,11 +35,15 @@ return function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
 
-        'view' => function (ContainerInterface $c) {
+        Twig::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
             $twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
+            $environment = $twig->getEnvironment();
+            $environment->addGlobal('session', $_SESSION);
             return $twig;
         },
+
+        'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
 
         PDO::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
@@ -53,18 +56,17 @@ return function (ContainerBuilder $containerBuilder) {
             ]);
         },
 
-        User::class => function (ContainerInterface $c) {
-            return new User($c->get(PDO::class));
-        },
+        User::class => fn(ContainerInterface $c) => new User($c->get(PDO::class)),
 
         AuthController::class => function (ContainerInterface $c) {
-            return new AuthController($c->get('view'), $c->get(User::class), $c->get(LoggerInterface::class));
+            return new AuthController($c->get(Twig::class), $c->get(User::class), $c->get(LoggerInterface::class));
         },
 
         App::class => function (ContainerInterface $c) {
             AppFactory::setContainer($c);
-            $app = AppFactory::create();
-            return $app;
+            return AppFactory::create();
         },
+
+        RouteParserInterface::class => fn(ContainerInterface $c) => $c->get(App::class)->getRouteCollector()->getRouteParser(),
     ]);
 };
