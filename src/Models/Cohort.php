@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use PDO;
+use DateTime;
 
 /**
  * Cohort Model
@@ -41,11 +42,22 @@ class Cohort
         $stmt->execute(['id' => $id]);
         $cohortData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($cohortData) {
-            return $this->hydrate($cohortData);
-        }
+        return $cohortData ? $this->hydrate($cohortData) : null;
+    }
 
-        return null;
+    /**
+     * Find a cohort by its name
+     *
+     * @param string $name The cohort name
+     * @return Cohort|null The cohort object if found, null otherwise
+     */
+    public function findByName($name)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM cohorts WHERE name = :name");
+        $stmt->execute(['name' => $name]);
+        $cohortData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $cohortData ? $this->hydrate($cohortData) : null;
     }
 
     /**
@@ -53,14 +65,74 @@ class Cohort
      *
      * @return array An array of Cohort objects
      */
-    public function getAll()
+    public function findAll()
     {
         $stmt = $this->db->query("SELECT * FROM cohorts ORDER BY start_date DESC");
         $cohortsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $cohorts = [];
         foreach ($cohortsData as $cohortData) {
-            $cohorts[] = (new Cohort($this->db))->hydrate($cohortData);
+            $cohorts[] = $this->hydrate($cohortData);
+        }
+
+        return $cohorts;
+    }
+
+    /**
+     * Get current cohorts
+     *
+     * @return array An array of current Cohort objects
+     */
+    public function findCurrent()
+    {
+        $currentDate = date('Y-m-d');
+        $stmt = $this->db->prepare("SELECT * FROM cohorts WHERE :current_date BETWEEN start_date AND end_date ORDER BY start_date");
+        $stmt->execute(['current_date' => $currentDate]);
+        $cohortsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $cohorts = [];
+        foreach ($cohortsData as $cohortData) {
+            $cohorts[] = $this->hydrate($cohortData);
+        }
+
+        return $cohorts;
+    }
+
+    /**
+     * Get future cohorts
+     *
+     * @return array An array of future Cohort objects
+     */
+    public function findFuture()
+    {
+        $currentDate = date('Y-m-d');
+        $stmt = $this->db->prepare("SELECT * FROM cohorts WHERE start_date > :current_date ORDER BY start_date");
+        $stmt->execute(['current_date' => $currentDate]);
+        $cohortsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $cohorts = [];
+        foreach ($cohortsData as $cohortData) {
+            $cohorts[] = $this->hydrate($cohortData);
+        }
+
+        return $cohorts;
+    }
+
+    /**
+     * Get past cohorts
+     *
+     * @return array An array of past Cohort objects
+     */
+    public function findPast()
+    {
+        $currentDate = date('Y-m-d');
+        $stmt = $this->db->prepare("SELECT * FROM cohorts WHERE end_date < :current_date ORDER BY start_date DESC");
+        $stmt->execute(['current_date' => $currentDate]);
+        $cohortsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $cohorts = [];
+        foreach ($cohortsData as $cohortData) {
+            $cohorts[] = $this->hydrate($cohortData);
         }
 
         return $cohorts;
@@ -69,56 +141,63 @@ class Cohort
     /**
      * Create a new cohort
      *
-     * @param array $data The cohort data
+     * @param string $name The cohort name
+     * @param DateTime $startDate The start date
+     * @param DateTime $endDate The end date
      * @return bool True if the cohort was created successfully, false otherwise
      */
-    public function create($data)
+    public function create($name, DateTime $startDate, DateTime $endDate)
     {
         $stmt = $this->db->prepare("INSERT INTO cohorts (name, start_date, end_date) VALUES (:name, :start_date, :end_date)");
         return $stmt->execute([
-            'name' => $data['name'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date']
+            'name' => $name,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
         ]);
     }
 
     /**
      * Update an existing cohort
      *
-     * @param array $data The cohort data to update
+     * @param int $id The cohort ID
+     * @param string $name The cohort name
+     * @param DateTime $startDate The start date
+     * @param DateTime $endDate The end date
      * @return bool True if the cohort was updated successfully, false otherwise
      */
-    public function update($data)
+    public function update($id, $name, DateTime $startDate, DateTime $endDate)
     {
         $stmt = $this->db->prepare("UPDATE cohorts SET name = :name, start_date = :start_date, end_date = :end_date WHERE id = :id");
         return $stmt->execute([
-            'id' => $this->id,
-            'name' => $data['name'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date']
+            'id' => $id,
+            'name' => $name,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
         ]);
     }
 
     /**
      * Delete the cohort
      *
+     * @param int $id The cohort ID
      * @return bool True if the cohort was deleted successfully, false otherwise
      */
-    public function delete()
+    public function delete($id)
     {
         $stmt = $this->db->prepare("DELETE FROM cohorts WHERE id = :id");
-        return $stmt->execute(['id' => $this->id]);
+        return $stmt->execute(['id' => $id]);
     }
 
     /**
      * Get students in this cohort
      *
+     * @param int $cohortId The cohort ID
      * @return array An array of Student objects
      */
-    public function getStudents()
+    public function getStudents($cohortId)
     {
         $stmt = $this->db->prepare("SELECT * FROM students WHERE cohort_id = :cohort_id");
-        $stmt->execute(['cohort_id' => $this->id]);
+        $stmt->execute(['cohort_id' => $cohortId]);
         $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $students = [];
@@ -127,6 +206,38 @@ class Cohort
         }
 
         return $students;
+    }
+
+    /**
+     * Add a student to this cohort
+     *
+     * @param int $cohortId The cohort ID
+     * @param int $studentId The student ID
+     * @return bool True if the student was added successfully, false otherwise
+     */
+    public function addStudent($cohortId, $studentId)
+    {
+        $stmt = $this->db->prepare("UPDATE students SET cohort_id = :cohort_id WHERE id = :student_id");
+        return $stmt->execute([
+            'cohort_id' => $cohortId,
+            'student_id' => $studentId
+        ]);
+    }
+
+    /**
+     * Remove a student from this cohort
+     *
+     * @param int $cohortId The cohort ID
+     * @param int $studentId The student ID
+     * @return bool True if the student was removed successfully, false otherwise
+     */
+    public function removeStudent($cohortId, $studentId)
+    {
+        $stmt = $this->db->prepare("UPDATE students SET cohort_id = NULL WHERE id = :student_id AND cohort_id = :cohort_id");
+        return $stmt->execute([
+            'cohort_id' => $cohortId,
+            'student_id' => $studentId
+        ]);
     }
 
     /**
@@ -139,9 +250,9 @@ class Cohort
     {
         $this->id = $data['id'];
         $this->name = $data['name'];
-        $this->startDate = $data['start_date'];
-        $this->endDate = $data['end_date'];
-        $this->createdAt = $data['created_at'];
+        $this->startDate = new DateTime($data['start_date']);
+        $this->endDate = new DateTime($data['end_date']);
+        $this->createdAt = new DateTime($data['created_at']);
 
         return $this;
     }

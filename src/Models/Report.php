@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use PDO;
+use DateTime;
 
 class Report
 {
@@ -22,7 +23,7 @@ class Report
 
     public function create($studentId, $type, $content)
     {
-        $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content) VALUES (:student_id, :type, :content)");
+        $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content, created_at) VALUES (:student_id, :type, :content, NOW())");
         return $stmt->execute([
             'student_id' => $studentId,
             'type' => $type,
@@ -32,7 +33,7 @@ class Report
 
     public function update($id, $studentId, $type, $content)
     {
-        $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content, updated_at = NOW() WHERE id = :id");
         return $stmt->execute([
             'id' => $id,
             'student_id' => $studentId,
@@ -49,21 +50,41 @@ class Report
 
     public function findAll()
     {
-        $stmt = $this->db->query("SELECT * FROM reports");
+        $stmt = $this->db->query("SELECT * FROM reports ORDER BY created_at DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findByStudentId($studentId)
     {
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id");
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id ORDER BY created_at DESC");
         $stmt->execute(['student_id' => $studentId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findByType($type)
     {
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type");
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type ORDER BY created_at DESC");
         $stmt->execute(['type' => $type]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findByDateRange(DateTime $startDate, DateTime $endDate)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE created_at BETWEEN :start_date AND :end_date ORDER BY created_at DESC");
+        $stmt->execute([
+            'start_date' => $startDate->format('Y-m-d H:i:s'),
+            'end_date' => $endDate->format('Y-m-d H:i:s')
+        ]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findLatestByStudentAndType($studentId, $type)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id AND type = :type ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([
+            'student_id' => $studentId,
+            'type' => $type
+        ]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
