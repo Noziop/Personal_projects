@@ -1,10 +1,4 @@
 <?php
-/**
- * Dashboard Controller
- *
- * This controller handles the dashboard functionality, including displaying
- * relevant information for different user roles.
- */
 
 namespace App\Controllers;
 
@@ -20,13 +14,6 @@ class DashboardController
     private $logger;
     private $dashboardService;
 
-    /**
-     * DashboardController constructor.
-     *
-     * @param Twig $view The Twig template engine
-     * @param LoggerInterface $logger The logger interface
-     * @param DashboardService $dashboardService The dashboard service
-     */
     public function __construct(Twig $view, LoggerInterface $logger, DashboardService $dashboardService)
     {
         $this->view = $view;
@@ -34,28 +21,27 @@ class DashboardController
         $this->dashboardService = $dashboardService;
     }
 
-    /**
-     * Display the dashboard
-     *
-     * @param Request $request The request object
-     * @param Response $response The response object
-     * @return Response
-     */
     public function index(Request $request, Response $response): Response
     {
+        error_log("Entering DashboardController::index");
         $user = $_SESSION['user'] ?? null;
 
         if (!$user) {
-            $this->logger->warning('Unauthorized access attempt to dashboard');
+            error_log("User not found in session");
             return $response->withHeader('Location', '/')->withStatus(302);
         }
 
         $this->logger->info('User accessed dashboard', ['username' => $user['username']]);
 
         try {
+            error_log("Fetching dashboard data");
             $dashboardData = $this->dashboardService->getDashboardData($user['id']);
+            error_log("Dashboard data fetched successfully");
+            error_log("Rendering dashboard template");
             return $this->view->render($response, 'dashboard.twig', $dashboardData);
         } catch (\Exception $e) {
+            error_log("Error in DashboardController: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             $this->logger->error('Error fetching dashboard data', ['error' => $e->getMessage()]);
             return $this->view->render($response->withStatus(500), 'error/500.twig', [
                 'error' => 'An error occurred while loading the dashboard.'
