@@ -1,6 +1,8 @@
 <?php
 
 use Slim\App;
+use Slim\Views\TwigMiddleware;
+
 
 return function (App $app) {
     // Parse json, form data and xml
@@ -8,9 +10,13 @@ return function (App $app) {
 
     // Add the Slim built-in routing middleware
     $app->addRoutingMiddleware();
+	
+	// Add Twig Middleware
+	$app->add(TwigMiddleware::createFromContainer($app));
 
     // Add Error Middleware
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
     
     // Customize error handler
     $errorHandler = $errorMiddleware->getDefaultErrorHandler();

@@ -3,10 +3,7 @@
 namespace App\Models;
 
 use PDO;
-<<<<<<< HEAD
 use DateTime;
-=======
->>>>>>> temp-branch
 
 class Report
 {
@@ -26,11 +23,7 @@ class Report
 
     public function create($studentId, $type, $content)
     {
-<<<<<<< HEAD
         $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content, created_at) VALUES (:student_id, :type, :content, NOW())");
-=======
-        $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content) VALUES (:student_id, :type, :content)");
->>>>>>> temp-branch
         return $stmt->execute([
             'student_id' => $studentId,
             'type' => $type,
@@ -40,11 +33,7 @@ class Report
 
     public function update($id, $studentId, $type, $content)
     {
-<<<<<<< HEAD
         $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content, updated_at = NOW() WHERE id = :id");
-=======
-        $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content WHERE id = :id");
->>>>>>> temp-branch
         return $stmt->execute([
             'id' => $id,
             'student_id' => $studentId,
@@ -61,28 +50,27 @@ class Report
 
     public function findAll()
     {
-<<<<<<< HEAD
         $stmt = $this->db->query("SELECT * FROM reports ORDER BY created_at DESC");
-=======
-        $stmt = $this->db->query("SELECT * FROM reports");
->>>>>>> temp-branch
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findByStudentId($studentId)
+    public function findByStudentId($studentId, $limit = null)
     {
-<<<<<<< HEAD
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id ORDER BY created_at DESC");
-=======
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id");
->>>>>>> temp-branch
-        $stmt->execute(['student_id' => $studentId]);
+        $query = "SELECT * FROM reports WHERE student_id = :student_id ORDER BY created_at DESC";
+        if ($limit !== null) {
+            $query .= " LIMIT :limit";
+        }
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':student_id', $studentId, PDO::PARAM_INT);
+        if ($limit !== null) {
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        }
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findByType($type)
     {
-<<<<<<< HEAD
         $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type ORDER BY created_at DESC");
         $stmt->execute(['type' => $type]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -98,19 +86,18 @@ class Report
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findLatestByStudentAndType($studentId, $type)
+    public function getRecentReports($limit = 10)
     {
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id AND type = :type ORDER BY created_at DESC LIMIT 1");
-        $stmt->execute([
-            'student_id' => $studentId,
-            'type' => $type
-        ]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-=======
-        $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type");
-        $stmt->execute(['type' => $type]);
+        $stmt = $this->db->prepare("
+            SELECT r.*, s.id as student_id, u.first_name, u.last_name
+            FROM reports r
+            JOIN students s ON r.student_id = s.id
+            JOIN users u ON s.user_id = u.id
+            ORDER BY r.created_at DESC
+            LIMIT :limit
+        ");
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
->>>>>>> temp-branch
 }

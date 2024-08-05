@@ -17,6 +17,7 @@ use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
 use Slim\Psr7\Factory\ResponseFactory;
 use GuzzleHttp\Client;
 
@@ -64,13 +65,12 @@ return function (ContainerBuilder $containerBuilder) {
 
         Twig::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
-            $twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
-            $environment = $twig->getEnvironment();
-            $environment->addGlobal('session', $_SESSION);
-            return $twig;
+            return Twig::create($settings['view']['template_path'], $settings['view']['twig']);
         },
 
-        'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
+        'view' => function (ContainerInterface $c) {
+            return $c->get(Twig::class);
+        },
 
         PDO::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
