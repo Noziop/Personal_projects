@@ -30,6 +30,17 @@ return function (App $app) {
     // Add Error Middleware
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
+	$app->add(function ($request, $handler) {
+		try {
+			return $handler->handle($request);
+		} catch (\Throwable $e) {
+			error_log($e->getMessage());
+			error_log($e->getTraceAsString());
+			throw $e;
+		}
+	});
+	
+
     // Customize error handler
     $errorHandler = $errorMiddleware->getDefaultErrorHandler();
     $errorHandler->registerErrorRenderer('text/html', function ($exception, $displayErrorDetails) use ($app) {

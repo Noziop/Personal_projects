@@ -123,23 +123,27 @@ return function (ContainerBuilder $containerBuilder) {
             return new VacationService($c->get(Vacation::class), $c->get(LoggerInterface::class));
         },
         DashboardService::class => function (ContainerInterface $c) {
-            return new DashboardService(
-                $c->get(CohortService::class),
-                $c->get(StudentService::class),
-                $c->get(SODScheduleService::class),
-                $c->get(ReportService::class),
-                $c->get(UserService::class),
-                $c->get(LoggerInterface::class)
-            );
-        },
+			return new DashboardService(
+				$c->get(CohortService::class),
+				$c->get(StudentService::class),
+				$c->get(SODScheduleService::class),
+				$c->get(ReportService::class),
+				$c->get(UserService::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {
             return new AuthController($c->get(Twig::class), $c->get(User::class), $c->get(LoggerInterface::class));
         },
         DashboardController::class => function (ContainerInterface $c) {
-            return new DashboardController($c->get(Twig::class), $c->get(LoggerInterface::class), $c->get(DashboardService::class));
-        },
+			return new DashboardController(
+				$c->get(Twig::class),
+				$c->get(LoggerInterface::class),
+				$c->get(DashboardService::class)
+			);
+		},
 
         // Application
         App::class => function (ContainerInterface $c) {
