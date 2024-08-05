@@ -1,0 +1,40 @@
+{% extends "layout.twig" %}
+
+{% block title %}Students - {{ parent() }}{% endblock %}
+
+{% block header_title %}Students{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Students List</h2>
+    <a href="{{ url_for('students.create') }}" class="neumorphic-button">Add New Student</a>
+    <div class="neumorphic-table-container">
+        <table class="neumorphic-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Cohort</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.cohort_name }}</td>
+                        <td>
+                            <a href="{{ url_for('students.edit', {'id': student.id}) }}" class="neumorphic-button-small">Edit</a>
+                            <a href="{{ url_for('students.unavailability', {'id': student.id}) }}" class="neumorphic-button-small">Unavailability</a>
+                            <form action="{{ url_for('students.delete', {'id': student.id}) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="neumorphic-button-small neumorphic-button-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

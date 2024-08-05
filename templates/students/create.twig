@@ -1,0 +1,30 @@
+{% extends "layout.twig" %}
+
+{% block title %}Add Student - {{ parent() }}{% endblock %}
+
+{% block header_title %}Add New Student{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Add New Student</h2>
+    <form action="{{ url_for('students.create') }}" method="POST" class="neumorphic-form">
+        <div class="neumorphic-form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="cohort_id">Cohort</label>
+            <select id="cohort_id" name="cohort_id" required class="neumorphic-input">
+                {% for cohort in cohorts %}
+                    <option value="{{ cohort.id }}">{{ cohort.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="neumorphic-button">Create</button>
+    </form>
+</div>
+{% endblock %}

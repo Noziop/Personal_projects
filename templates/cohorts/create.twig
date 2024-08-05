@@ -1,0 +1,26 @@
+{% extends "layout.twig" %}
+
+{% block title %}Create Cohort - {{ parent() }}{% endblock %}
+
+{% block header_title %}Create New Cohort{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Create New Cohort</h2>
+    <form action="{{ url_for('cohorts.create') }}" method="POST" class="neumorphic-form">
+        <div class="neumorphic-form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" required class="neumorphic-input">
+        </div>
+        <button type="submit" class="neumorphic-button">Create</button>
+    </form>
+</div>
+{% endblock %}

@@ -6,6 +6,7 @@ use App\Models\Holiday;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use DateTime;
 
 class HolidayService
 {
@@ -110,6 +111,27 @@ class HolidayService
 
         for ($year = $startYear; $year <= $endYear; $year++) {
             $this->syncHolidaysWithGovernmentAPI($year);
+        }
+    }
+
+    public function cleanupOldHolidays()
+    {
+        $today = new DateTime();
+        $this->holidayModel->deleteOlderThan($today);
+    }
+
+    public function syncHolidays()
+    {
+        $this->logger->info('Starting holiday synchronization');
+        
+        try {
+            $this->cleanupOldHolidays();
+            $currentYear = (int)date('Y');
+            $this->syncHolidaysForYearRange($currentYear, $currentYear + 2);
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error('Error during holiday synchronization', ['error' => $e->getMessage()]);
+            return false;
         }
     }
 }

@@ -1,0 +1,39 @@
+{% extends "layout.twig" %}
+
+{% block title %}Cohorts - {{ parent() }}{% endblock %}
+
+{% block header_title %}Cohorts{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Cohorts List</h2>
+    <a href="{{ url_for('cohorts.create') }}" class="neumorphic-button">Create New Cohort</a>
+    <div class="neumorphic-table-container">
+        <table class="neumorphic-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cohort in cohorts %}
+                    <tr>
+                        <td>{{ cohort.name }}</td>
+                        <td>{{ cohort.start_date|date('Y-m-d') }}</td>
+                        <td>{{ cohort.end_date|date('Y-m-d') }}</td>
+                        <td>
+                            <a href="{{ url_for('cohorts.edit', {'id': cohort.id}) }}" class="neumorphic-button-small">Edit</a>
+                            <form action="{{ url_for('cohorts.delete', {'id': cohort.id}) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="neumorphic-button-small neumorphic-button-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

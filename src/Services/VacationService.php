@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Vacation;
 use Psr\Log\LoggerInterface;
+use DateTime;
 
 class VacationService
 {
@@ -88,5 +89,15 @@ class VacationService
             'from_date' => $fromDate
         ]);
         return $this->vacationModel->findNextVacation($cohortId, $fromDate);
+    }
+
+    // Nouvelle méthode proposée
+    public function getVacationsInRange(DateTime $startDate, DateTime $endDate)
+    {
+        $this->logger->info('Fetching vacations in range', [
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
+        ]);
+        return $this->vacationModel->findInRange($startDate, $endDate);
     }
 }

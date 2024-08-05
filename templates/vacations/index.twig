@@ -1,0 +1,39 @@
+{% extends "layout.twig" %}
+
+{% block title %}Vacations - {{ parent() }}{% endblock %}
+
+{% block header_title %}Vacations{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Vacations List</h2>
+    <a href="{{ url_for('vacations.create') }}" class="neumorphic-button">Add New Vacation</a>
+    <div class="neumorphic-table-container">
+        <table class="neumorphic-table">
+            <thead>
+                <tr>
+                    <th>Cohort</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vacation in vacations %}
+                    <tr>
+                        <td>{{ vacation.cohort_name }}</td>
+                        <td>{{ vacation.start_date|date('Y-m-d') }}</td>
+                        <td>{{ vacation.end_date|date('Y-m-d') }}</td>
+                        <td>
+                            <a href="{{ url_for('vacations.edit', {'id': vacation.id}) }}" class="neumorphic-button-small">Edit</a>
+                            <form action="{{ url_for('vacations.delete', {'id': vacation.id}) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="neumorphic-button-small neumorphic-button-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

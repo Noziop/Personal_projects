@@ -1,0 +1,26 @@
+{% extends "layout.twig" %}
+
+{% block title %}Edit Cohort - {{ parent() }}{% endblock %}
+
+{% block header_title %}Edit Cohort{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Edit Cohort</h2>
+    <form action="{{ url_for('cohorts.edit', {'id': cohort.id}) }}" method="POST" class="neumorphic-form">
+        <div class="neumorphic-form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ cohort.name }}" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" value="{{ cohort.start_date|date('Y-m-d') }}" required class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" value="{{ cohort.end_date|date('Y-m-d') }}" required class="neumorphic-input">
+        </div>
+        <button type="submit" class="neumorphic-button">Update</button>
+    </form>
+</div>
+{% endblock %}
