@@ -7,11 +7,13 @@
 
 use Slim\App;
 use App\Controllers\AuthController;
+use App\Controllers\DashboardController;
+
 
 return function (App $app) {
     $app->get('/', [AuthController::class, 'loginPage'])->setName('home');
     $app->get('/login', [AuthController::class, 'loginPage'])->setName('auth.loginPage');
     $app->post('/login', [AuthController::class, 'login'])->setName('auth.login');
     $app->get('/logout', [AuthController::class, 'logout'])->setName('auth.logout');
-    $app->get('/dashboard', [AuthController::class, 'dashboard'])->setName('dashboard');
+	$app->get('/dashboard', [DashboardController::class, 'index'])->setName('dashboard');
 };

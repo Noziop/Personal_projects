@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use PDO;
+<<<<<<< HEAD
 use DateTime;
+=======
+>>>>>>> temp-branch
 
 class Report
 {
@@ -23,7 +26,11 @@ class Report
 
     public function create($studentId, $type, $content)
     {
+<<<<<<< HEAD
         $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content, created_at) VALUES (:student_id, :type, :content, NOW())");
+=======
+        $stmt = $this->db->prepare("INSERT INTO reports (student_id, type, content) VALUES (:student_id, :type, :content)");
+>>>>>>> temp-branch
         return $stmt->execute([
             'student_id' => $studentId,
             'type' => $type,
@@ -33,7 +40,11 @@ class Report
 
     public function update($id, $studentId, $type, $content)
     {
+<<<<<<< HEAD
         $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content, updated_at = NOW() WHERE id = :id");
+=======
+        $stmt = $this->db->prepare("UPDATE reports SET student_id = :student_id, type = :type, content = :content WHERE id = :id");
+>>>>>>> temp-branch
         return $stmt->execute([
             'id' => $id,
             'student_id' => $studentId,
@@ -50,19 +61,28 @@ class Report
 
     public function findAll()
     {
+<<<<<<< HEAD
         $stmt = $this->db->query("SELECT * FROM reports ORDER BY created_at DESC");
+=======
+        $stmt = $this->db->query("SELECT * FROM reports");
+>>>>>>> temp-branch
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findByStudentId($studentId)
     {
+<<<<<<< HEAD
         $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id ORDER BY created_at DESC");
+=======
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE student_id = :student_id");
+>>>>>>> temp-branch
         $stmt->execute(['student_id' => $studentId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findByType($type)
     {
+<<<<<<< HEAD
         $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type ORDER BY created_at DESC");
         $stmt->execute(['type' => $type]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -87,4 +107,10 @@ class Report
         ]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+=======
+        $stmt = $this->db->prepare("SELECT * FROM reports WHERE type = :type");
+        $stmt->execute(['type' => $type]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+>>>>>>> temp-branch
 }

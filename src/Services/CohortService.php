@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Cohort;
 use Psr\Log\LoggerInterface;
+<<<<<<< HEAD
 use DateTime;
+=======
+>>>>>>> temp-branch
 
 class CohortService
 {
@@ -17,12 +20,21 @@ class CohortService
         $this->logger = $logger;
     }
 
+<<<<<<< HEAD
     public function createCohort($name, DateTime $startDate, DateTime $endDate)
     {
         $this->logger->info('Creating new cohort', [
             'name' => $name,
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d')
+=======
+    public function createCohort($name, $startDate, $endDate)
+    {
+        $this->logger->info('Creating new cohort', [
+            'name' => $name,
+            'start_date' => $startDate,
+            'end_date' => $endDate
+>>>>>>> temp-branch
         ]);
 
         return $this->cohortModel->create($name, $startDate, $endDate);
@@ -34,6 +46,7 @@ class CohortService
         return $this->cohortModel->findById($id);
     }
 
+<<<<<<< HEAD
     public function getCohortByName($name)
     {
         $this->logger->info('Fetching cohort by name', ['name' => $name]);
@@ -41,12 +54,20 @@ class CohortService
     }
 
     public function updateCohort($id, $name, DateTime $startDate, DateTime $endDate)
+=======
+    public function updateCohort($id, $name, $startDate, $endDate)
+>>>>>>> temp-branch
     {
         $this->logger->info('Updating cohort', [
             'id' => $id,
             'name' => $name,
+<<<<<<< HEAD
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d')
+=======
+            'start_date' => $startDate,
+            'end_date' => $endDate
+>>>>>>> temp-branch
         ]);
 
         return $this->cohortModel->update($id, $name, $startDate, $endDate);
@@ -64,11 +85,21 @@ class CohortService
         return $this->cohortModel->findAll();
     }
 
+<<<<<<< HEAD
+=======
+    public function getCohortByName($name)
+    {
+        $this->logger->info('Fetching cohort by name', ['name' => $name]);
+        return $this->cohortModel->findByName($name);
+    }
+
+>>>>>>> temp-branch
     public function getCurrentCohorts()
     {
         $this->logger->info('Fetching current cohorts');
         return $this->cohortModel->findCurrent();
     }
+<<<<<<< HEAD
 
     public function getFutureCohorts()
     {
@@ -105,4 +136,6 @@ class CohortService
         ]);
         return $this->cohortModel->removeStudent($cohortId, $studentId);
     }
+=======
+>>>>>>> temp-branch
 }
