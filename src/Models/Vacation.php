@@ -1,239 +1,161 @@
 <?php
 
-namespace App\Models;
-
-use PDO;
-use DateTime;
-
 /**
  * Vacation Model
  *
- * This class represents a vacation period for a cohort in the application.
+ * This class represents a vacation period for a cohort in the SOD (Speaker of the Day) application.
+ * It is used to track periods when no drawings or speaking events should occur for a specific cohort.
  */
+
+namespace App\Models;
+
 class Vacation
 {
+    /**
+     * @var int The unique identifier for the vacation period
+     */
     private $id;
-    private $cohortId;
-    private $name;
-    private $startDate;
-    private $endDate;
-    private $createdAt;
 
-    private $db;
+    /**
+     * @var int The ID of the cohort this vacation period applies to
+     */
+    private $cohortId;
+
+    /**
+     * @var string The name or description of the vacation period
+     */
+    private $name;
+
+    /**
+     * @var \DateTime The start date of the vacation period
+     */
+    private $startDate;
+
+    /**
+     * @var \DateTime The end date of the vacation period
+     */
+    private $endDate;
 
     /**
      * Vacation constructor.
      *
-     * @param PDO $db The database connection
+     * @param int $cohortId The ID of the cohort this vacation period applies to
+     * @param string $name The name or description of the vacation period
+     * @param \DateTime $startDate The start date of the vacation period
+     * @param \DateTime $endDate The end date of the vacation period
+     * @param int|null $id The unique identifier for the vacation period (optional)
      */
-    public function __construct(PDO $db)
+    public function __construct(int $cohortId, string $name, \DateTime $startDate, \DateTime $endDate, ?int $id = null)
     {
-        $this->db = $db;
+        $this->cohortId = $cohortId;
+        $this->name = $name;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+        $this->id = $id;
     }
 
     /**
-     * Find a vacation by its ID
+     * Get the vacation's ID.
      *
-     * @param int $id The vacation ID
-     * @return Vacation|null The vacation object if found, null otherwise
+     * @return int|null
      */
-    public function findById($id)
+    public function getId(): ?int
     {
-        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $vacationData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($vacationData) {
-            return $this->hydrate($vacationData);
-        }
-
-        return null;
+        return $this->id;
     }
 
     /**
-     * Get all vacations
-     *
-     * @return array An array of Vacation objects
-     */
-    public function findAll()
-    {
-        $stmt = $this->db->query("SELECT * FROM vacations ORDER BY start_date");
-        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $vacations = [];
-        foreach ($vacationsData as $vacationData) {
-            $vacations[] = $this->hydrate($vacationData);
-        }
-
-        return $vacations;
-    }
-
-    /**
-     * Get all vacations for a specific cohort
-     *
-     * @param int $cohortId The cohort ID
-     * @return array An array of Vacation objects
-     */
-    public function findByCohort($cohortId)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE cohort_id = :cohort_id ORDER BY start_date");
-        $stmt->execute(['cohort_id' => $cohortId]);
-        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $vacations = [];
-        foreach ($vacationsData as $vacationData) {
-            $vacations[] = $this->hydrate($vacationData);
-        }
-
-        return $vacations;
-    }
-
-    /**
-     * Find vacations by date range
-     *
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @return array An array of Vacation objects
-     */
-    public function findByDateRange(DateTime $startDate, DateTime $endDate)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE 
-            (start_date BETWEEN :start_date AND :end_date) OR
-            (end_date BETWEEN :start_date AND :end_date) OR
-            (start_date <= :start_date AND end_date >= :end_date)
-            ORDER BY start_date");
-        $stmt->execute([
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
-        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $vacations = [];
-        foreach ($vacationsData as $vacationData) {
-            $vacations[] = $this->hydrate($vacationData);
-        }
-
-        return $vacations;
-    }
-
-    /**
-     * Create a new vacation
-     *
-     * @param int $cohortId
-     * @param string $name
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @return bool True if the vacation was created successfully, false otherwise
-     */
-    public function create($cohortId, $name, DateTime $startDate, DateTime $endDate)
-    {
-        $stmt = $this->db->prepare("INSERT INTO vacations (cohort_id, name, start_date, end_date) VALUES (:cohort_id, :name, :start_date, :end_date)");
-        return $stmt->execute([
-            'cohort_id' => $cohortId,
-            'name' => $name,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
-    }
-
-    /**
-     * Update an existing vacation
+     * Set the vacation's ID.
      *
      * @param int $id
+     * @return void
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * Get the ID of the cohort this vacation period applies to.
+     *
+     * @return int
+     */
+    public function getCohortId(): int
+    {
+        return $this->cohortId;
+    }
+
+    /**
+     * Set the ID of the cohort this vacation period applies to.
+     *
      * @param int $cohortId
+     * @return void
+     */
+    public function setCohortId(int $cohortId): void
+    {
+        $this->cohortId = $cohortId;
+    }
+
+    /**
+     * Get the name or description of the vacation period.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set the name or description of the vacation period.
+     *
      * @param string $name
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @return bool True if the vacation was updated successfully, false otherwise
+     * @return void
      */
-    public function update($id, $cohortId, $name, DateTime $startDate, DateTime $endDate)
+    public function setName(string $name): void
     {
-        $stmt = $this->db->prepare("UPDATE vacations SET cohort_id = :cohort_id, name = :name, start_date = :start_date, end_date = :end_date WHERE id = :id");
-        return $stmt->execute([
-            'id' => $id,
-            'cohort_id' => $cohortId,
-            'name' => $name,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
+        $this->name = $name;
     }
 
     /**
-     * Delete the vacation
+     * Get the start date of the vacation period.
      *
-     * @param int $id
-     * @return bool True if the vacation was deleted successfully, false otherwise
+     * @return \DateTime
      */
-    public function delete($id)
+    public function getStartDate(): \DateTime
     {
-        $stmt = $this->db->prepare("DELETE FROM vacations WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        return $this->startDate;
     }
 
     /**
-     * Check if a date is within a vacation period for a specific cohort
+     * Set the start date of the vacation period.
      *
-     * @param int $cohortId The cohort ID
-     * @param DateTime $date The date to check
-     * @return bool True if the date is within a vacation period, false otherwise
+     * @param \DateTime $startDate
+     * @return void
      */
-    public function isDateInVacation($cohortId, DateTime $date)
+    public function setStartDate(\DateTime $startDate): void
     {
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM vacations WHERE cohort_id = :cohort_id AND :date BETWEEN start_date AND end_date");
-        $stmt->execute([
-            'cohort_id' => $cohortId,
-            'date' => $date->format('Y-m-d')
-        ]);
-        
-        return $stmt->fetchColumn() > 0;
+        $this->startDate = $startDate;
     }
 
     /**
-     * Find the next vacation period for a cohort after a given date
+     * Get the end date of the vacation period.
      *
-     * @param int $cohortId
-     * @param DateTime $fromDate
-     * @return Vacation|null The next vacation period if found, null otherwise
+     * @return \DateTime
      */
-    public function findNextVacation($cohortId, DateTime $fromDate)
+    public function getEndDate(): \DateTime
     {
-        $stmt = $this->db->prepare("SELECT * FROM vacations WHERE cohort_id = :cohort_id AND start_date > :from_date ORDER BY start_date LIMIT 1");
-        $stmt->execute([
-            'cohort_id' => $cohortId,
-            'from_date' => $fromDate->format('Y-m-d')
-        ]);
-        $vacationData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($vacationData) {
-            return $this->hydrate($vacationData);
-        }
-
-        return null;
+        return $this->endDate;
     }
 
     /**
-     * Hydrate the vacation object with data
+     * Set the end date of the vacation period.
      *
-     * @param array $data The data to hydrate the object with
-     * @return Vacation The hydrated vacation object
+     * @param \DateTime $endDate
+     * @return void
      */
-    private function hydrate($data)
+    public function setEndDate(\DateTime $endDate): void
     {
-        $this->id = $data['id'];
-        $this->cohortId = $data['cohort_id'];
-        $this->name = $data['name'];
-        $this->startDate = new DateTime($data['start_date']);
-        $this->endDate = new DateTime($data['end_date']);
-        $this->createdAt = new DateTime($data['created_at']);
-
-        return $this;
+        $this->endDate = $endDate;
     }
-
-    // Getters
-    public function getId() { return $this->id; }
-    public function getCohortId() { return $this->cohortId; }
-    public function getName() { return $this->name; }
-    public function getStartDate() { return $this->startDate; }
-    public function getEndDate() { return $this->endDate; }
-    public function getCreatedAt() { return $this->createdAt; }
 }

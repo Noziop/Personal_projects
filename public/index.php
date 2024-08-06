@@ -1,63 +1,60 @@
 <?php
 
-// Set error display based on environment
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+use Slim\Factory\AppFactory;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
+use App\Logging\Logger;
+use DI\ContainerBuilder;
 
-/**
- * Main entry point for the application
- *
- * This file bootstraps the application, sets up the container,
- * and runs the application.
- */
+require __DIR__ . '/../vendor/autoload.php';
 
- use DI\ContainerBuilder;
- use Slim\Factory\AppFactory;
- use Slim\Views\Twig;
- use Slim\Views\TwigMiddleware;
- use Dotenv\Dotenv;
- 
- // Autoloader
- require __DIR__ . '/../vendor/autoload.php';
- 
- // Start session
- session_start();
- 
- // Load environment variables
- $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
- $dotenv->load();
- 
- // Instantiate PHP-DI ContainerBuilder
- $containerBuilder = new ContainerBuilder();
- 
- // Set up settings
- $settings = require __DIR__ . '/../config/settings.php';
- $settings($containerBuilder);
- 
- // Set up dependencies
- $dependencies = require __DIR__ . '/../config/dependencies.php';
- $dependencies($containerBuilder);
- 
- // Build PHP-DI Container instance
- $container = $containerBuilder->build();
- 
- // Instantiate the app
- $app = $container->get(Slim\App::class);
- 
- // Create Twig
- $twig = $container->get(Twig::class);
- 
- // Add Twig-View Middleware
- $app->add(TwigMiddleware::create($app, $twig));
- 
- // Register routes
- $routes = require __DIR__ . '/../config/routes.php';
- $routes($app);
- 
- // Register middleware
- $middleware = require __DIR__ . '/../config/middleware.php';
- $middleware($app);
- 
- // Run app
- $app->run();
+// Load environment variables
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
+// Initialize logger
+Logger::init();
+Logger::info('Application starting');
+
+// Instantiate PHP-DI ContainerBuilder
+$containerBuilder = new ContainerBuilder();
+
+// Set up settings
+$settings = require __DIR__ . '/../app/settings.php';
+$settings($containerBuilder);
+
+// Set up dependencies
+$dependencies = require __DIR__ . '/../app/dependencies.php';
+$dependencies($containerBuilder);
+
+// Build PHP-DI Container instance
+$container = $containerBuilder->build();
+
+// Instantiate the app
+AppFactory::setContainer($container);
+$app = AppFactory::create();
+
+// Create Twig
+$container->set('view', function() {
+    return Twig::create(__DIR__ . '/../templates', ['cache' => false]);
+});
+
+// Add Twig-View Middleware
+$app->add(TwigMiddleware::createFromContainer($app));
+
+// Add routing middleware
+$app->addRoutingMiddleware();
+
+// Add error middleware
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
+// Define app routes
+$routes = require __DIR__ . '/../app/routes.php';
+$routes($app);
+
+Logger::info('Routes defined, starting application');
+
+// Run app
+$app->run();
+
+Logger::info('Application finished');

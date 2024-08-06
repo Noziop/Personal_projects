@@ -1,240 +1,171 @@
 <?php
 
-namespace App\Models;
-
-use PDO;
-
 /**
  * Student Model
  *
- * This class represents a student in the application.
+ * This class represents a student in the SOD (Speaker of the Day) application.
+ * It contains properties and methods related to student management.
  */
+
+namespace App\Models;
+
 class Student
 {
+    /**
+     * @var int The unique identifier for the student
+     */
     private $id;
-    private $userId;
-    private $cohortId;
-    private $firstName;
-    private $lastName;
-    private $email;
-    private $slackId;
-    private $createdAt;
 
-    private $db;
+    /**
+     * @var string The first name of the student
+     */
+    private $firstName;
+
+    /**
+     * @var string The last name of the student
+     */
+    private $lastName;
+
+    /**
+     * @var string The email of the student
+     */
+    private $email;
+
+    /**
+     * @var int The ID of the cohort the student belongs to
+     */
+    private $cohortId;
 
     /**
      * Student constructor.
      *
-     * @param PDO $db The database connection
+     * @param string $firstName The first name of the student
+     * @param string $lastName The last name of the student
+     * @param string $email The email of the student
+     * @param int $cohortId The ID of the cohort the student belongs to
+     * @param int|null $id The unique identifier for the student (optional)
      */
-    public function __construct(PDO $db)
+    public function __construct(string $firstName, string $lastName, string $email, int $cohortId, ?int $id = null)
     {
-        $this->db = $db;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->email = $email;
+        $this->cohortId = $cohortId;
+        $this->id = $id;
     }
 
     /**
-     * Find a student by their ID
+     * Get the student's ID.
      *
-     * @param int $id The student ID
-     * @return Student|null The student object if found, null otherwise
+     * @return int|null
      */
-    public function findById($id)
+    public function getId(): ?int
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        return $this->id;
     }
 
     /**
-     * Get all students
+     * Set the student's ID.
      *
-     * @return array An array of Student objects
+     * @param int $id
+     * @return void
      */
-    public function findAll()
+    public function setId(int $id): void
     {
-        $stmt = $this->db->query("SELECT * FROM students ORDER BY last_name, first_name");
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
+        $this->id = $id;
     }
 
     /**
-     * Create a new student
+     * Get the student's first name.
      *
-     * @param int $cohortId The cohort ID
-     * @param string $lastName The student's last name
-     * @param string $firstName The student's first name
-     * @param string $email The student's email
-     * @param string|null $slackId The student's Slack ID (optional)
-     * @return bool True if the student was created successfully, false otherwise
+     * @return string
      */
-    public function create($cohortId, $lastName, $firstName, $email, $slackId = null)
+    public function getFirstName(): string
     {
-        $stmt = $this->db->prepare("INSERT INTO students (cohort_id, last_name, first_name, email, slack_id) VALUES (:cohort_id, :last_name, :first_name, :email, :slack_id)");
-        return $stmt->execute([
-            'cohort_id' => $cohortId,
-            'last_name' => $lastName,
-            'first_name' => $firstName,
-            'email' => $email,
-            'slack_id' => $slackId
-        ]);
+        return $this->firstName;
     }
 
     /**
-     * Update an existing student
+     * Set the student's first name.
      *
-     * @param int $id The student ID
-     * @param int $cohortId The cohort ID
-     * @param string $lastName The student's last name
-     * @param string $firstName The student's first name
-     * @param string $email The student's email
-     * @param string|null $slackId The student's Slack ID (optional)
-     * @return bool True if the student was updated successfully, false otherwise
+     * @param string $firstName
+     * @return void
      */
-    public function update($id, $cohortId, $lastName, $firstName, $email, $slackId = null)
+    public function setFirstName(string $firstName): void
     {
-        $stmt = $this->db->prepare("UPDATE students SET cohort_id = :cohort_id, last_name = :last_name, first_name = :first_name, email = :email, slack_id = :slack_id WHERE id = :id");
-        return $stmt->execute([
-            'id' => $id,
-            'cohort_id' => $cohortId,
-            'last_name' => $lastName,
-            'first_name' => $firstName,
-            'email' => $email,
-            'slack_id' => $slackId
-        ]);
+        $this->firstName = $firstName;
     }
 
     /**
-     * Delete the student
+     * Get the student's last name.
      *
-     * @param int $id The student ID
-     * @return bool True if the student was deleted successfully, false otherwise
+     * @return string
      */
-    public function delete($id)
+    public function getLastName(): string
     {
-        $stmt = $this->db->prepare("DELETE FROM students WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        return $this->lastName;
     }
 
     /**
-     * Find students by cohort
+     * Set the student's last name.
      *
-     * @param int $cohortId The cohort ID
-     * @return array An array of Student objects
+     * @param string $lastName
+     * @return void
      */
-    public function findByCohort($cohortId)
+    public function setLastName(string $lastName): void
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE cohort_id = :cohort_id ORDER BY last_name, first_name");
-        $stmt->execute(['cohort_id' => $cohortId]);
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
+        $this->lastName = $lastName;
     }
 
     /**
-     * Find a student by email
+     * Get the student's email.
      *
-     * @param string $email The student's email
-     * @return Student|null The student object if found, null otherwise
+     * @return string
      */
-    public function findByEmail($email)
+    public function getEmail(): string
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE email = :email");
-        $stmt->execute(['email' => $email]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        return $this->email;
     }
 
     /**
-     * Find a student by Slack ID
+     * Set the student's email.
      *
-     * @param string $slackId The student's Slack ID
-     * @return Student|null The student object if found, null otherwise
+     * @param string $email
+     * @return void
      */
-    public function findBySlackId($slackId)
+    public function setEmail(string $email): void
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE slack_id = :slack_id");
-        $stmt->execute(['slack_id' => $slackId]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        $this->email = $email;
     }
 
     /**
-     * Search students by name or email
+     * Get the student's cohort ID.
      *
-     * @param string $searchTerm The search term
-     * @return array An array of Student objects
+     * @return int
      */
-    public function search($searchTerm)
+    public function getCohortId(): int
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE last_name LIKE :search OR first_name LIKE :search OR email LIKE :search ORDER BY last_name, first_name");
-        $stmt->execute(['search' => "%$searchTerm%"]);
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
+        return $this->cohortId;
     }
 
     /**
-     * Hydrate the student object with data
+     * Set the student's cohort ID.
      *
-     * @param array $data The data to hydrate the object with
-     * @return Student The hydrated student object
+     * @param int $cohortId
+     * @return void
      */
-    private function hydrate($data)
+    public function setCohortId(int $cohortId): void
     {
-        $this->id = $data['id'];
-        $this->userId = $data['user_id'] ?? null;
-        $this->cohortId = $data['cohort_id'];
-        $this->firstName = $data['first_name'];
-        $this->lastName = $data['last_name'];
-        $this->email = $data['email'];
-        $this->slackId = $data['slack_id'] ?? null;
-        $this->createdAt = $data['created_at'];
-
-        return $this;
+        $this->cohortId = $cohortId;
     }
 
-    // Getters
-    public function getId() { return $this->id; }
-    public function getUserId() { return $this->userId; }
-    public function getCohortId() { return $this->cohortId; }
-    public function getFirstName() { return $this->firstName; }
-    public function getLastName() { return $this->lastName; }
-    public function getEmail() { return $this->email; }
-    public function getSlackId() { return $this->slackId; }
-    public function getCreatedAt() { return $this->createdAt; }
-
-    // Additional methods
-    public function getFullName() { return $this->firstName . ' ' . $this->lastName; }
+    /**
+     * Get the student's full name.
+     *
+     * @return string
+     */
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
 }

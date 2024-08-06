@@ -1,0 +1,26 @@
+{% extends "layout.twig" %}
+
+{% block title %}Gestion des Rapports S.O.D.{% endblock %}
+
+{% block header_title %}Gestion des Rapports S.O.D.{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title">Rapports des présentations S.O.D.</h2>
+    
+    <div class="neumorphic-card">
+        <h3>Liste des rapports récents</h3>
+        <ul>
+            {% for rapport in rapports %}
+                <li>
+                    <a href="{{ url_for('rapports.view', {'id': rapport.id}) }}">
+                        {{ rapport.date|date("d/m/Y") }} - {{ rapport.student_name }} - {{ rapport.topic }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <a href="{{ url_for('rapports.create') }}" class="neumorphic-button">Ajouter un nouveau rapport</a>
+    </div>
+</div>
+{% endblock %}

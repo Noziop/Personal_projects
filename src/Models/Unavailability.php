@@ -1,248 +1,161 @@
 <?php
 
-namespace App\Models;
-
-use PDO;
-use DateTime;
-
 /**
  * Unavailability Model
  *
- * This class represents a student's unavailability period in the application.
+ * This class represents a period of unavailability for a student in the SOD (Speaker of the Day) application.
+ * It is used to track times when a student cannot participate in the drawing or speaking events.
  */
+
+namespace App\Models;
+
 class Unavailability
 {
+    /**
+     * @var int The unique identifier for the unavailability period
+     */
     private $id;
-    private $studentId;
-    private $startDate;
-    private $endDate;
-    private $reason;
-    private $createdAt;
 
-    private $db;
+    /**
+     * @var int The ID of the student who is unavailable
+     */
+    private $studentId;
+
+    /**
+     * @var \DateTime The start date and time of the unavailability period
+     */
+    private $startDateTime;
+
+    /**
+     * @var \DateTime The end date and time of the unavailability period
+     */
+    private $endDateTime;
+
+    /**
+     * @var string The reason for the unavailability (optional)
+     */
+    private $reason;
 
     /**
      * Unavailability constructor.
      *
-     * @param PDO $db The database connection
+     * @param int $studentId The ID of the student who is unavailable
+     * @param \DateTime $startDateTime The start date and time of the unavailability period
+     * @param \DateTime $endDateTime The end date and time of the unavailability period
+     * @param string|null $reason The reason for the unavailability (optional)
+     * @param int|null $id The unique identifier for the unavailability period (optional)
      */
-    public function __construct(PDO $db)
+    public function __construct(int $studentId, \DateTime $startDateTime, \DateTime $endDateTime, ?string $reason = null, ?int $id = null)
     {
-        $this->db = $db;
+        $this->studentId = $studentId;
+        $this->startDateTime = $startDateTime;
+        $this->endDateTime = $endDateTime;
+        $this->reason = $reason;
+        $this->id = $id;
     }
 
     /**
-     * Find an unavailability by its ID
+     * Get the unavailability's ID.
      *
-     * @param int $id The unavailability ID
-     * @return Unavailability|null The unavailability object if found, null otherwise
+     * @return int|null
      */
-    public function findById($id)
+    public function getId(): ?int
     {
-        $stmt = $this->db->prepare("SELECT * FROM unavailabilities WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $unavailabilityData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($unavailabilityData) {
-            return $this->hydrate($unavailabilityData);
-        }
-
-        return null;
+        return $this->id;
     }
 
     /**
-     * Get all unavailabilities
-     *
-     * @return array An array of Unavailability objects
-     */
-    public function findAll()
-    {
-        $stmt = $this->db->query("SELECT * FROM unavailabilities ORDER BY start_date");
-        $unavailabilitiesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $unavailabilities = [];
-        foreach ($unavailabilitiesData as $unavailabilityData) {
-            $unavailabilities[] = (new Unavailability($this->db))->hydrate($unavailabilityData);
-        }
-
-        return $unavailabilities;
-    }
-
-    /**
-     * Get all unavailabilities for a specific student
-     *
-     * @param int $studentId The student ID
-     * @return array An array of Unavailability objects
-     */
-    public function findByStudentId($studentId)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM unavailabilities WHERE student_id = :student_id ORDER BY start_date");
-        $stmt->execute(['student_id' => $studentId]);
-        $unavailabilitiesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $unavailabilities = [];
-        foreach ($unavailabilitiesData as $unavailabilityData) {
-            $unavailabilities[] = (new Unavailability($this->db))->hydrate($unavailabilityData);
-        }
-
-        return $unavailabilities;
-    }
-
-    /**
-     * Find unavailabilities by date range
-     *
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @return array An array of Unavailability objects
-     */
-    public function findByDateRange(DateTime $startDate, DateTime $endDate)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM unavailabilities WHERE 
-            (start_date BETWEEN :start_date AND :end_date) OR
-            (end_date BETWEEN :start_date AND :end_date) OR
-            (start_date <= :start_date AND end_date >= :end_date)
-            ORDER BY start_date");
-        $stmt->execute([
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
-        $unavailabilitiesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $unavailabilities = [];
-        foreach ($unavailabilitiesData as $unavailabilityData) {
-            $unavailabilities[] = (new Unavailability($this->db))->hydrate($unavailabilityData);
-        }
-
-        return $unavailabilities;
-    }
-
-    /**
-     * Create a new unavailability
-     *
-     * @param int $studentId
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @param string $reason
-     * @return bool True if the unavailability was created successfully, false otherwise
-     */
-    public function create($studentId, DateTime $startDate, DateTime $endDate, $reason)
-    {
-        $stmt = $this->db->prepare("INSERT INTO unavailabilities (student_id, start_date, end_date, reason) VALUES (:student_id, :start_date, :end_date, :reason)");
-        return $stmt->execute([
-            'student_id' => $studentId,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
-            'reason' => $reason
-        ]);
-    }
-
-    /**
-     * Update an existing unavailability
+     * Set the unavailability's ID.
      *
      * @param int $id
+     * @return void
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * Get the ID of the student who is unavailable.
+     *
+     * @return int
+     */
+    public function getStudentId(): int
+    {
+        return $this->studentId;
+    }
+
+    /**
+     * Set the ID of the student who is unavailable.
+     *
      * @param int $studentId
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @param string $reason
-     * @return bool True if the unavailability was updated successfully, false otherwise
+     * @return void
      */
-    public function update($id, $studentId, DateTime $startDate, DateTime $endDate, $reason)
+    public function setStudentId(int $studentId): void
     {
-        $stmt = $this->db->prepare("UPDATE unavailabilities SET student_id = :student_id, start_date = :start_date, end_date = :end_date, reason = :reason WHERE id = :id");
-        return $stmt->execute([
-            'id' => $id,
-            'student_id' => $studentId,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
-            'reason' => $reason
-        ]);
+        $this->studentId = $studentId;
     }
 
     /**
-     * Delete the unavailability
+     * Get the start date and time of the unavailability period.
      *
-     * @param int $id
-     * @return bool True if the unavailability was deleted successfully, false otherwise
+     * @return \DateTime
      */
-    public function delete($id)
+    public function getStartDateTime(): \DateTime
     {
-        $stmt = $this->db->prepare("DELETE FROM unavailabilities WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        return $this->startDateTime;
     }
 
     /**
-     * Check if a student is available on a specific date
+     * Set the start date and time of the unavailability period.
      *
-     * @param int $studentId The student ID
-     * @param DateTime $date The date to check
-     * @return bool True if the student is available, false otherwise
+     * @param \DateTime $startDateTime
+     * @return void
      */
-    public function isStudentAvailable($studentId, DateTime $date)
+    public function setStartDateTime(\DateTime $startDateTime): void
     {
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM unavailabilities WHERE student_id = :student_id AND :date BETWEEN start_date AND end_date");
-        $stmt->execute([
-            'student_id' => $studentId,
-            'date' => $date->format('Y-m-d')
-        ]);
-        
-        return $stmt->fetchColumn() == 0;
+        $this->startDateTime = $startDateTime;
     }
 
     /**
-     * Get available students for a specific date
+     * Get the end date and time of the unavailability period.
      *
-     * @param DateTime $date
-     * @return array An array of available student IDs
+     * @return \DateTime
      */
-    public function getAvailableStudents(DateTime $date)
+    public function getEndDateTime(): \DateTime
     {
-        $stmt = $this->db->prepare("
-            SELECT s.id
-            FROM students s
-            WHERE s.id NOT IN (
-                SELECT u.student_id
-                FROM unavailabilities u
-                WHERE :date BETWEEN u.start_date AND u.end_date
-            )
-        ");
-        $stmt->execute(['date' => $date->format('Y-m-d')]);
-        
-        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $this->endDateTime;
     }
 
     /**
-     * Get the student associated with this unavailability
+     * Set the end date and time of the unavailability period.
      *
-     * @return Student|null The Student object if found, null otherwise
+     * @param \DateTime $endDateTime
+     * @return void
      */
-    public function getStudent()
+    public function setEndDateTime(\DateTime $endDateTime): void
     {
-        return (new Student($this->db))->findById($this->studentId);
+        $this->endDateTime = $endDateTime;
     }
 
     /**
-     * Hydrate the unavailability object with data
+     * Get the reason for the unavailability.
      *
-     * @param array $data The data to hydrate the object with
-     * @return Unavailability The hydrated unavailability object
+     * @return string|null
      */
-    private function hydrate($data)
+    public function getReason(): ?string
     {
-        $this->id = $data['id'];
-        $this->studentId = $data['student_id'];
-        $this->startDate = new DateTime($data['start_date']);
-        $this->endDate = new DateTime($data['end_date']);
-        $this->reason = $data['reason'];
-        $this->createdAt = new DateTime($data['created_at']);
-
-        return $this;
+        return $this->reason;
     }
 
-    // Getters
-    public function getId() { return $this->id; }
-    public function getStudentId() { return $this->studentId; }
-    public function getStartDate() { return $this->startDate; }
-    public function getEndDate() { return $this->endDate; }
-    public function getReason() { return $this->reason; }
-    public function getCreatedAt() { return $this->createdAt; }
+    /**
+     * Set the reason for the unavailability.
+     *
+     * @param string|null $reason
+     * @return void
+     */
+    public function setReason(?string $reason): void
+    {
+        $this->reason = $reason;
+    }
 }

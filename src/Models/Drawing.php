@@ -1,168 +1,161 @@
 <?php
 
-namespace App\Models;
-
-use PDO;
-use DateTime;
-
 /**
  * Drawing Model
  *
- * This class represents a drawing (tirage au sort) in the application.
+ * This class represents a drawing in the SOD (Speaker of the Day) application.
+ * It contains information about a specific drawing event.
  */
+
+namespace App\Models;
+
 class Drawing
 {
+    /**
+     * @var int The unique identifier for the drawing
+     */
     private $id;
-    private $cohortId;
-    private $studentId;
-    private $drawDate;
-    private $type;
-    private $status;
-    private $createdAt;
 
-    private $db;
+    /**
+     * @var int The ID of the student selected in this drawing
+     */
+    private $studentId;
+
+    /**
+     * @var int The ID of the cohort for which this drawing was made
+     */
+    private $cohortId;
+
+    /**
+     * @var \DateTime The date when this drawing was performed
+     */
+    private $drawingDate;
+
+    /**
+     * @var \DateTime The date for which this student was selected to speak
+     */
+    private $speakingDate;
 
     /**
      * Drawing constructor.
      *
-     * @param PDO $db The database connection
+     * @param int $studentId The ID of the selected student
+     * @param int $cohortId The ID of the cohort
+     * @param \DateTime $drawingDate The date of the drawing
+     * @param \DateTime $speakingDate The date the student is to speak
+     * @param int|null $id The unique identifier for the drawing (optional)
      */
-    public function __construct(PDO $db)
+    public function __construct(int $studentId, int $cohortId, \DateTime $drawingDate, \DateTime $speakingDate, ?int $id = null)
     {
-        $this->db = $db;
+        $this->studentId = $studentId;
+        $this->cohortId = $cohortId;
+        $this->drawingDate = $drawingDate;
+        $this->speakingDate = $speakingDate;
+        $this->id = $id;
     }
 
     /**
-     * Find a drawing by its ID
+     * Get the drawing's ID.
      *
-     * @param int $id The drawing ID
-     * @return Drawing|null The drawing object if found, null otherwise
+     * @return int|null
      */
-    public function findById($id)
+    public function getId(): ?int
     {
-        $stmt = $this->db->prepare("SELECT * FROM drawings WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $drawingData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($drawingData) {
-            return $this->hydrate($drawingData);
-        }
-
-        return null;
+        return $this->id;
     }
 
     /**
-     * Get all drawings for a specific cohort
+     * Set the drawing's ID.
      *
-     * @param int $cohortId The cohort ID
-     * @return array An array of Drawing objects
+     * @param int $id
+     * @return void
      */
-    public function getAllForCohort($cohortId)
+    public function setId(int $id): void
     {
-        $stmt = $this->db->prepare("SELECT * FROM drawings WHERE cohort_id = :cohort_id ORDER BY draw_date DESC");
-        $stmt->execute(['cohort_id' => $cohortId]);
-        $drawingsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $drawings = [];
-        foreach ($drawingsData as $drawingData) {
-            $drawings[] = (new Drawing($this->db))->hydrate($drawingData);
-        }
-
-        return $drawings;
+        $this->id = $id;
     }
 
     /**
-     * Create a new drawing
+     * Get the ID of the selected student.
      *
-     * @param array $data The drawing data
-     * @return bool True if the drawing was created successfully, false otherwise
+     * @return int
      */
-    public function create($data)
+    public function getStudentId(): int
     {
-        $stmt = $this->db->prepare("INSERT INTO drawings (cohort_id, student_id, draw_date, type, status) VALUES (:cohort_id, :student_id, :draw_date, :type, :status)");
-        return $stmt->execute([
-            'cohort_id' => $data['cohort_id'],
-            'student_id' => $data['student_id'],
-            'draw_date' => $data['draw_date'],
-            'type' => $data['type'],
-            'status' => $data['status'] ?? 'pending'
-        ]);
+        return $this->studentId;
     }
 
     /**
-     * Update an existing drawing
+     * Set the ID of the selected student.
      *
-     * @param array $data The drawing data to update
-     * @return bool True if the drawing was updated successfully, false otherwise
+     * @param int $studentId
+     * @return void
      */
-    public function update($data)
+    public function setStudentId(int $studentId): void
     {
-        $stmt = $this->db->prepare("UPDATE drawings SET student_id = :student_id, draw_date = :draw_date, type = :type, status = :status WHERE id = :id");
-        return $stmt->execute([
-            'id' => $this->id,
-            'student_id' => $data['student_id'],
-            'draw_date' => $data['draw_date'],
-            'type' => $data['type'],
-            'status' => $data['status']
-        ]);
+        $this->studentId = $studentId;
     }
 
     /**
-     * Delete the drawing
+     * Get the ID of the cohort.
      *
-     * @return bool True if the drawing was deleted successfully, false otherwise
+     * @return int
      */
-    public function delete()
+    public function getCohortId(): int
     {
-        $stmt = $this->db->prepare("DELETE FROM drawings WHERE id = :id");
-        return $stmt->execute(['id' => $this->id]);
+        return $this->cohortId;
     }
 
     /**
-     * Get the student associated with this drawing
+     * Set the ID of the cohort.
      *
-     * @return Student|null The Student object if found, null otherwise
+     * @param int $cohortId
+     * @return void
      */
-    public function getStudent()
+    public function setCohortId(int $cohortId): void
     {
-        return (new Student($this->db))->findById($this->studentId);
+        $this->cohortId = $cohortId;
     }
 
     /**
-     * Get the cohort associated with this drawing
+     * Get the date of the drawing.
      *
-     * @return Cohort|null The Cohort object if found, null otherwise
+     * @return \DateTime
      */
-    public function getCohort()
+    public function getDrawingDate(): \DateTime
     {
-        return (new Cohort($this->db))->findById($this->cohortId);
+        return $this->drawingDate;
     }
 
     /**
-     * Hydrate the drawing object with data
+     * Set the date of the drawing.
      *
-     * @param array $data The data to hydrate the object with
-     * @return Drawing The hydrated drawing object
+     * @param \DateTime $drawingDate
+     * @return void
      */
-    private function hydrate($data)
+    public function setDrawingDate(\DateTime $drawingDate): void
     {
-        $this->id = $data['id'];
-        $this->cohortId = $data['cohort_id'];
-        $this->studentId = $data['student_id'];
-        $this->drawDate = new DateTime($data['draw_date']);
-        $this->type = $data['type'];
-        $this->status = $data['status'];
-        $this->createdAt = new DateTime($data['created_at']);
-
-        return $this;
+        $this->drawingDate = $drawingDate;
     }
 
-    // Getters
-    public function getId() { return $this->id; }
-    public function getCohortId() { return $this->cohortId; }
-    public function getStudentId() { return $this->studentId; }
-    public function getDrawDate() { return $this->drawDate; }
-    public function getType() { return $this->type; }
-    public function getStatus() { return $this->status; }
-    public function getCreatedAt() { return $this->createdAt; }
+    /**
+     * Get the speaking date for the selected student.
+     *
+     * @return \DateTime
+     */
+    public function getSpeakingDate(): \DateTime
+    {
+        return $this->speakingDate;
+    }
+
+    /**
+     * Set the speaking date for the selected student.
+     *
+     * @param \DateTime $speakingDate
+     * @return void
+     */
+    public function setSpeakingDate(\DateTime $speakingDate): void
+    {
+        $this->speakingDate = $speakingDate;
+    }
 }
