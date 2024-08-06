@@ -220,7 +220,7 @@ class Student
         $this->lastName = $data['last_name'];
         $this->email = $data['email'];
         $this->slackId = $data['slack_id'] ?? null;
-        $this->createdAt = $data['created_at'];
+        $this->createdAt = $data['created_at'] ?? null;
 
         return $this;
     }

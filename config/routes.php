@@ -6,10 +6,17 @@
  */
 
 use Slim\App;
-use App\Controllers\AuthController;
-use App\Controllers\DashboardController;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+
+//controllers
+
+use App\Controllers\AuthController;
+use App\Controllers\DashboardController;
+use App\Controllers\CohortController;
+use App\Controllers\StudentController;
+use App\Controllers\VacationController;
+use App\Controllers\HolidayController;
 
 
 return function (App $app) {

@@ -7,7 +7,32 @@
 {% block content %}
 <div class="neumorphic-container">
     <h2 class="neumorphic-title-red">Welcome, {{ user.username }}</h2>
-    <p>This is your dashboard. Here you can manage your account and access various features.</p>
-    <a href="{{ url_for('auth.logout') }}" class="neumorphic-button">Logout</a>
+    <p>This is your dashboard. Here you can manage various aspects of the SOD system.</p>
+
+    <div class="dashboard-grid">
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Cohort Management</h3>
+            <p>Manage cohorts, vacations, and drawing days.</p>
+            <a href="{{ url_for('cohorts.index') }}" class="neumorphic-button">Manage Cohorts</a>
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Student Management</h3>
+            <p>Manage students and their unavailabilities.</p>
+            <a href="{{ url_for('students.index') }}" class="neumorphic-button">Manage Students</a>
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Holiday Management</h3>
+            <p>Import and manage public holidays.</p>
+            <a href="{{ url_for('holidays.index') }}" class="neumorphic-button">Manage Holidays</a>
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Vacation Management</h3>
+            <p>Manage vacation periods for cohorts.</p>
+            <a href="{{ url_for('vacations.index') }}" class="neumorphic-button">Manage Vacations</a>
+        </div>
+    </div>
 </div>
 {% endblock %}
