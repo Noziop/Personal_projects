@@ -142,6 +142,20 @@ class User
 
         return $this;
     }
+	public function verifyPassword($password)
+    {
+        return password_verify($password, $this->password);
+    }
+
+    public function toArray()
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'role' => $this->role,
+            // Ajoutez ici tous les autres attributs nécessaires, sauf le mot de passe
+        ];
+    }
 
     public function getId() { return $this->id; }
     public function getUsername() { return $this->username; }

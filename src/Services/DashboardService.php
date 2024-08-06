@@ -54,37 +54,41 @@ class DashboardService
      * @throws \Exception
      */
     public function getDashboardData($userId)
-    {
-        try {
-            $this->logger->info('Fetching dashboard data', ['user_id' => $userId]);
+{
+    try {
+        $this->logger->info('Fetching dashboard data', ['user_id' => $userId]);
 
-            $user = $this->userService->getUserById($userId);
-            if (!$user) {
-                throw new \Exception("User not found");
-            }
-
-            $dashboardData = [
-                'user' => $user,
-            ];
-
-            if ($user['role'] === 'student') {
-                $dashboardData += $this->getStudentDashboardData($user['id']);
-            } elseif (in_array($user['role'], ['directrice', 'swe', 'ssm'])) {
-                $dashboardData += $this->getAdminDashboardData();
-            } else {
-                $this->logger->warning('Unknown user role accessing dashboard', ['role' => $user['role']]);
-            }
-
-            return $dashboardData;
-
-        } catch (\Exception $e) {
-            $this->logger->error('Error in DashboardService', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
+        $user = $this->userService->getUserById($userId);
+        if (!$user) {
+            throw new \Exception("User not found");
         }
+
+        $userArray = $user->toArray();
+
+        $dashboardData = [
+            'user' => $userArray,
+        ];
+
+        if ($userArray['role'] === 'student') {
+            $dashboardData += $this->getStudentDashboardData($userArray['id']);
+        } elseif (in_array($userArray['role'], ['directrice', 'swe', 'ssm'])) {
+            $dashboardData += $this->getAdminDashboardData();
+        } else {
+            $this->logger->warning('Unknown user role accessing dashboard', ['role' => $userArray['role']]);
+        }
+
+        return $dashboardData;
+
+    } catch (\Exception $e) {
+        $this->logger->error('Error in DashboardService', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
     }
+}
+
+
 
     /**
      * Get dashboard data for student role

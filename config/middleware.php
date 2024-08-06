@@ -2,57 +2,46 @@
 
 use Slim\App;
 use Slim\Views\TwigMiddleware;
+use Slim\Handlers\ErrorHandler;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Exception\HttpNotFoundException;
+use Slim\Psr7\Response;
 
 return function (App $app) {
-    // Parse json, form data and xml
     $app->addBodyParsingMiddleware();
-
-    // Add the Slim built-in routing middleware
     $app->addRoutingMiddleware();
 
-    // Add Twig Middleware
     $app->add(TwigMiddleware::createFromContainer($app));
 
-    // Add logging middleware
     $app->add(function ($request, $handler) {
         try {
-            $response = $handler->handle($request);
-            error_log("Response status: " . $response->getStatusCode());
-            error_log("Response headers: " . json_encode($response->getHeaders()));
-            return $response;
+            return $handler->handle($request);
         } catch (\Throwable $e) {
-            error_log("Error in middleware: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
             throw $e;
         }
     });
 
-    // Add Error Middleware
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
-	$app->add(function ($request, $handler) {
-		try {
-			return $handler->handle($request);
-		} catch (\Throwable $e) {
-			error_log($e->getMessage());
-			error_log($e->getTraceAsString());
-			throw $e;
-		}
-	});
-	
+    $customErrorHandler = function (
+        ServerRequestInterface $request,
+        \Throwable $exception,
+        bool $displayErrorDetails,
+        bool $logErrors,
+        bool $logErrorDetails
+    ) use ($app) {
+        $payload = ['error' => $exception->getMessage()];
 
-    // Customize error handler
-    $errorHandler = $errorMiddleware->getDefaultErrorHandler();
-    $errorHandler->registerErrorRenderer('text/html', function ($exception, $displayErrorDetails) use ($app) {
-        $view = $app->getContainer()->get('view');
-        error_log("Rendering error template. Exception: " . $exception->getMessage());
-        return $view->render(
-            $app->getResponseFactory()->createResponse(),
-            'error.twig',
-            [
-                'message' => $exception->getMessage(),
-                'displayErrorDetails' => $displayErrorDetails
-            ]
+        $response = $app->getResponseFactory()->createResponse();
+        $response->getBody()->write(
+            json_encode($payload, JSON_UNESCAPED_UNICODE)
         );
-    });
+
+        return $response->withStatus(500)
+                        ->withHeader('Content-Type', 'application/json');
+    };
+
+    $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 };
