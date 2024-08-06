@@ -5,7 +5,7 @@ use Slim\Views\TwigMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
-use Slim\Exception\HttpNotFoundException;
+use Psr\Log\LoggerInterface;
 
 return function (App $app) {
     $app->addBodyParsingMiddleware();
@@ -14,28 +14,28 @@ return function (App $app) {
     $app->add(TwigMiddleware::createFromContainer($app));
 
     // Ajoutez ce middleware de journalisation
-	$app->add(function (Request $request, RequestHandler $handler) use ($app) {
-		try {
-			$response = $handler->handle($request);
-			$responseStatusCode = $response->getStatusCode();
-	
-			$logger = $app->getContainer()->get(LoggerInterface::class);
-			$logger->info(
-				sprintf(
-					'"%s %s" %d',
-					$request->getMethod(),
-					$request->getUri(),
-					$responseStatusCode
-				)
-			);
-	
-			return $response;
-		} catch (\Throwable $e) {
-			$logger = $app->getContainer()->get(LoggerInterface::class);
-			$logger->error('Error: ' . $e->getMessage());
-			throw $e;
-		}
-	});
+    $app->add(function (Request $request, RequestHandler $handler) use ($app) {
+        try {
+            $response = $handler->handle($request);
+            $responseStatusCode = $response->getStatusCode();
+    
+            $logger = $app->getContainer()->get(LoggerInterface::class);
+            $logger->info(
+                sprintf(
+                    '"%s %s" %d',
+                    $request->getMethod(),
+                    $request->getUri(),
+                    $responseStatusCode
+                )
+            );
+    
+            return $response;
+        } catch (\Throwable $e) {
+            $logger = $app->getContainer()->get(LoggerInterface::class);
+            $logger->error('Error: ' . $e->getMessage());
+            throw $e;
+        }
+    });
 
     // Configurez le middleware d'erreur
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);

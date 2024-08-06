@@ -8,6 +8,8 @@
 use Slim\App;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
 
 
 return function (App $app) {
@@ -16,6 +18,9 @@ return function (App $app) {
     $app->post('/login', [AuthController::class, 'login'])->setName('auth.login');
     $app->get('/logout', [AuthController::class, 'logout'])->setName('auth.logout');
 	$app->get('/dashboard', [DashboardController::class, 'index'])->setName('dashboard');
+	$app->get('/test-error', function (Request $request, Response $response) {
+		throw new \Exception("This is a test error");
+	});
 
 	//cohorts
 	$app->get('/cohorts', [CohortController::class, 'index'])->setName('cohorts.index');

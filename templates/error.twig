@@ -1,14 +1,11 @@
 {% extends "layout.twig" %}
 
-{% block title %}Error - {{ parent() }}{% endblock %}
+{% block title %}Erreur{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">An error occurred</h2>
+    <h1 class="neumorphic-title-red">Erreur ¯\_(ツ)_/¯</h1>
     <p>{{ message }}</p>
-    {% if displayErrorDetails %}
-        <h3>Stack Trace:</h3>
-        <pre>{{ trace }}</pre>
-    {% endif %}
+    <a href="{{ url_for('home') }}" class="neumorphic-button">Retour à l'accueil</a>
 </div>
 {% endblock %}
