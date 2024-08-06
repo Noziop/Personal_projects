@@ -46,12 +46,6 @@ $container = $containerBuilder->build();
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
-// Add Error Middleware
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
-
-// Create Twig
-$twig = $container->get(Twig::class);
-
 // Register routes
 $routes = require __DIR__ . '/../config/routes.php';
 $routes($app);
@@ -60,8 +54,4 @@ $routes($app);
 $middleware = require __DIR__ . '/../config/middleware.php';
 $middleware($app);
 
-// Add Twig-View Middleware
-$app->add(TwigMiddleware::createFromContainer($app));
-
-// Run app
 $app->run();

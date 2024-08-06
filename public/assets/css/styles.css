@@ -77,11 +77,15 @@ main {
     background-color: var(--secondary-color);
     border-radius: 15px;
     padding: 20px;
+	max-width: 90%;
     box-shadow: 
         0 4px 6px var(--shadow-color),
         0 1px 3px var(--shadow-color);
 }
 
+.neumorphic-container pre {
+	max-width: 95%;
+}
 .neumorphic-title-red {
     color: var(--primary-color);
     margin-bottom: 20px;
