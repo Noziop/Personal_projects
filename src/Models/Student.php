@@ -225,6 +225,12 @@ class Student
         return $this;
     }
 
+	public function getTotalCount()
+	{
+		$stmt = $this->db->query("SELECT COUNT(*) FROM students");
+		return $stmt->fetchColumn();
+	}
+
     // Getters
     public function getId() { return $this->id; }
     public function getUserId() { return $this->userId; }

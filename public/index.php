@@ -46,6 +46,9 @@ $container = $containerBuilder->build();
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
+// Add Error Middleware
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
 // Create Twig
 $twig = $container->get(Twig::class);
 
@@ -59,9 +62,6 @@ $middleware($app);
 
 // Add Twig-View Middleware
 $app->add(TwigMiddleware::createFromContainer($app));
-
-// Add Error Middleware
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
 // Run app
 $app->run();

@@ -17,7 +17,6 @@ use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
-use Slim\Views\TwigMiddleware;
 use Slim\Psr7\Factory\ResponseFactory;
 use GuzzleHttp\Client;
 
@@ -63,14 +62,19 @@ return function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
 
-        Twig::class => function (ContainerInterface $c) {
-            $settings = $c->get('settings');
-            return Twig::create($settings['view']['template_path'], $settings['view']['twig']);
+        'logger' => function (ContainerInterface $c) {
+            return $c->get(LoggerInterface::class);
         },
 
-        'view' => function (ContainerInterface $c) {
-            return $c->get(Twig::class);
+        Twig::class => function (ContainerInterface $c) {
+            $settings = $c->get('settings');
+            $twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
+            $environment = $twig->getEnvironment();
+            $environment->addGlobal('session', $_SESSION);
+            return $twig;
         },
+
+        'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
 
         PDO::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
@@ -99,7 +103,7 @@ return function (ContainerBuilder $containerBuilder) {
             return new UserService($c->get(User::class), $c->get(LoggerInterface::class));
         },
         StudentService::class => function (ContainerInterface $c) {
-            return new StudentService($c->get(Student::class), $c->get(LoggerInterface::class));
+            return new StudentService($c->get(Student::class), $c->get(Unavailability::class), $c->get(LoggerInterface::class));
         },
         CohortService::class => function (ContainerInterface $c) {
             return new CohortService($c->get(Cohort::class), $c->get(LoggerInterface::class));
@@ -123,27 +127,23 @@ return function (ContainerBuilder $containerBuilder) {
             return new VacationService($c->get(Vacation::class), $c->get(LoggerInterface::class));
         },
         DashboardService::class => function (ContainerInterface $c) {
-			return new DashboardService(
-				$c->get(CohortService::class),
-				$c->get(StudentService::class),
-				$c->get(SODScheduleService::class),
-				$c->get(ReportService::class),
-				$c->get(UserService::class),
-				$c->get(LoggerInterface::class)
-			);
-		},
+            return new DashboardService(
+                $c->get(CohortService::class),
+                $c->get(StudentService::class),
+                $c->get(SODScheduleService::class),
+                $c->get(ReportService::class),
+                $c->get(UserService::class),
+                $c->get(LoggerInterface::class)
+            );
+        },
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {
             return new AuthController($c->get(Twig::class), $c->get(User::class), $c->get(LoggerInterface::class));
         },
         DashboardController::class => function (ContainerInterface $c) {
-			return new DashboardController(
-				$c->get(Twig::class),
-				$c->get(LoggerInterface::class),
-				$c->get(DashboardService::class)
-			);
-		},
+            return new DashboardController($c->get(Twig::class), $c->get(LoggerInterface::class), $c->get(DashboardService::class));
+        },
 
         // Application
         App::class => function (ContainerInterface $c) {

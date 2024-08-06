@@ -111,4 +111,11 @@ class StudentService
         $this->logger->info('Fetching unavailability for student', ['student_id' => $studentId]);
         return $this->unavailabilityModel->findByStudentId($studentId);
     }
+
+	public function getTotalStudentsCount()
+	{
+		$this->logger->info('Fetching total student count');
+		return $this->studentModel->getTotalCount();
+	}
+
 }

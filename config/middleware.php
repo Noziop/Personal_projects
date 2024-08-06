@@ -2,46 +2,54 @@
 
 use Slim\App;
 use Slim\Views\TwigMiddleware;
-use Slim\Handlers\ErrorHandler;
-use Psr\Http\Message\ServerRequestInterface;
-use Slim\Exception\HttpNotFoundException;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
+use Slim\Exception\HttpNotFoundException;
 
 return function (App $app) {
     $app->addBodyParsingMiddleware();
     $app->addRoutingMiddleware();
-
+    
     $app->add(TwigMiddleware::createFromContainer($app));
 
-    $app->add(function ($request, $handler) {
-        try {
-            return $handler->handle($request);
-        } catch (\Throwable $e) {
-            error_log($e->getMessage());
-            error_log($e->getTraceAsString());
-            throw $e;
-        }
-    });
+    // Ajoutez ce middleware de journalisation
+	$app->add(function (Request $request, RequestHandler $handler) use ($app) {
+		try {
+			$response = $handler->handle($request);
+			$responseStatusCode = $response->getStatusCode();
+	
+			$logger = $app->getContainer()->get(LoggerInterface::class);
+			$logger->info(
+				sprintf(
+					'"%s %s" %d',
+					$request->getMethod(),
+					$request->getUri(),
+					$responseStatusCode
+				)
+			);
+	
+			return $response;
+		} catch (\Throwable $e) {
+			$logger = $app->getContainer()->get(LoggerInterface::class);
+			$logger->error('Error: ' . $e->getMessage());
+			throw $e;
+		}
+	});
 
+    // Configurez le middleware d'erreur
     $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
-    $customErrorHandler = function (
-        ServerRequestInterface $request,
-        \Throwable $exception,
-        bool $displayErrorDetails,
-        bool $logErrors,
-        bool $logErrorDetails
-    ) use ($app) {
-        $payload = ['error' => $exception->getMessage()];
-
-        $response = $app->getResponseFactory()->createResponse();
-        $response->getBody()->write(
-            json_encode($payload, JSON_UNESCAPED_UNICODE)
-        );
-
-        return $response->withStatus(500)
-                        ->withHeader('Content-Type', 'application/json');
-    };
-
-    $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
+    // Définissez un gestionnaire d'erreurs personnalisé
+    $errorHandler = $errorMiddleware->getDefaultErrorHandler();
+    $errorHandler->forceContentType('text/html');
+    $errorHandler->setDefaultErrorRenderer('text/html', function (\Throwable $exception, bool $displayErrorDetails) use ($app) {
+        $response = new Response();
+        $twig = $app->getContainer()->get('view');
+        return $twig->render($response, 'error.twig', [
+            'message' => $exception->getMessage(),
+            'trace' => $displayErrorDetails ? $exception->getTraceAsString() : '',
+            'displayErrorDetails' => $displayErrorDetails
+        ]);
+    });
 };
