@@ -1,6 +1,7 @@
 <?php
 
 use Slim\App;
+use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
@@ -44,9 +45,8 @@ return function (App $app) {
     $errorHandler = $errorMiddleware->getDefaultErrorHandler();
     $errorHandler->forceContentType('text/html');
     $errorHandler->setDefaultErrorRenderer('text/html', function (\Throwable $exception, bool $displayErrorDetails) use ($app) {
-        $response = new Response();
-        $twig = $app->getContainer()->get('view');
-        return $twig->render($response, 'error.twig', [
+        $twig = $app->getContainer()->get(Twig::class);
+        return $twig->render(new Response(), 'error.twig', [
             'message' => $exception->getMessage(),
             'trace' => $displayErrorDetails ? $exception->getTraceAsString() : '',
             'displayErrorDetails' => $displayErrorDetails
