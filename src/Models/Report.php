@@ -86,18 +86,13 @@ class Report
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getRecentReports($limit = 10)
-    {
-        $stmt = $this->db->prepare("
-            SELECT r.*, s.id as student_id, u.first_name, u.last_name
-            FROM reports r
-            JOIN students s ON r.student_id = s.id
-            JOIN users u ON s.user_id = u.id
-            ORDER BY r.created_at DESC
-            LIMIT :limit
-        ");
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+	public function getRecentReports($limit = 10)
+	{
+		$sql = "SELECT * FROM reports ORDER BY created_at DESC LIMIT :limit";
+		$stmt = $this->db->prepare($sql);
+		$stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+		$stmt->execute();
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+	
 }

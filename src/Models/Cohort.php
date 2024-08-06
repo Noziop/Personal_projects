@@ -252,7 +252,7 @@ class Cohort
         $this->name = $data['name'];
         $this->startDate = new DateTime($data['start_date']);
         $this->endDate = new DateTime($data['end_date']);
-        $this->createdAt = new DateTime($data['created_at']);
+		$this->$createdAt = $data['created_at'] ?? null;
 
         return $this;
     }

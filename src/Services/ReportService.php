@@ -86,4 +86,11 @@ class ReportService
         ]);
         return $this->reportModel->findLatestByStudentAndType($studentId, $type);
     }
+
+	public function getRecentReports($limit = 10)
+	{
+		$this->logger->info('Fetching recent reports', ['limit' => $limit]);
+		return $this->reportModel->getRecentReports($limit);
+	}
+
 }
