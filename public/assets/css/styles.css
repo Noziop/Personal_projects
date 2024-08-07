@@ -77,7 +77,7 @@ main {
     padding: 40px;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
 }
 
 #main-content {
@@ -302,6 +302,29 @@ footer {
     background-color: var(--secondary-color);
     margin-bottom: 5px;
     transition: var(--transition);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cohort-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cohort-filters .neumorphic-button {
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+.cohort-filters .neumorphic-button.active {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 @media screen and (max-width: 768px) {

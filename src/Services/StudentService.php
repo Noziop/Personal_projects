@@ -58,11 +58,13 @@ class StudentService
         return $this->studentModel->delete($id);
     }
 
-    public function getAllStudents()
-    {
-        $this->logger->info('Fetching all students');
-        return $this->studentModel->findAll();
-    }
+	public function getAllStudents()
+	{
+		$this->logger->info('Fetching all students');
+		$students = $this->studentModel->findAll();
+		$this->logger->info('Fetched students', ['count' => count($students)]);
+		return $students;
+	}
 
     public function getStudentsByCohort($cohortId)
     {

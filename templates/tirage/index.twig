@@ -1,0 +1,76 @@
+{% extends "layout.twig" %}
+
+{% block title %}Tirage au Sort SOD{% endblock %}
+
+{% block header_title %}Tirage au Sort SOD{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title">Effectuer un nouveau tirage</h2>
+    
+    <form id="drawingForm" class="neumorphic-form">
+        <div class="form-group">
+            <label for="cohort">Cohorte :</label>
+            <select id="cohort" name="cohort" required>
+                <option value="">Sélectionnez une cohorte</option>
+                {% for cohort in cohorts %}
+                    <option value="{{ cohort.id }}">{{ cohort.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="drawingDate">Date du tirage :</label>
+            <input type="date" id="drawingDate" name="drawingDate" required>
+        </div>
+        
+        <button type="submit" class="neumorphic-button">Effectuer le tirage</button>
+    </form>
+    
+    <div id="drawingResult" class="neumorphic-card" style="display: none;">
+        <h3>Résultat du tirage</h3>
+        <p>L'étudiant tiré au sort est : <span id="drawnStudent"></span></p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('drawingForm');
+    const resultDiv = document.getElementById('drawingResult');
+    const drawnStudentSpan = document.getElementById('drawnStudent');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const cohortId = formData.get('cohort');
+        const drawingDate = formData.get('drawingDate');
+
+        fetch('/api/drawings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cohort_id: cohortId,
+                drawing_date: drawingDate
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur lors du tirage au sort');
+            }
+            return response.json();
+        })
+        .then(data => {
+            drawnStudentSpan.textContent = `${data.student.first_name} ${data.student.last_name}`;
+            resultDiv.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors du tirage au sort. Veuillez réessayer.');
+        });
+    });
+});
+</script>
+{% endblock %}

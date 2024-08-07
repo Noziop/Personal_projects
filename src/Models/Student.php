@@ -56,18 +56,20 @@ class Student
      *
      * @return array An array of Student objects
      */
-    public function findAll()
-    {
-        $stmt = $this->db->query("SELECT * FROM students ORDER BY last_name, first_name");
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
-    }
+	public function findAll()
+	{
+		$query = "
+			SELECT 
+				s.*, 
+				c.name as cohort_name, 
+				(SELECT COUNT(*) FROM unavailabilities u WHERE u.student_id = s.id) as unavailability,
+				(SELECT COUNT(*) FROM sod_schedules ss WHERE ss.student_id = s.id) as sod_count
+			FROM students s 
+			LEFT JOIN cohorts c ON s.cohort_id = c.id
+		";
+		$stmt = $this->db->query($query);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
 
     /**
      * Create a new student

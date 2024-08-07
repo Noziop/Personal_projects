@@ -7,23 +7,37 @@
 {% block content %}
 <div class="neumorphic-container">
     <h2 class="neumorphic-title-red">Students List</h2>
-    <a href="{{ url_for('students.create') }}" class="neumorphic-button">Add New Student</a>
+    <div class="action-buttons">
+        <a href="{{ url_for('students.create') }}" class="neumorphic-button">Add New Student</a>
+        <div class="cohort-filters">
+            <button class="neumorphic-button active" data-cohort="all">All</button>
+            {% for cohort in cohorts %}
+                <button class="neumorphic-button" data-cohort="{{ cohort.id }}">{{ cohort.name }}</button>
+            {% endfor %}
+        </div>
+    </div>
     <div class="neumorphic-table-container">
-        <table class="neumorphic-table">
+        <table class="neumorphic-table" id="students-table">
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
                     <th>Email</th>
                     <th>Cohort</th>
+                    <th>Unavailability</th>
+                    <th>SOD Count</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for student in students %}
-                    <tr>
-                        <td>{{ student.name }}</td>
+                    <tr data-cohort="{{ student.cohort_id }}">
+                        <td>{{ student.first_name }}</td>
+                        <td>{{ student.last_name }}</td>
                         <td>{{ student.email }}</td>
                         <td>{{ student.cohort_name }}</td>
+                        <td>{{ student.unavailability|length }}</td>
+                        <td>{{ student.sod_count }}</td>
                         <td>
                             <a href="{{ url_for('students.edit', {'id': student.id}) }}" class="neumorphic-button-small">Edit</a>
                             <a href="{{ url_for('students.unavailability', {'id': student.id}) }}" class="neumorphic-button-small">Unavailability</a>
@@ -37,4 +51,31 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cohortButtons = document.querySelectorAll('.cohort-filters button');
+    const studentsTable = document.getElementById('students-table');
+    const studentRows = studentsTable.querySelectorAll('tbody tr');
+
+    cohortButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const cohortId = this.getAttribute('data-cohort');
+            
+            cohortButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            studentRows.forEach(row => {
+                if (cohortId === 'all' || row.getAttribute('data-cohort') === cohortId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
