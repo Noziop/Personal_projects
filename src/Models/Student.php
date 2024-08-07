@@ -106,18 +106,18 @@ class Student
      * @param string|null $slackId The student's Slack ID (optional)
      * @return bool True if the student was updated successfully, false otherwise
      */
-    public function update($id, $cohortId, $lastName, $firstName, $email, $slackId = null)
-    {
-        $stmt = $this->db->prepare("UPDATE students SET cohort_id = :cohort_id, last_name = :last_name, first_name = :first_name, email = :email, slack_id = :slack_id WHERE id = :id");
-        return $stmt->execute([
-            'id' => $id,
-            'cohort_id' => $cohortId,
-            'last_name' => $lastName,
-            'first_name' => $firstName,
-            'email' => $email,
-            'slack_id' => $slackId
-        ]);
-    }
+	public function update($id, $firstName, $lastName, $email, $cohortId)
+	{
+		$sql = "UPDATE students SET first_name = :first_name, last_name = :last_name, email = :email, cohort_id = :cohort_id WHERE id = :id";
+		$stmt = $this->db->prepare($sql);
+		return $stmt->execute([
+			'id' => $id,
+			'first_name' => $firstName,
+			'last_name' => $lastName,
+			'email' => $email,
+			'cohort_id' => $cohortId
+		]);
+	}
 
     /**
      * Delete the student

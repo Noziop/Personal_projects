@@ -2,15 +2,19 @@
 
 {% block title %}Edit Student - {{ parent() }}{% endblock %}
 
-{% block header_title %}Edit Student{% endblock %}
+{% block header_title %}Edit Student : {{ student.firstName }} {{ student.lastName }}{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">Edit Student</h2>
+    <h2 class="neumorphic-title-red">Edit {{ student.firstName }} {{ student.lastName }}'s informations</h2>
     <form action="{{ url_for('students.edit', {'id': student.id}) }}" method="POST" class="neumorphic-form">
-        <div class="neumorphic-form-group">
+		<div class="neumorphic-form-group">
+			<label for="name">First Name</label>
+			<input type="text" id="first_name" name="first_name" value="{{ student.firstName }}" required class="neumorphic-input">
+        </div>
+		<div class="neumorphic-form-group">
             <label for="name">Name</label>
-            <input type="text" id="name" name="name" value="{{ student.name }}" required class="neumorphic-input">
+            <input type="text" id="last_name" name="last_name" value="{{ student.lastName }}" required class="neumorphic-input">
         </div>
         <div class="neumorphic-form-group">
             <label for="email">Email</label>
@@ -20,7 +24,7 @@
             <label for="cohort_id">Cohort</label>
             <select id="cohort_id" name="cohort_id" required class="neumorphic-input">
                 {% for cohort in cohorts %}
-                    <option value="{{ cohort.id }}" {% if cohort.id == student.cohort_id %}selected{% endif %}>{{ cohort.name }}</option>
+                    <option value="{{ cohort.id }}" {% if cohort.id == student.cohort.id %}selected{% endif %}>{{ cohort.name }}</option>
                 {% endfor %}
             </select>
         </div>

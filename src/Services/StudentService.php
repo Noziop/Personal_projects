@@ -33,25 +33,19 @@ class StudentService
         return $this->studentModel->create($cohortId, $lastName, $firstName, $email, $slackId);
     }
 
-    public function getStudentById($id)
-    {
-        $this->logger->info('Fetching student by ID', ['id' => $id]);
-        return $this->studentModel->findById($id);
-    }
+	public function getStudentById($id)
+	{
+		$student = $this->studentModel->findById($id);
+		if ($student) {
+			$student['cohort'] = $this->cohortService->getCohortById($student['cohort_id']);
+		}
+		return $student;
+	}
 
-    public function updateStudent($id, $cohortId, $lastName, $firstName, $email, $slackId = null)
-    {
-        $this->logger->info('Updating student', [
-            'id' => $id,
-            'cohort_id' => $cohortId,
-            'last_name' => $lastName,
-            'first_name' => $firstName,
-            'email' => $email,
-            'slack_id' => $slackId
-        ]);
-
-        return $this->studentModel->update($id, $cohortId, $lastName, $firstName, $email, $slackId);
-    }
+	public function updateStudent($id, $firstName, $lastName, $email, $cohortId)
+	{
+		return $this->studentModel->update($id, $firstName, $lastName, $email, $cohortId);
+	}
 
     public function deleteStudent($id)
     {

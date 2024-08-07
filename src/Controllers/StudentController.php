@@ -50,27 +50,40 @@ class StudentController
         return $this->view->render($response, 'students/create.twig', ['cohorts' => $cohorts]);
     }
 
-    public function edit(Request $request, Response $response, array $args): Response
-    {
-        $student = $this->studentService->getStudentById($args['id']);
-        $cohorts = $this->cohortService->getAllCohorts();
-        
-        if (!$student) {
-            $this->logger->warning('Student not found', ['student_id' => $args['id']]);
-            return $response->withStatus(404);
-        }
+	public function edit(Request $request, Response $response, array $args): Response
+	{
+		$studentId = $args['id'];
+		$student = $this->studentService->getStudentById($studentId);
+		$cohorts = $this->cohortService->getAllCohorts();
+	
+		if (!$student) {
+			// Gérer le cas où l'étudiant n'est pas trouvé
+			return $response->withStatus(404);
+		}
+	
+		if ($request->getMethod() === 'POST') {
+			$data = $request->getParsedBody();
+			$updated = $this->studentService->updateStudent(
+				$studentId,
+				$data['first_name'],
+				$data['last_name'],
+				$data['email'],
+				$data['cohort_id']
+			);
 
-        if ($request->getMethod() === 'POST') {
-            $data = $request->getParsedBody();
-            $updated = $this->studentService->updateStudent($args['id'], $data);
-            if ($updated) {
-                $this->logger->info('Student updated', ['student_id' => $args['id']]);
-                return $response->withHeader('Location', '/students')->withStatus(302);
-            }
-        }
-
-        return $this->view->render($response, 'students/edit.twig', ['student' => $student, 'cohorts' => $cohorts]);
-    }
+			$student = $this->studentService->getStudentById($studentId);
+	
+			if ($updated) {
+				// Rediriger vers la liste des étudiants après la mise à jour
+				return $response->withHeader('Location', '/students')->withStatus(302);
+			}
+		}
+	
+		return $this->view->render($response, 'students/edit.twig', [
+			'student' => $student,
+			'cohorts' => $cohorts
+		]);
+	}
 
     public function delete(Request $request, Response $response, array $args): Response
     {
