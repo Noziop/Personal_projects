@@ -33,14 +33,11 @@ class StudentService
         return $this->studentModel->create($cohortId, $lastName, $firstName, $email, $slackId);
     }
 
-	public function getStudentById($id)
-	{
-		$student = $this->studentModel->findById($id);
-		if ($student) {
-			$student['cohort'] = $this->cohortService->getCohortById($student['cohort_id']);
-		}
-		return $student;
-	}
+    public function getStudentById($id)
+    {
+        $this->logger->info('Fetching student by ID', ['id' => $id]);
+        return $this->studentModel->findById($id);
+    }
 
 	public function updateStudent($id, $firstName, $lastName, $email, $cohortId)
 	{
