@@ -36,7 +36,13 @@
                         <td>{{ student.last_name }}</td>
                         <td>{{ student.email }}</td>
                         <td>{{ student.cohort_name }}</td>
-                        <td>{{ student.unavailability|length }}</td>
+                        <td>
+							{% if student.unavailability %}
+								{{ student.unavailability }}
+							{% else %}
+								No unavailability
+							{% endif %}
+						</td>
                         <td>{{ student.sod_count }}</td>
                         <td>
                             <a href="{{ url_for('students.edit', {'id': student.id}) }}" class="neumorphic-button-small">Edit</a>

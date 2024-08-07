@@ -61,11 +61,13 @@ class Student
 		$query = "
 			SELECT 
 				s.*, 
-				c.name as cohort_name, 
-				(SELECT COUNT(*) FROM unavailabilities u WHERE u.student_id = s.id) as unavailability,
+				c.name as cohort_name,
+				GROUP_CONCAT(CONCAT(u.start_date, ' to ', u.end_date) SEPARATOR ', ') as unavailability,
 				(SELECT COUNT(*) FROM sod_schedule ss WHERE ss.student_id = s.id) as sod_count
 			FROM students s 
 			LEFT JOIN cohorts c ON s.cohort_id = c.id
+			LEFT JOIN unavailabilities u ON s.id = u.student_id
+			GROUP BY s.id
 		";
 		$stmt = $this->db->query($query);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
