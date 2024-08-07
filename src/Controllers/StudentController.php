@@ -82,24 +82,22 @@ class StudentController
         return $response->withStatus(404);
     }
 
-    public function manageUnavailability(Request $request, Response $response, array $args): Response
-    {
-        $student = $this->studentService->getStudentById($args['id']);
-        
-        if (!$student) {
-            $this->logger->warning('Student not found', ['student_id' => $args['id']]);
-            return $response->withStatus(404);
-        }
-
-        if ($request->getMethod() === 'POST') {
-            $data = $request->getParsedBody();
-            $updated = $this->studentService->updateUnavailability($args['id'], $data['unavailability']);
-            if ($updated) {
-                $this->logger->info('Student unavailability updated', ['student_id' => $args['id']]);
-                return $response->withHeader('Location', '/students')->withStatus(302);
-            }
-        }
-
-        return $this->view->render($response, 'students/unavailability.twig', ['student' => $student]);
-    }
+	public function manageUnavailability(Request $request, Response $response, array $args): Response
+	{
+		$studentId = $args['id'];
+		$student = $this->studentService->getStudentById($studentId);
+	
+		if ($request->getMethod() === 'POST') {
+			$unavailability = $request->getParsedBody()['unavailability'] ?? null;
+			$dates = $unavailability ? explode(' to ', $unavailability) : null;
+			
+			$this->studentService->updateUnavailability($studentId, $dates ? [$dates] : null);
+	
+			return $response->withHeader('Location', '/students')->withStatus(302);
+		}
+	
+		return $this->view->render($response, 'students/unavailability.twig', [
+			'student' => $student
+		]);
+	}
 }

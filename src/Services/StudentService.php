@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Student;
 use App\Models\Unavailability;
 use Psr\Log\LoggerInterface;
+use DateTime;
 
 class StudentService
 {
@@ -90,23 +91,22 @@ class StudentService
         return $this->studentModel->search($searchTerm);
     }
 
-    public function updateUnavailability($studentId, $unavailabilityData)
-    {
-        $this->logger->info('Updating student unavailability', ['student_id' => $studentId]);
-
-        // First, delete all existing unavailability for this student
-        $this->unavailabilityModel->deleteByStudentId($studentId);
-
-        // Then, create new unavailability entries
-        foreach ($unavailabilityData as $date) {
-            $this->unavailabilityModel->create([
-                'student_id' => $studentId,
-                'date' => $date
-            ]);
-        }
-
-        return true;
-    }
+	public function updateUnavailability($studentId, $unavailabilityDates)
+	{
+		// Supprimer d'abord toutes les indisponibilités existantes pour cet étudiant
+		$this->unavailabilityModel->deleteByStudentId($studentId);
+	
+		// Si de nouvelles dates d'indisponibilité sont fournies, les ajouter
+		if ($unavailabilityDates) {
+			foreach ($unavailabilityDates as $date) {
+				$startDate = new DateTime($date[0]);
+				$endDate = new DateTime($date[1]);
+				$this->unavailabilityModel->create($studentId, $startDate, $endDate);
+			}
+		}
+	
+		return true;
+	}
 
     public function getUnavailabilityForStudent($studentId)
     {

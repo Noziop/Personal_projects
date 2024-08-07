@@ -125,16 +125,15 @@ class Unavailability
      * @param string $reason
      * @return bool True if the unavailability was created successfully, false otherwise
      */
-    public function create($studentId, DateTime $startDate, DateTime $endDate, $reason)
-    {
-        $stmt = $this->db->prepare("INSERT INTO unavailabilities (student_id, start_date, end_date, reason) VALUES (:student_id, :start_date, :end_date, :reason)");
-        return $stmt->execute([
-            'student_id' => $studentId,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
-            'reason' => $reason
-        ]);
-    }
+	public function create($studentId, DateTime $startDate, DateTime $endDate)
+	{
+		$stmt = $this->db->prepare("INSERT INTO unavailabilities (student_id, start_date, end_date) VALUES (:student_id, :start_date, :end_date)");
+		return $stmt->execute([
+			'student_id' => $studentId,
+			'start_date' => $startDate->format('Y-m-d'),
+			'end_date' => $endDate->format('Y-m-d')
+		]);
+	}
 
     /**
      * Update an existing unavailability
@@ -209,6 +208,18 @@ class Unavailability
         
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
+
+	/**
+	 * Delete unavailability for a specific student
+	 * 
+	 * @param student id
+	 * @return array an array of deleted unavailabilty by student id
+	 */
+	public function deleteByStudentId($studentId)
+{
+    $stmt = $this->db->prepare("DELETE FROM unavailabilities WHERE student_id = :student_id");
+    return $stmt->execute(['student_id' => $studentId]);
+}
 
     /**
      * Get the student associated with this unavailability

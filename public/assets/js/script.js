@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Cohort Filters - WIP - to debug
+// Cohort Filters - allows button cohorts to filter students in student.index
 
 document.addEventListener('DOMContentLoaded', function() {
     const cohortButtons = document.querySelectorAll('.cohort-filters .neumorphic-button');
@@ -32,5 +32,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    });
+});
+
+// FlatPicker
+
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr("#date-range", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length === 2) {
+                document.getElementById('start_date').value = flatpickr.formatDate(selectedDates[0], "Y-m-d");
+                document.getElementById('end_date').value = flatpickr.formatDate(selectedDates[1], "Y-m-d");
+            }
+        }
     });
 });
