@@ -19,19 +19,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for cohort in cohorts %}
-                    <tr>
-                        <td>{{ cohort.name }}</td>
-                        <td>{{ cohort.start_date|date('Y-m-d') }}</td>
-                        <td>{{ cohort.end_date|date('Y-m-d') }}</td>
-                        <td>
-                            <a href="{{ url_for('cohorts.edit', {'id': cohort.id}) }}" class="neumorphic-button-small">Edit</a>
-                            <form action="{{ url_for('cohorts.delete', {'id': cohort.id}) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="neumorphic-button-small neumorphic-button-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
+			{% for cohort in cohorts %}
+				<tr>
+					<td>{{ cohort.getName() }}</td>
+					<td>{{ cohort.getStartDate()|date('Y-m-d') }}</td>
+					<td>{{ cohort.getEndDate()|date('Y-m-d') }}</td>
+					<td>
+						<a href="{{ url_for('cohorts.edit', {'id': cohort.getId()}) }}" class="neumorphic-button-small">Edit</a>
+						<form action="{{ url_for('cohorts.delete', {'id': cohort.getId()}) }}" method="POST" style="display:inline;">
+							<button type="submit" class="neumorphic-button-small neumorphic-button-danger" onclick="return confirm('Are you sure?')">Delete</button>
+						</form>
+					</td>
+				</tr>
+			{% endfor %}
             </tbody>
         </table>
     </div>

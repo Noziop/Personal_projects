@@ -21,11 +21,22 @@ class CohortController
         $this->logger = $logger;
     }
 
-    public function index(Request $request, Response $response): Response
-    {
-        $cohorts = $this->cohortService->getAllCohorts();
-        return $this->view->render($response, 'cohorts/index.twig', ['cohorts' => $cohorts]);
-    }
+	public function index(Request $request, Response $response): Response
+	{
+		$cohorts = $this->cohortService->getAllCohorts();
+		$this->logger->info('Cohorts retrieved', [
+			'count' => count($cohorts),
+			'details' => array_map(function($cohort) {
+				return [
+					'id' => $cohort->getId(),
+					'name' => $cohort->getName(),
+					'startDate' => $cohort->getStartDate()->format('Y-m-d'),
+					'endDate' => $cohort->getEndDate()->format('Y-m-d')
+				];
+			}, $cohorts)
+		]);
+		return $this->view->render($response, 'cohorts/index.twig', ['cohorts' => $cohorts]);
+	}
 
     public function create(Request $request, Response $response): Response
     {

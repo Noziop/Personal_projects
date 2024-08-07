@@ -157,7 +157,7 @@ main {
 }
 
 .neumorphic-button:hover {
-    transform: translateY(-3px);
+    /*transform: translateY(-3px);*/
     box-shadow: 0 4px 15px var(--shadow-color);
 }
 

@@ -246,16 +246,17 @@ class Cohort
      * @param array $data The data to hydrate the object with
      * @return Cohort The hydrated cohort object
      */
-    private function hydrate($data)
-    {
-        $this->id = $data['id'];
-        $this->name = $data['name'];
-        $this->startDate = new DateTime($data['start_date']);
-        $this->endDate = new DateTime($data['end_date']);
-		$this->createdAt = $data['created_at'] ?? null;
-
-        return $this;
-    }
+	private function hydrate($data)
+	{
+		$cohort = new Cohort($this->db);
+		$cohort->id = $data['id'];
+		$cohort->name = $data['name'];
+		$cohort->startDate = new DateTime($data['start_date']);
+		$cohort->endDate = new DateTime($data['end_date']);
+		$cohort->createdAt = $data['created_at'] ?? null;
+		return $cohort;
+	}
+	
 
     // Getters
     public function getId() { return $this->id; }
