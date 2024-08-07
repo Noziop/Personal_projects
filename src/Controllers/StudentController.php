@@ -27,8 +27,7 @@ class StudentController
 	public function index(Request $request, Response $response): Response
 	{
 		$students = $this->studentService->getAllStudents();
-		$cohorts = $this->cohortService->getAllCohorts(); // Assurez-vous d'avoir injecté CohortService dans le constructeur
-		$this->logger->info('Fetched students', ['count' => count($students)]);
+		$cohorts = $this->cohortService->getAllCohorts();
 		return $this->view->render($response, 'students/index.twig', [
 			'students' => $students,
 			'cohorts' => $cohorts

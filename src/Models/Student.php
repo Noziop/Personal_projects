@@ -63,7 +63,7 @@ class Student
 				s.*, 
 				c.name as cohort_name, 
 				(SELECT COUNT(*) FROM unavailabilities u WHERE u.student_id = s.id) as unavailability,
-				(SELECT COUNT(*) FROM sod_schedules ss WHERE ss.student_id = s.id) as sod_count
+				(SELECT COUNT(*) FROM sod_schedule ss WHERE ss.student_id = s.id) as sod_count
 			FROM students s 
 			LEFT JOIN cohorts c ON s.cohort_id = c.id
 		";
