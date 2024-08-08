@@ -81,7 +81,7 @@ public function edit(Request $request, Response $response, array $args): Respons
         'student' => $student,
         'cohorts' => $cohorts
     ]);
-}git
+}
 
     public function delete(Request $request, Response $response, array $args): Response
     {
