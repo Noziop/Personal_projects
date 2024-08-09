@@ -34,54 +34,60 @@ class StudentController
 		]);
 	}
 
-    public function create(Request $request, Response $response): Response
-    {
-        $cohorts = $this->cohortService->getAllCohorts();
-        
-        if ($request->getMethod() === 'POST') {
-            $data = $request->getParsedBody();
-            $student = $this->studentService->createStudent($data);
-            if ($student) {
-                $this->logger->info('Student created', ['student_id' => $student['id']]);
-                return $response->withHeader('Location', '/students')->withStatus(302);
-            }
-        }
-        
-        return $this->view->render($response, 'students/create.twig', ['cohorts' => $cohorts]);
-    }
+	public function create(Request $request, Response $response): Response
+	{
+		$cohorts = $this->cohortService->getAllCohorts();
+		
+		if ($request->getMethod() === 'POST') {
+			$data = $request->getParsedBody();
+			$student = $this->studentService->createStudent(
+				$data['cohort_id'],
+				$data['last_name'],
+				$data['first_name'],
+				$data['email'],
+				$data['slack_id'] ?? null
+			);
+			if ($student) {
+				$this->logger->info('Student created', ['student_id' => $student['id']]);
+				return $response->withHeader('Location', '/students')->withStatus(302);
+			}
+		}
+		
+		return $this->view->render($response, 'students/create.twig', ['cohorts' => $cohorts]);
+	}
 
-public function edit(Request $request, Response $response, array $args): Response
-{
-    $studentId = $args['id'];
-    $student = $this->studentService->getStudentById($studentId);
-    $cohorts = $this->cohortService->getAllCohorts();
+	public function edit(Request $request, Response $response, array $args): Response
+	{
+		$studentId = $args['id'];
+		$student = $this->studentService->getStudentById($studentId);
+		$cohorts = $this->cohortService->getAllCohorts();
 
-    if (!$student) {
-        // Gérer le cas où l'étudiant n'est pas trouvé
-        return $response->withStatus(404);
-    }
+		if (!$student) {
+			// Gérer le cas où l'étudiant n'est pas trouvé
+			return $response->withStatus(404);
+		}
 
-    if ($request->getMethod() === 'POST') {
-        $data = $request->getParsedBody();
-        $updated = $this->studentService->updateStudent(
-            $studentId,
-            $data['first_name'],
-            $data['last_name'],
-            $data['email'],
-            $data['cohort_id']
-        );
+		if ($request->getMethod() === 'POST') {
+			$data = $request->getParsedBody();
+			$updated = $this->studentService->updateStudent(
+				$studentId,
+				$data['first_name'],
+				$data['last_name'],
+				$data['email'],
+				$data['cohort_id']
+			);
 
-        if ($updated) {
-            // Rediriger vers la liste des étudiants après la mise à jour
-            return $response->withHeader('Location', '/students')->withStatus(302);
-        }
-    }
+			if ($updated) {
+				// Rediriger vers la liste des étudiants après la mise à jour
+				return $response->withHeader('Location', '/students')->withStatus(302);
+			}
+		}
 
-    return $this->view->render($response, 'students/edit.twig', [
-        'student' => $student,
-        'cohorts' => $cohorts
-    ]);
-}
+		return $this->view->render($response, 'students/edit.twig', [
+			'student' => $student,
+			'cohorts' => $cohorts
+		]);
+	}
 
     public function delete(Request $request, Response $response, array $args): Response
     {

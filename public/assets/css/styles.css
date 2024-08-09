@@ -9,6 +9,7 @@
     --glass-border: rgba(255, 255, 255, 0.18);
     --neumorphic-flat: -5px -5px 10px #FFFFFF, 5px 5px 10px #BABECC;
     --neumorphic-pressed: inset -5px -5px 10px #FFFFFF, inset 5px 5px 10px #BABECC;
+	--neumorphic-btn-pressed: inset 8px 8px 9px #5e0d1a, inset -8px -8px 9px #ff3164;
     --transition: all 0.3s ease;
 }
 
@@ -123,7 +124,7 @@ main {
 
 .neumorphic-input,
 .neumorphic-textarea {
-    width: 100%;
+    width: 97%;
     padding: 12px 15px;
     border: none;
     border-radius: 10px;
@@ -218,11 +219,13 @@ main {
 }
 
 .neumorphic-button:hover {
-    box-shadow: var(--neumorphic-pressed);
+	transform: scale(1.1);
+    box-shadow: var(--neumorphic-btn-flat);
 }
 
 .neumorphic-button:active {
-    box-shadow: var(--neumorphic-pressed);
+	transform: scale(1.1);
+    box-shadow: var(--neumorphic-btn-pressed);
 }
 
 .neumorphic-card-title {
