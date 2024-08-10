@@ -160,7 +160,7 @@ main {
 
 .neumorphic-button:hover {
     /*transform: translateY(-3px);*/
-    box-shadow: 0 4px 15px var(--neumorphic-btn-hover);
+    box-shadow: 0 4px 15px var(--neumorphic-btn-pressed);
 }
 
 .neumorphic-button:active {
@@ -221,7 +221,7 @@ main {
 
 .neumorphic-button:hover {
 	transform: scale(1.1);
-    box-shadow: var(--neumorphic-btn-hover);
+    box-shadow: var(--neumorphic-btn-pressed);
 }
 
 .neumorphic-button:active {
