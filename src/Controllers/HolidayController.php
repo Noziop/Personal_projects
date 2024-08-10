@@ -7,18 +7,21 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use App\Services\HolidayService;
 use Psr\Log\LoggerInterface;
+use Slim\Flash\Messages;
 
 class HolidayController
 {
     private $view;
     private $holidayService;
     private $logger;
+    private $flash;
 
-    public function __construct(Twig $view, HolidayService $holidayService, LoggerInterface $logger)
+    public function __construct(Twig $view, HolidayService $holidayService, LoggerInterface $logger, Messages $flash)
     {
         $this->view = $view;
         $this->holidayService = $holidayService;
         $this->logger = $logger;
+        $this->flash = $flash;
     }
 
     public function index(Request $request, Response $response): Response
@@ -33,11 +36,11 @@ class HolidayController
         if ($result) {
             $this->logger->info('Holidays synchronized successfully');
             // Add a flash message for success
-            // $this->flash->addMessage('success', 'Holidays synchronized successfully');
+            $this->flash->addMessage('success', 'Holidays synchronized successfully');
         } else {
             $this->logger->error('Failed to synchronize holidays');
             // Add a flash message for error
-            // $this->flash->addMessage('error', 'Failed to synchronize holidays');
+            $this->flash->addMessage('error', 'Failed to synchronize holidays');
         }
         return $response->withHeader('Location', '/holidays')->withStatus(302);
     }

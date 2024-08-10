@@ -11,6 +11,8 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use Psr\Log\LoggerInterface;
 use App\Handlers\ErrorHandler;
+use Slim\Flash\MessagesMiddleware;
+
 
 return function (App $app) {
     $container = $app->getContainer();
@@ -18,6 +20,9 @@ return function (App $app) {
 
     $app->addBodyParsingMiddleware();
     $app->addRoutingMiddleware();
+
+	// Add Flash Messages Middleware
+	$app->add(MessagesMiddleware::class);
 
     // Add Error Middleware
     $errorMiddleware = $app->addErrorMiddleware(

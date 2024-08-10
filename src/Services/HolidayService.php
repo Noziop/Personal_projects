@@ -22,14 +22,15 @@ class HolidayService
         $this->httpClient = $httpClient;
     }
 
-    public function createHoliday($date, $description)
+    public function createHoliday($date, $description, $cohortId = null)
     {
         $this->logger->info('Creating new holiday', [
             'date' => $date,
-            'description' => $description
+            'description' => $description,
+            'cohort_id' => $cohortId
         ]);
 
-        return $this->holidayModel->create($date, $description);
+        return $this->holidayModel->create($date, $description, $cohortId);
     }
 
     public function getHolidayById($id)
@@ -38,15 +39,16 @@ class HolidayService
         return $this->holidayModel->findById($id);
     }
 
-    public function updateHoliday($id, $date, $description)
+    public function updateHoliday($id, $date, $description, $cohortId = null)
     {
         $this->logger->info('Updating holiday', [
             'id' => $id,
             'date' => $date,
-            'description' => $description
+            'description' => $description,
+            'cohort_id' => $cohortId
         ]);
 
-        return $this->holidayModel->update($id, $date, $description);
+        return $this->holidayModel->update($id, $date, $description, $cohortId);
     }
 
     public function deleteHoliday($id)
@@ -58,7 +60,7 @@ class HolidayService
     public function getAllHolidays()
     {
         $this->logger->info('Fetching all holidays');
-        return $this->holidayModel->findAll();
+        return $this->holidayModel->findAllWithCohort();
     }
 
     public function getHolidaysByDateRange($startDate, $endDate)
@@ -77,30 +79,34 @@ class HolidayService
     }
 
     public function syncHolidaysWithGovernmentAPI($year = null)
-    {
-        $year = $year ?? date('Y');
-        $this->logger->info('Syncing holidays with government API', ['year' => $year]);
+	{
+		$year = $year ?? date('Y');
+		$this->logger->info('Syncing holidays with government API', ['year' => $year]);
 
-        try {
-            $response = $this->httpClient->request('GET', $this->apiUrl . $year);
-            $holidays = json_decode($response->getBody(), true);
+		try {
+			$response = $this->httpClient->request('GET', $this->apiUrl . $year . '.json');
+			$holidays = json_decode($response->getBody(), true);
 
-            foreach ($holidays as $date => $description) {
-                $existingHoliday = $this->holidayModel->findByDate($date);
-                if ($existingHoliday) {
-                    $this->updateHoliday($existingHoliday['id'], $date, $description);
-                } else {
-                    $this->createHoliday($date, $description);
-                }
-            }
+			foreach ($holidays as $date => $description) {
+				if (new DateTime($date) >= new DateTime()) {
+					$existingHoliday = $this->holidayModel->findByDate($date);
+					if ($existingHoliday) {
+						$this->updateHoliday($existingHoliday['id'], $date, $description);
+					} else {
+						$this->createHoliday($date, $description);
+					}
+				}
+			}
 
-            $this->logger->info('Holiday sync completed successfully');
-            return true;
-        } catch (GuzzleException $e) {
-            $this->logger->error('Error syncing holidays with API', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
+			$this->logger->info('Holiday sync completed successfully');
+			return true;
+		} catch (GuzzleException $e) {
+			$this->logger->error('Error syncing holidays with API', ['error' => $e->getMessage()]);
+			return false;
+		}
+	}
+
+
 
     public function syncHolidaysForYearRange($startYear, $endYear)
     {
@@ -114,24 +120,26 @@ class HolidayService
         }
     }
 
-    public function cleanupOldHolidays()
-    {
-        $today = new DateTime();
-        $this->holidayModel->deleteOlderThan($today);
-    }
+	public function cleanupOldHolidays()
+	{
+		$today = new DateTime();
+		$this->logger->info('Deleting holidays older than today', ['date' => $today->format('Y-m-d')]);
+		$this->holidayModel->deleteOlderThan($today);
+	}
+	
 
-    public function syncHolidays()
-    {
-        $this->logger->info('Starting holiday synchronization');
-        
-        try {
-            $this->cleanupOldHolidays();
-            $currentYear = (int)date('Y');
-            $this->syncHolidaysForYearRange($currentYear, $currentYear + 2);
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->error('Error during holiday synchronization', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
+	public function syncHolidays()
+	{
+		$this->logger->info('Starting holiday synchronization');
+		
+		try {
+			$this->cleanupOldHolidays();
+			$currentYear = (int)date('Y');
+			$this->syncHolidaysForYearRange($currentYear, $currentYear + 2);
+			return true;
+		} catch (\Exception $e) {
+			$this->logger->error('Error during holiday synchronization', ['error' => $e->getMessage()]);
+			return false;
+		}
+	}
 }

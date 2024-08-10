@@ -49,6 +49,12 @@ return function (App $app) {
         $group->delete('/{id}', \App\Controllers\VacationController::class . ':deleteVacation')->setName('vacations.delete');
     });
 
+    $app->group('/holidays', function (Group $group) {
+        $group->get('', \App\Controllers\HolidayController::class . ':index')->setName('holidays.index');
+        $group->get('/sync', \App\Controllers\HolidayController::class . ':sync')->setName('holidays.sync');
+        $group->post('/{id}/delete', \App\Controllers\HolidayController::class . ':delete')->setName('holidays.delete');
+    });
+
     $app->get('/tirage', \App\Controllers\DrawingController::class . ':index')->setName('tirage.index');
     $app->get('/configuration', \App\Controllers\ConfigurationController::class . ':index')->setName('configuration.index');
     $app->get('/tableau-de-bord', \App\Controllers\DashboardController::class . ':index')->setName('tableau_de_bord');

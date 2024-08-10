@@ -2177,7 +2177,7 @@
         "monolog/monolog": 20,
         "slim/twig-view": 20,
         "vlucas/phpdotenv": 20,
-        "slim/flash": 20
+        "guzzlehttp/guzzle": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

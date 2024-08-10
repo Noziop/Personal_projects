@@ -8,6 +8,8 @@ use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
 use Twig\Loader\FilesystemLoader;
 use DI\ContainerBuilder;
+use Slim\Flash\Messages;
+
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -54,6 +56,12 @@ return function (ContainerBuilder $containerBuilder) {
             }
             return $twig;
         },
+
+		// Flash messages
+		Messages::class => function (ContainerInterface $c) {
+            return new Messages();
+        },
+
 
         // Services
         App\Services\CohortService::class => function (ContainerInterface $c) {

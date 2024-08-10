@@ -10,6 +10,7 @@
     --neumorphic-flat: -5px -5px 10px #FFFFFF, 5px 5px 10px #BABECC;
     --neumorphic-pressed: inset -5px -5px 10px #FFFFFF, inset 5px 5px 10px #BABECC;
 	--neumorphic-btn-pressed: inset 8px 8px 9px #5e0d1a, inset -8px -8px 9px #ff3164;
+	--neumorphic-btn-hover:  45px 45px 90px #5e0d1a, -45px -45px 90px #ff3164;
     --transition: all 0.3s ease;
 }
 
@@ -159,7 +160,7 @@ main {
 
 .neumorphic-button:hover {
     /*transform: translateY(-3px);*/
-    box-shadow: 0 4px 15px var(--shadow-color);
+    box-shadow: 0 4px 15px var(--neumorphic-btn-hover);
 }
 
 .neumorphic-button:active {
@@ -220,7 +221,7 @@ main {
 
 .neumorphic-button:hover {
 	transform: scale(1.1);
-    box-shadow: var(--neumorphic-btn-flat);
+    box-shadow: var(--neumorphic-btn-hover);
 }
 
 .neumorphic-button:active {

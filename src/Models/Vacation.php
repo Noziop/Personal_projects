@@ -55,18 +55,25 @@ class Vacation
      *
      * @return array An array of Vacation objects
      */
-    public function findAll()
-    {
-        $stmt = $this->db->query("SELECT * FROM vacations ORDER BY start_date");
-        $vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $vacations = [];
-        foreach ($vacationsData as $vacationData) {
-            $vacations[] = $this->hydrate($vacationData);
-        }
-
-        return $vacations;
-    }
+	public function findAll()
+	{
+		$stmt = $this->db->query("
+			SELECT v.*, c.name as cohort_name 
+			FROM vacations v
+			LEFT JOIN cohorts c ON v.cohort_id = c.id
+			ORDER BY v.start_date
+		");
+		$vacationsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+		$vacations = [];
+		foreach ($vacationsData as $vacationData) {
+			$vacations[] = $this->hydrate($vacationData);
+		}
+	
+		return $vacations;
+	}
+	
+	
 
     /**
      * Get all vacations for a specific cohort
@@ -217,17 +224,20 @@ class Vacation
      * @param array $data The data to hydrate the object with
      * @return Vacation The hydrated vacation object
      */
-    private function hydrate($data)
-    {
-        $this->id = $data['id'];
-        $this->cohortId = $data['cohort_id'];
-        $this->name = $data['name'];
-        $this->startDate = new DateTime($data['start_date']);
-        $this->endDate = new DateTime($data['end_date']);
-        $this->createdAt = new DateTime($data['created_at']);
-
-        return $this;
-    }
+	private function hydrate($data)
+	{
+		$this->id = $data['id'];
+		$this->cohortId = $data['cohort_id'];
+		$this->cohortName = $data['cohort_name'];
+		$this->startDate = new DateTime($data['start_date']);
+		$this->endDate = new DateTime($data['end_date']);
+		$this->createdAt = isset($data['created_at']) ? new DateTime($data['created_at']) : null;
+	
+		return $this;
+	}
+	
+	
+	
 
     // Getters
     public function getId() { return $this->id; }

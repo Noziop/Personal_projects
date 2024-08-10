@@ -21,9 +21,9 @@
             <tbody>
                 {% for vacation in vacations %}
                     <tr>
-                        <td>{{ vacation.cohort_name }}</td>
-                        <td>{{ vacation.start_date|date('Y-m-d') }}</td>
-                        <td>{{ vacation.end_date|date('Y-m-d') }}</td>
+                        <td>{{ vacation.cohortName }}</td>
+                        <td>{{ vacation.startDate|date('Y-m-d') }}</td>
+                        <td>{{ vacation.endDate|date('Y-m-d') }}</td>
                         <td>
                             <a href="{{ url_for('vacations.edit', {'id': vacation.id}) }}" class="neumorphic-button-small">Edit</a>
                             <form action="{{ url_for('vacations.delete', {'id': vacation.id}) }}" method="POST" style="display:inline;">
