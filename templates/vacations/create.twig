@@ -1,0 +1,30 @@
+{% extends "layout.twig" %}
+
+{% block title %}Create Vacation - {{ parent() }}{% endblock %}
+
+{% block header_title %}Create Vacation{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Create New Vacation</h2>
+    <form action="{{ url_for('vacations.create') }}" method="POST" class="neumorphic-form">
+        <div class="form-group">
+            <label for="cohort_id">Cohort:</label>
+            <select id="cohort_id" name="cohort_id" required class="neumorphic-input">
+                {% for cohort in cohorts %}
+                    <option value="{{ cohort.id }}">{{ cohort.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" required class="neumorphic-input">
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" required class="neumorphic-input">
+        </div>
+        <button type="submit" class="neumorphic-button">Create Vacation</button>
+    </form>
+</div>
+{% endblock %}

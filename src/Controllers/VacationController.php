@@ -27,6 +27,7 @@ class VacationController
     public function index(Request $request, Response $response): Response
     {
         $vacations = $this->vacationService->getAllVacations();
+        $this->logger->info('Vacations retrieved', ['count' => count($vacations)]);
         return $this->view->render($response, 'vacations/index.twig', ['vacations' => $vacations]);
     }
 
@@ -36,12 +37,13 @@ class VacationController
 
         if ($request->getMethod() === 'POST') {
             $data = $request->getParsedBody();
-            $vacation = $this->vacationService->createVacation($data['cohort_id'], $data['start_date'], $data['end_date']);
-            if ($vacation) {
-                $this->logger->info('Vacation created', ['vacation_id' => $vacation['id']]);
+            $created = $this->vacationService->createVacation($data['cohort_id'], $data['start_date'], $data['end_date']);
+            if ($created) {
+                $this->logger->info('Vacation created');
                 return $response->withHeader('Location', '/vacations')->withStatus(302);
             }
         }
+
         return $this->view->render($response, 'vacations/create.twig', ['cohorts' => $cohorts]);
     }
 
@@ -51,7 +53,7 @@ class VacationController
         $cohorts = $this->cohortService->getAllCohorts();
 
         if (!$vacation) {
-            $this->logger->warning('Vacation not found', ['vacation_id' => $args['id']]);
+            $this->logger->warning('Vacation not found', ['id' => $args['id']]);
             return $response->withStatus(404);
         }
 
@@ -59,7 +61,7 @@ class VacationController
             $data = $request->getParsedBody();
             $updated = $this->vacationService->updateVacation($args['id'], $data['cohort_id'], $data['start_date'], $data['end_date']);
             if ($updated) {
-                $this->logger->info('Vacation updated', ['vacation_id' => $args['id']]);
+                $this->logger->info('Vacation updated', ['id' => $args['id']]);
                 return $response->withHeader('Location', '/vacations')->withStatus(302);
             }
         }
@@ -71,7 +73,7 @@ class VacationController
     {
         $deleted = $this->vacationService->deleteVacation($args['id']);
         if ($deleted) {
-            $this->logger->info('Vacation deleted', ['vacation_id' => $args['id']]);
+            $this->logger->info('Vacation deleted', ['id' => $args['id']]);
             return $response->withHeader('Location', '/vacations')->withStatus(302);
         }
         return $response->withStatus(404);

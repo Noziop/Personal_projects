@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Vacation;
 use Psr\Log\LoggerInterface;
-use DateTime;
 
 class VacationService
 {
@@ -17,87 +16,42 @@ class VacationService
         $this->logger = $logger;
     }
 
-    public function createVacation($cohortId, $startDate, $endDate)
-    {
-        $this->logger->info('Creating new vacation period', [
-            'cohort_id' => $cohortId,
-            'start_date' => $startDate,
-            'end_date' => $endDate
-        ]);
-
-        return $this->vacationModel->create($cohortId, $startDate, $endDate);
-    }
-
-    public function getVacationById($id)
-    {
-        $this->logger->info('Fetching vacation period by ID', ['id' => $id]);
-        return $this->vacationModel->findById($id);
-    }
-
-    public function updateVacation($id, $cohortId, $startDate, $endDate)
-    {
-        $this->logger->info('Updating vacation period', [
-            'id' => $id,
-            'cohort_id' => $cohortId,
-            'start_date' => $startDate,
-            'end_date' => $endDate
-        ]);
-
-        return $this->vacationModel->update($id, $cohortId, $startDate, $endDate);
-    }
-
-    public function deleteVacation($id)
-    {
-        $this->logger->info('Deleting vacation period', ['id' => $id]);
-        return $this->vacationModel->delete($id);
-    }
-
     public function getAllVacations()
     {
         $this->logger->info('Fetching all vacation periods');
         return $this->vacationModel->findAll();
     }
 
-    public function getVacationsByCohort($cohortId)
+    public function getVacationById($id)
     {
-        $this->logger->info('Fetching vacation periods by cohort', ['cohort_id' => $cohortId]);
-        return $this->vacationModel->findByCohort($cohortId);
+        $this->logger->info('Fetching vacation by ID', ['id' => $id]);
+        return $this->vacationModel->findById($id);
     }
 
-    public function getVacationsByDateRange($startDate, $endDate)
+    public function createVacation($cohortId, $startDate, $endDate)
     {
-        $this->logger->info('Fetching vacation periods by date range', [
+        $this->logger->info('Creating new vacation', [
+            'cohort_id' => $cohortId,
             'start_date' => $startDate,
             'end_date' => $endDate
         ]);
-        return $this->vacationModel->findByDateRange($startDate, $endDate);
+        return $this->vacationModel->create($cohortId, $startDate, $endDate);
     }
 
-    public function isDateInVacation($cohortId, $date)
+    public function updateVacation($id, $cohortId, $startDate, $endDate)
     {
-        $this->logger->info('Checking if date is in vacation period', [
+        $this->logger->info('Updating vacation', [
+            'id' => $id,
             'cohort_id' => $cohortId,
-            'date' => $date
+            'start_date' => $startDate,
+            'end_date' => $endDate
         ]);
-        return $this->vacationModel->isDateInVacation($cohortId, $date);
+        return $this->vacationModel->update($id, $cohortId, $startDate, $endDate);
     }
 
-    public function getNextVacation($cohortId, $fromDate)
+    public function deleteVacation($id)
     {
-        $this->logger->info('Fetching next vacation period', [
-            'cohort_id' => $cohortId,
-            'from_date' => $fromDate
-        ]);
-        return $this->vacationModel->findNextVacation($cohortId, $fromDate);
-    }
-
-    // Nouvelle méthode proposée
-    public function getVacationsInRange(DateTime $startDate, DateTime $endDate)
-    {
-        $this->logger->info('Fetching vacations in range', [
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
-        return $this->vacationModel->findInRange($startDate, $endDate);
+        $this->logger->info('Deleting vacation', ['id' => $id]);
+        return $this->vacationModel->delete($id);
     }
 }

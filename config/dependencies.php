@@ -96,7 +96,12 @@ return function (ContainerBuilder $containerBuilder) {
         Report::class => fn(ContainerInterface $c) => new Report($c->get(PDO::class)),
         SODSchedule::class => fn(ContainerInterface $c) => new SODSchedule($c->get(PDO::class)),
         Unavailability::class => fn(ContainerInterface $c) => new Unavailability($c->get(PDO::class)),
-        Vacation::class => fn(ContainerInterface $c) => new Vacation($c->get(PDO::class)),
+		VacationService::class => function (ContainerInterface $c) {
+			return new VacationService(
+				$c->get(Vacation::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 
         // Services
         UserService::class => function (ContainerInterface $c) {
