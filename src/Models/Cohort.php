@@ -17,8 +17,8 @@ class Cohort
     private $startDate;
     private $endDate;
     private $createdAt;
-
     private $db;
+	private $drawingDays;
 
     /**
      * Cohort constructor.
@@ -146,15 +146,21 @@ class Cohort
      * @param DateTime $endDate The end date
      * @return bool True if the cohort was created successfully, false otherwise
      */
-    public function create($name, DateTime $startDate, DateTime $endDate)
-    {
-        $stmt = $this->db->prepare("INSERT INTO cohorts (name, start_date, end_date) VALUES (:name, :start_date, :end_date)");
-        return $stmt->execute([
-            'name' => $name,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d')
-        ]);
-    }
+	public function create($name, $startDate, $endDate)
+	{
+		$stmt = $this->db->prepare("INSERT INTO cohorts (name, start_date, end_date) VALUES (:name, :start_date, :end_date)");
+		$result = $stmt->execute([
+			'name' => $name,
+			'start_date' => $startDate,
+			'end_date' => $endDate
+		]);
+	
+		if ($result) {
+			return $this->db->lastInsertId();
+		}
+	
+		return false;
+	}
 
     /**
      * Update an existing cohort
@@ -239,6 +245,32 @@ class Cohort
             'student_id' => $studentId
         ]);
     }
+
+    /**
+     * Get the drawing days for this cohort.
+     *
+     * @return array
+     */
+    public function getDrawingDays(): array
+    {
+        return $this->drawingDays ?? [];
+    }
+
+	/**
+     * Set the drawing days for this cohort.
+     *
+     * @param array $drawingDays
+     * @return void
+     */
+    public function setDrawingDays(array $drawingDays): void
+    {
+        $this->drawingDays = $drawingDays;
+    }
+
+	public function isDrawingDay($day)
+	{
+		return in_array($day, array_column($this->drawingDays, 'day'));
+	}
 
     /**
      * Hydrate the cohort object with data

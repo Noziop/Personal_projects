@@ -9,6 +9,8 @@
 
 namespace App\Models;
 
+use PDO;
+
 class DrawingDay
 {
     /**
@@ -22,112 +24,121 @@ class DrawingDay
     private $cohortId;
 
     /**
-     * @var string The day of the week (e.g., 'Monday', 'Tuesday', etc.)
+     * @var string The day of the week (e.g., 'monday', 'tuesday', etc.)
      */
-    private $dayOfWeek;
+    private $day;
 
     /**
-     * @var bool Whether drawings are enabled for this day
+     * @var PDO The database connection
      */
-    private $isEnabled;
+    private $db;
 
     /**
      * DrawingDay constructor.
      *
-     * @param int $cohortId The ID of the associated cohort
-     * @param string $dayOfWeek The day of the week
-     * @param bool $isEnabled Whether drawings are enabled for this day
-     * @param int|null $id The unique identifier for the drawing day (optional)
+     * @param PDO $db The database connection
      */
-    public function __construct(int $cohortId, string $dayOfWeek, bool $isEnabled, ?int $id = null)
+    public function __construct(PDO $db)
     {
-        $this->cohortId = $cohortId;
-        $this->dayOfWeek = $dayOfWeek;
-        $this->isEnabled = $isEnabled;
-        $this->id = $id;
+        $this->db = $db;
     }
 
     /**
-     * Get the drawing day's ID.
+     * Find all drawing days for a specific cohort.
      *
-     * @return int|null
+     * @param int $cohortId The ID of the cohort
+     * @return array An array of DrawingDay objects
      */
+	public function findByCohort($cohortId)
+	{
+		$stmt = $this->db->prepare("SELECT * FROM drawing_days WHERE cohort_id = :cohort_id");
+		$stmt->execute(['cohort_id' => $cohortId]);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+    /**
+     * Create a new drawing day.
+     *
+     * @param int $cohortId The ID of the cohort
+     * @param string $day The day of the week
+     * @return bool True if the creation was successful, false otherwise
+     */
+    public function create(int $cohortId, string $day): bool
+    {
+        $stmt = $this->db->prepare("INSERT INTO drawing_days (cohort_id, day) VALUES (:cohort_id, :day)");
+        return $stmt->execute([
+            'cohort_id' => $cohortId,
+            'day' => $day
+        ]);
+    }
+
+    /**
+     * Update an existing drawing day.
+     *
+     * @param int $id The ID of the drawing day to update
+     * @param string $day The new day of the week
+     * @return bool True if the update was successful, false otherwise
+     */
+    public function update(int $id, string $day): bool
+    {
+        $stmt = $this->db->prepare("UPDATE drawing_days SET day = :day WHERE id = :id");
+        return $stmt->execute([
+            'id' => $id,
+            'day' => $day
+        ]);
+    }
+
+    /**
+     * Delete a drawing day.
+     *
+     * @param int $id The ID of the drawing day to delete
+     * @return bool True if the deletion was successful, false otherwise
+     */
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM drawing_days WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+	public function deleteByCohort(int $cohortId): bool
+{
+    $stmt = $this->db->prepare("DELETE FROM drawing_days WHERE cohort_id = :cohort_id");
+    return $stmt->execute(['cohort_id' => $cohortId]);
+}
+
+    /**
+     * Hydrate a DrawingDay object from an array of data.
+     *
+     * @param array $data The data to hydrate the object with
+     * @return DrawingDay
+     */
+    private function hydrate(array $data): DrawingDay
+    {
+        $this->id = $data['id'];
+        $this->cohortId = $data['cohort_id'];
+        $this->day = $data['day'];
+        return $this;
+    }
+
+    // Getters and setters
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Set the drawing day's ID.
-     *
-     * @param int $id
-     * @return void
-     */
-    public function setId(int $id): void
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * Get the cohort ID.
-     *
-     * @return int
-     */
     public function getCohortId(): int
     {
         return $this->cohortId;
     }
 
-    /**
-     * Set the cohort ID.
-     *
-     * @param int $cohortId
-     * @return void
-     */
-    public function setCohortId(int $cohortId): void
+    public function getDay(): string
     {
-        $this->cohortId = $cohortId;
+        return $this->day;
     }
 
-    /**
-     * Get the day of the week.
-     *
-     * @return string
-     */
-    public function getDayOfWeek(): string
+    public function setDay(string $day): void
     {
-        return $this->dayOfWeek;
-    }
-
-    /**
-     * Set the day of the week.
-     *
-     * @param string $dayOfWeek
-     * @return void
-     */
-    public function setDayOfWeek(string $dayOfWeek): void
-    {
-        $this->dayOfWeek = $dayOfWeek;
-    }
-
-    /**
-     * Check if drawings are enabled for this day.
-     *
-     * @return bool
-     */
-    public function isEnabled(): bool
-    {
-        return $this->isEnabled;
-    }
-
-    /**
-     * Set whether drawings are enabled for this day.
-     *
-     * @param bool $isEnabled
-     * @return void
-     */
-    public function setIsEnabled(bool $isEnabled): void
-    {
-        $this->isEnabled = $isEnabled;
+        $this->day = $day;
     }
 }

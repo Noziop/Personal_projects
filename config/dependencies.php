@@ -25,6 +25,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Cohort;
 use App\Models\Drawing;
+use App\Models\DrawingDay;
 use App\Models\Holiday;
 use App\Models\Report;
 use App\Models\SODSchedule;
@@ -92,6 +93,7 @@ return function (ContainerBuilder $containerBuilder) {
         Student::class => fn(ContainerInterface $c) => new Student($c->get(PDO::class)),
         Cohort::class => fn(ContainerInterface $c) => new Cohort($c->get(PDO::class)),
         Drawing::class => fn(ContainerInterface $c) => new Drawing($c->get(PDO::class)),
+		DrawingDay::class => fn(ContainerInterface $c) => new DrawingDay($c->get(PDO::class)),
         Holiday::class => fn(ContainerInterface $c) => new Holiday($c->get(PDO::class)),
         Report::class => fn(ContainerInterface $c) => new Report($c->get(PDO::class)),
         SODSchedule::class => fn(ContainerInterface $c) => new SODSchedule($c->get(PDO::class)),
@@ -110,9 +112,13 @@ return function (ContainerBuilder $containerBuilder) {
         StudentService::class => function (ContainerInterface $c) {
             return new StudentService($c->get(Student::class), $c->get(Unavailability::class), $c->get(LoggerInterface::class));
         },
-        CohortService::class => function (ContainerInterface $c) {
-            return new CohortService($c->get(Cohort::class), $c->get(LoggerInterface::class));
-        },
+		CohortService::class => function (ContainerInterface $c) {
+			return new CohortService(
+				$c->get(Cohort::class),
+				$c->get(DrawingDay::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
         DrawingService::class => function (ContainerInterface $c) {
             return new DrawingService($c->get(Drawing::class), $c->get(LoggerInterface::class));
         },

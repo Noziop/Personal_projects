@@ -20,6 +20,18 @@
             <label for="end_date">End Date</label>
             <input type="date" id="end_date" name="end_date" required class="neumorphic-input">
         </div>
+        <div class="neumorphic-form-group">
+            <label>Drawing Days</label>
+            <div class="drawing-days-container">
+                {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] %}
+                    <label class="drawing-day-checkbox">
+                        <input type="checkbox" name="drawing_days[]" value="{{ day }}">
+                        <span class="checkmark"></span>
+                        {{ day|capitalize }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
         <button type="submit" class="neumorphic-button">Create</button>
     </form>
 </div>

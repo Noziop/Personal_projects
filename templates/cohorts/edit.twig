@@ -7,20 +7,33 @@
 {% block content %}
 <div class="neumorphic-container">
     <h2 class="neumorphic-title-red">Edit Cohort</h2>
-    <form action="{{ url_for('cohorts.edit', {'id': cohort.id}) }}" method="POST" class="neumorphic-form">
-        <div class="neumorphic-form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" value="{{ cohort.name }}" required class="neumorphic-input">
-        </div>
-        <div class="neumorphic-form-group">
-            <label for="start_date">Start Date</label>
-            <input type="date" id="start_date" name="start_date" value="{{ cohort.start_date|date('Y-m-d') }}" required class="neumorphic-input">
-        </div>
-        <div class="neumorphic-form-group">
-            <label for="end_date">End Date</label>
-            <input type="date" id="end_date" name="end_date" value="{{ cohort.end_date|date('Y-m-d') }}" required class="neumorphic-input">
-        </div>
-        <button type="submit" class="neumorphic-button">Update</button>
-    </form>
+	<form action="{{ url_for('cohorts.edit', {'id': cohort.getId()}) }}" method="POST" class="neumorphic-form">
+		<div class="neumorphic-form-group">
+			<label for="name">Name</label>
+			<input type="text" id="name" name="name" value="{{ cohort.getName() }}" required class="neumorphic-input">
+		</div>
+		<div class="neumorphic-form-group">
+			<label for="start_date">Start Date</label>
+			<input type="date" id="start_date" name="start_date" value="{{ cohort.getStartDate()|date('Y-m-d') }}" required class="neumorphic-input">
+		</div>
+		<div class="neumorphic-form-group">
+			<label for="end_date">End Date</label>
+			<input type="date" id="end_date" name="end_date" value="{{ cohort.getEndDate()|date('Y-m-d') }}" required class="neumorphic-input">
+		</div>
+		<div class="neumorphic-form-group">
+			<label>Drawing Days</label>
+			<div class="drawing-days-container">
+				{% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] %}
+					<label class="drawing-day-checkbox">
+						<input type="checkbox" name="drawing_days[]" value="{{ day }}"
+							{% if cohort.isDrawingDay(day) %}checked{% endif %}>
+						<span class="checkmark"></span>
+						{{ day|capitalize }}
+					</label>
+				{% endfor %}
+			</div>
+		</div>
+		<button type="submit" class="neumorphic-button">Update</button>
+	</form>
 </div>
 {% endblock %}
