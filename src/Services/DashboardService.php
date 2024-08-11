@@ -93,41 +93,31 @@ class DashboardService
 			return null;
 		}
 	
-		$cohort = $this->cohortService->getCohortById($student->getCohortId());
-		$nextSOD = $this->sodScheduleService->getNextSODForStudent($student->getId());
-		$lastReport = $this->reportService->getLastReportForStudent($student->getId());
-		$unavailabilities = $this->studentService->getUnavailabilityForStudent($student->getId());
-		$upcomingVacations = $this->vacationService->getUpcomingVacationsForCohort($student->getCohortId());
+		$cohort = $this->cohortService->getCohortById($student['cohort_id']);
+		$nextSOD = $this->sodScheduleService->getNextSODForStudent($student['id']);
+		$lastReport = $this->reportService->getLastReportForStudent($student['id']);
+		$unavailabilities = $this->studentService->getUnavailabilityForStudent($student['id']);
+		$upcomingVacations = $this->vacationService->getUpcomingVacationsForCohort($student['cohort_id']);
 	
 		return [
 			'student' => [
-				'id' => $student->getId(),
-				'name' => $student->getFirstName() . ' ' . $student->getLastName(),
-				'email' => $student->getEmail(),
-				'slack_id' => $student->getSlackId(),
-				'cohort' => $cohort ? $cohort->getName() : 'N/A',
+				'id' => $student['id'],
+				'name' => $student['first_name'] . ' ' . $student['last_name'],
+				'email' => $student['email'],
+				'slack_id' => $student['slack_id'] ?? null,
+				'cohort' => $cohort ? $cohort['name'] : 'N/A',
 			],
 			'nextSOD' => $nextSOD ? [
-				'date' => $nextSOD->getDate(),
-				'isPresenter' => $nextSOD->getStudentId() === $student->getId(),
+				'date' => $nextSOD['date'],
+				'isPresenter' => $nextSOD['student_id'] === $student['id'],
 			] : null,
 			'lastReport' => $lastReport ? [
-				'type' => $lastReport->getType(),
-				'date' => $lastReport->getCreatedAt(),
-				'content' => substr($lastReport->getContent(), 0, 100) . '...',
+				'type' => $lastReport['type'],
+				'date' => $lastReport['created_at'],
+				'content' => substr($lastReport['content'], 0, 100) . '...',
 			] : null,
-			'unavailabilities' => array_map(function($unavailability) {
-				return [
-					'start_date' => $unavailability->getStartDate(),
-					'end_date' => $unavailability->getEndDate(),
-				];
-			}, $unavailabilities),
-			'upcomingVacations' => array_map(function($vacation) {
-				return [
-					'start_date' => $vacation->getStartDate(),
-					'end_date' => $vacation->getEndDate(),
-				];
-			}, $upcomingVacations),
+			'unavailabilities' => $unavailabilities,
+			'upcomingVacations' => $upcomingVacations,
 		];
 	}
 

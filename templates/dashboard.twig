@@ -9,6 +9,7 @@
     <h2 class="neumorphic-title-red">Welcome, {{ user.username }}</h2>
     <p>This is your dashboard. Here you can manage various aspects of the SOD system.</p>
 
+    {% if user.role in ['directrice', 'swe', 'ssm'] %}
     <div class="dashboard-grid">
         <div class="neumorphic-card">
             <h3 class="neumorphic-card-title">Cohort Management</h3>
@@ -34,5 +35,55 @@
             <a href="{{ url_for('vacations.index') }}" class="neumorphic-button">Manage Vacations</a>
         </div>
     </div>
+    {% else %}
+    <div class="dashboard-grid">
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Your Next SOD</h3>
+            {% if nextSOD %}
+                <p>Date: {{ nextSOD.date }}</p>
+                <p>You are {% if nextSOD.isPresenter %}presenting{% else %}not presenting{% endif %}</p>
+            {% else %}
+                <p>No upcoming SOD scheduled.</p>
+            {% endif %}
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Your Last Report</h3>
+            {% if lastReport %}
+                <p>Type: {{ lastReport.type }}</p>
+                <p>Date: {{ lastReport.date }}</p>
+                <p>Content: {{ lastReport.content }}</p>
+            {% else %}
+                <p>No recent reports.</p>
+            {% endif %}
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Your Unavailabilities</h3>
+            {% if unavailabilities %}
+                <ul>
+                {% for unavailability in unavailabilities %}
+                    <li>{{ unavailability.start_date }} to {{ unavailability.end_date }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No unavailabilities set.</p>
+            {% endif %}
+        </div>
+
+        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Upcoming Vacations</h3>
+            {% if upcomingVacations %}
+                <ul>
+                {% for vacation in upcomingVacations %}
+                    <li>{{ vacation.start_date }} to {{ vacation.end_date }}</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No upcoming vacations.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
