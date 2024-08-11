@@ -54,39 +54,25 @@ class DashboardService
      * @throws \Exception
      */
     public function getDashboardData($userId)
-{
-    try {
-        $this->logger->info('Fetching dashboard data', ['user_id' => $userId]);
+	{
+		$user = $this->userService->getUserById($userId);
+		if (!$user) {
+			$this->logger->error('User not found', ['user_id' => $userId]);
+			return null;
+		}
 
-        $user = $this->userService->getUserById($userId);
-        if (!$user) {
-            throw new \Exception("User not found");
-        }
-
-        $userArray = $user->toArray();
-
-        $dashboardData = [
-            'user' => $userArray,
-        ];
-
-        if ($userArray['role'] === 'student') {
-            $dashboardData += $this->getStudentDashboardData($userArray['id']);
-        } elseif (in_array($userArray['role'], ['directrice', 'swe', 'ssm'])) {
-            $dashboardData += $this->getAdminDashboardData();
-        } else {
-            $this->logger->warning('Unknown user role accessing dashboard', ['role' => $userArray['role']]);
-        }
-
-        return $dashboardData;
-
-    } catch (\Exception $e) {
-        $this->logger->error('Error in DashboardService', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        throw $e;
-    }
-}
+		switch ($user['role']) {
+			case 'directrice':
+			case 'swe':
+			case 'ssm':
+				return $this->getAdminDashboardData();
+			case 'student':
+				return $this->getStudentDashboardData($userId);
+			default:
+				$this->logger->error('Invalid user role', ['user_id' => $userId, 'role' => $user['role']]);
+				return null;
+		}
+	}
 
 
 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Dependencies Configuration File
- *
- * This file defines all the dependencies for the Slim application.
- * It uses PHP-DI for dependency injection.
- */
 
 use DI\ContainerBuilder;
 use Monolog\Logger;
@@ -35,6 +29,10 @@ use App\Models\Vacation;
 // Controllers
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\UserController;
+use App\Controllers\StudentController;
+use App\Controllers\CohortController;
+use App\Controllers\VacationController;
 
 // Services
 use App\Services\UserService;
@@ -67,17 +65,17 @@ return function (ContainerBuilder $containerBuilder) {
             return $c->get(LoggerInterface::class);
         },
 
-		Twig::class => function (ContainerInterface $c) {
-			$settings = $c->get('settings');
-			$twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
-			$environment = $twig->getEnvironment();
-			$environment->addGlobal('session', $_SESSION);
-			return $twig;
-		},
-		
-		'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
+        Twig::class => function (ContainerInterface $c) {
+            $settings = $c->get('settings');
+            $twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
+            $environment = $twig->getEnvironment();
+            $environment->addGlobal('session', $_SESSION);
+            return $twig;
+        },
+        
+        'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
 
-		PDO::class => function (ContainerInterface $c) {
+        PDO::class => function (ContainerInterface $c) {
             $settings = $c->get('settings');
             $dbSettings = $settings['db'];
             $dsn = "mysql:host={$dbSettings['host']};dbname={$dbSettings['database']};charset={$dbSettings['charset']}";
@@ -93,32 +91,32 @@ return function (ContainerBuilder $containerBuilder) {
         Student::class => fn(ContainerInterface $c) => new Student($c->get(PDO::class)),
         Cohort::class => fn(ContainerInterface $c) => new Cohort($c->get(PDO::class)),
         Drawing::class => fn(ContainerInterface $c) => new Drawing($c->get(PDO::class)),
-		DrawingDay::class => fn(ContainerInterface $c) => new DrawingDay($c->get(PDO::class)),
+        DrawingDay::class => fn(ContainerInterface $c) => new DrawingDay($c->get(PDO::class)),
         Holiday::class => fn(ContainerInterface $c) => new Holiday($c->get(PDO::class)),
         Report::class => fn(ContainerInterface $c) => new Report($c->get(PDO::class)),
         SODSchedule::class => fn(ContainerInterface $c) => new SODSchedule($c->get(PDO::class)),
         Unavailability::class => fn(ContainerInterface $c) => new Unavailability($c->get(PDO::class)),
-		VacationService::class => function (ContainerInterface $c) {
-			return new VacationService(
-				$c->get(Vacation::class),
-				$c->get(LoggerInterface::class)
-			);
-		},
+        Vacation::class => fn(ContainerInterface $c) => new Vacation($c->get(PDO::class)),
 
         // Services
-        UserService::class => function (ContainerInterface $c) {
-            return new UserService($c->get(User::class), $c->get(LoggerInterface::class));
-        },
-        StudentService::class => function (ContainerInterface $c) {
-            return new StudentService($c->get(Student::class), $c->get(Unavailability::class), $c->get(LoggerInterface::class));
-        },
-		CohortService::class => function (ContainerInterface $c) {
-			return new CohortService(
-				$c->get(Cohort::class),
-				$c->get(DrawingDay::class),
-				$c->get(LoggerInterface::class)
-			);
+		UserService::class => function (ContainerInterface $c) {
+			return new UserService($c->get(User::class), $c->get(LoggerInterface::class));
 		},
+        StudentService::class => function (ContainerInterface $c) {
+            return new StudentService(
+                $c->get(Student::class),
+                $c->get(User::class),
+                $c->get(Unavailability::class),
+                $c->get(LoggerInterface::class)
+            );
+        },
+        CohortService::class => function (ContainerInterface $c) {
+            return new CohortService(
+                $c->get(Cohort::class),
+                $c->get(DrawingDay::class),
+                $c->get(LoggerInterface::class)
+            );
+        },
         DrawingService::class => function (ContainerInterface $c) {
             return new DrawingService($c->get(Drawing::class), $c->get(LoggerInterface::class));
         },
@@ -150,11 +148,34 @@ return function (ContainerBuilder $containerBuilder) {
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {
-            return new AuthController($c->get(Twig::class), $c->get(User::class), $c->get(LoggerInterface::class));
+            return new AuthController($c->get(Twig::class), $c->get(UserService::class), $c->get(LoggerInterface::class));
         },
         DashboardController::class => function (ContainerInterface $c) {
             return new DashboardController($c->get(Twig::class), $c->get(LoggerInterface::class), $c->get(DashboardService::class));
         },
+        UserController::class => function (ContainerInterface $c) {
+            return new UserController($c->get(Twig::class), $c->get(LoggerInterface::class), $c->get(UserService::class));
+        },
+        StudentController::class => function (ContainerInterface $c) {
+            return new StudentController(
+                $c->get(Twig::class),
+                $c->get(StudentService::class),
+                $c->get(CohortService::class),
+                $c->get(UserService::class),
+                $c->get(LoggerInterface::class)
+            );
+        },
+        CohortController::class => function (ContainerInterface $c) {
+            return new CohortController($c->get(Twig::class), $c->get(CohortService::class), $c->get(LoggerInterface::class));
+        },
+		VacationController::class => function (ContainerInterface $c) {
+			return new VacationController(
+				$c->get(Twig::class),
+				$c->get(VacationService::class),
+				$c->get(CohortService::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 
         // Application
         App::class => function (ContainerInterface $c) {

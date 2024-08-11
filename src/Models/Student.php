@@ -3,248 +3,145 @@
 namespace App\Models;
 
 use PDO;
+use Exception;
 
-/**
- * Student Model
- *
- * This class represents a student in the application.
- */
 class Student
 {
     private $id;
     private $userId;
     private $cohortId;
-    private $firstName;
-    private $lastName;
-    private $email;
-    private $slackId;
-    private $createdAt;
-
     private $db;
 
-    /**
-     * Student constructor.
-     *
-     * @param PDO $db The database connection
-     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
     }
 
-    /**
-     * Find a student by their ID
-     *
-     * @param int $id The student ID
-     * @return Student|null The student object if found, null otherwise
-     */
     public function findById($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE id = :id");
+        $stmt = $this->db->prepare("
+            SELECT s.*, u.username, u.first_name, u.last_name, u.email, u.slack_id
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.id = :id
+        ");
         $stmt->execute(['id' => $id]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Get all students
-     *
-     * @return array An array of Student objects
-     */
-	public function findAll()
-	{
-		$query = "
-			SELECT 
-				s.*, 
-				c.name as cohort_name,
-				GROUP_CONCAT(CONCAT(u.start_date, ' to ', u.end_date) SEPARATOR ', ') as unavailability,
-				(SELECT COUNT(*) FROM sod_schedule ss WHERE ss.student_id = s.id) as sod_count
-			FROM students s 
-			LEFT JOIN cohorts c ON s.cohort_id = c.id
-			LEFT JOIN unavailabilities u ON s.id = u.student_id
-			GROUP BY s.id
-		";
-		$stmt = $this->db->query($query);
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
-	}
-
-    /**
-     * Create a new student
-     *
-     * @param int $cohortId The cohort ID
-     * @param string $lastName The student's last name
-     * @param string $firstName The student's first name
-     * @param string $email The student's email
-     * @param string|null $slackId The student's Slack ID (optional)
-     * @return bool True if the student was created successfully, false otherwise
-     */
-    public function create($cohortId, $lastName, $firstName, $email, $slackId = null)
+    public function findAll()
     {
-        $stmt = $this->db->prepare("INSERT INTO students (cohort_id, last_name, first_name, email, slack_id) VALUES (:cohort_id, :last_name, :first_name, :email, :slack_id)");
+        $query = "
+            SELECT 
+                s.*, 
+                u.username, u.first_name, u.last_name, u.email, u.slack_id,
+                c.name as cohort_name,
+                GROUP_CONCAT(CONCAT(uv.start_date, ' to ', uv.end_date) SEPARATOR ', ') as unavailability,
+                (SELECT COUNT(*) FROM sod_schedule ss WHERE ss.student_id = s.id) as sod_count
+            FROM students s 
+            JOIN users u ON s.user_id = u.id
+            LEFT JOIN cohorts c ON s.cohort_id = c.id
+            LEFT JOIN unavailabilities uv ON s.id = uv.student_id
+            GROUP BY s.id
+        ";
+        $stmt = $this->db->query($query);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function create($userId, $cohortId)
+    {
+        $stmt = $this->db->prepare("INSERT INTO students (user_id, cohort_id) VALUES (:user_id, :cohort_id)");
         return $stmt->execute([
-            'cohort_id' => $cohortId,
-            'last_name' => $lastName,
-            'first_name' => $firstName,
-            'email' => $email,
-            'slack_id' => $slackId
+            'user_id' => $userId,
+            'cohort_id' => $cohortId
         ]);
     }
 
-    /**
-     * Update an existing student
-     *
-     * @param int $id The student ID
-     * @param int $cohortId The cohort ID
-     * @param string $lastName The student's last name
-     * @param string $firstName The student's first name
-     * @param string $email The student's email
-     * @param string|null $slackId The student's Slack ID (optional)
-     * @return bool True if the student was updated successfully, false otherwise
-     */
-	public function update($id, $firstName, $lastName, $email, $cohortId)
-	{
-		$sql = "UPDATE students SET first_name = :first_name, last_name = :last_name, email = :email, cohort_id = :cohort_id WHERE id = :id";
-		$stmt = $this->db->prepare($sql);
-		return $stmt->execute([
-			'id' => $id,
-			'first_name' => $firstName,
-			'last_name' => $lastName,
-			'email' => $email,
-			'cohort_id' => $cohortId
-		]);
-	}
+    public function update($id, $cohortId)
+    {
+        $sql = "UPDATE students SET cohort_id = :cohort_id WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'cohort_id' => $cohortId
+        ]);
+    }
 
-    /**
-     * Delete the student
-     *
-     * @param int $id The student ID
-     * @return bool True if the student was deleted successfully, false otherwise
-     */
     public function delete($id)
     {
-        $stmt = $this->db->prepare("DELETE FROM students WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare("SELECT user_id FROM students WHERE id = :id");
+            $stmt->execute(['id' => $id]);
+            $userId = $stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("DELETE FROM students WHERE id = :id");
+            $stmt->execute(['id' => $id]);
+
+            $stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
+            $stmt->execute(['id' => $userId]);
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
-    /**
-     * Find students by cohort
-     *
-     * @param int $cohortId The cohort ID
-     * @return array An array of Student objects
-     */
     public function findByCohort($cohortId)
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE cohort_id = :cohort_id ORDER BY last_name, first_name");
+        $stmt = $this->db->prepare("
+            SELECT s.*, u.username, u.first_name, u.last_name, u.email, u.slack_id
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.cohort_id = :cohort_id
+            ORDER BY u.last_name, u.first_name
+        ");
         $stmt->execute(['cohort_id' => $cohortId]);
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Find a student by email
-     *
-     * @param string $email The student's email
-     * @return Student|null The student object if found, null otherwise
-     */
     public function findByEmail($email)
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE email = :email");
+        $stmt = $this->db->prepare("
+            SELECT s.*, u.username, u.first_name, u.last_name, u.email, u.slack_id
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE u.email = :email
+        ");
         $stmt->execute(['email' => $email]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Find a student by Slack ID
-     *
-     * @param string $slackId The student's Slack ID
-     * @return Student|null The student object if found, null otherwise
-     */
     public function findBySlackId($slackId)
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE slack_id = :slack_id");
+        $stmt = $this->db->prepare("
+            SELECT s.*, u.username, u.first_name, u.last_name, u.email, u.slack_id
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE u.slack_id = :slack_id
+        ");
         $stmt->execute(['slack_id' => $slackId]);
-        $studentData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($studentData) {
-            return $this->hydrate($studentData);
-        }
-
-        return null;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Search students by name or email
-     *
-     * @param string $searchTerm The search term
-     * @return array An array of Student objects
-     */
     public function search($searchTerm)
     {
-        $stmt = $this->db->prepare("SELECT * FROM students WHERE last_name LIKE :search OR first_name LIKE :search OR email LIKE :search ORDER BY last_name, first_name");
+        $stmt = $this->db->prepare("
+            SELECT s.*, u.username, u.first_name, u.last_name, u.email, u.slack_id
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            WHERE u.last_name LIKE :search OR u.first_name LIKE :search OR u.email LIKE :search
+            ORDER BY u.last_name, u.first_name
+        ");
         $stmt->execute(['search' => "%$searchTerm%"]);
-        $studentsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $students = [];
-        foreach ($studentsData as $studentData) {
-            $students[] = (new Student($this->db))->hydrate($studentData);
-        }
-
-        return $students;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Hydrate the student object with data
-     *
-     * @param array $data The data to hydrate the object with
-     * @return Student The hydrated student object
-     */
-    private function hydrate($data)
+    public function getTotalCount()
     {
-        $this->id = $data['id'];
-        $this->userId = $data['user_id'] ?? null;
-        $this->cohortId = $data['cohort_id'];
-        $this->firstName = $data['first_name'];
-        $this->lastName = $data['last_name'];
-        $this->email = $data['email'];
-        $this->slackId = $data['slack_id'] ?? null;
-        $this->createdAt = $data['created_at'] ?? null;
-
-        return $this;
+        $stmt = $this->db->query("SELECT COUNT(*) FROM students");
+        return $stmt->fetchColumn();
     }
-
-	public function getTotalCount()
-	{
-		$stmt = $this->db->query("SELECT COUNT(*) FROM students");
-		return $stmt->fetchColumn();
-	}
-
-    // Getters
-    public function getId() { return $this->id; }
-    public function getUserId() { return $this->userId; }
-    public function getCohortId() { return $this->cohortId; }
-    public function getFirstName() { return $this->firstName; }
-    public function getLastName() { return $this->lastName; }
-    public function getEmail() { return $this->email; }
-    public function getSlackId() { return $this->slackId; }
-    public function getCreatedAt() { return $this->createdAt; }
-
-    // Additional methods
-    public function getFullName() { return $this->firstName . ' ' . $this->lastName; }
 }

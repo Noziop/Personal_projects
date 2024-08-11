@@ -243,8 +243,8 @@ class Unavailability
         $this->studentId = $data['student_id'];
         $this->startDate = new DateTime($data['start_date']);
         $this->endDate = new DateTime($data['end_date']);
-        $this->reason = $data['reason'];
-        $this->createdAt = new DateTime($data['created_at']);
+		$this->reason = $data['reason'] ?? null;
+		$this->createdAt = $data['created_at'] ?? null;
 
         return $this;
     }

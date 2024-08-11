@@ -10,27 +10,20 @@ namespace App\Controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
-use App\Models\User;
 use Psr\Log\LoggerInterface;
 use Slim\Routing\RouteContext;
+use App\Services\UserService;
 
 class AuthController
 {
     private $view;
-    private $user;
+    private $userService;
     private $logger;
 
-    /**
-     * AuthController constructor.
-     *
-     * @param Twig $view The Twig template engine
-     * @param User $user The User model
-     * @param LoggerInterface $logger The logger interface
-     */
-    public function __construct(Twig $view, User $user, LoggerInterface $logger)
+    public function __construct(Twig $view, UserService $userService, LoggerInterface $logger)
     {
         $this->view = $view;
-        $this->user = $user;
+        $this->userService = $userService;
         $this->logger = $logger;
     }
 
@@ -58,27 +51,26 @@ class AuthController
      * @return Response
      */
     public function login(Request $request, Response $response): Response
-{
-    $data = $request->getParsedBody();
-    $username = $data['username'] ?? '';
-    $password = $data['password'] ?? '';
+    {
+        $data = $request->getParsedBody();
+        $username = $data['username'] ?? '';
+        $password = $data['password'] ?? '';
 
-    $this->logger->info('Login attempt', ['username' => $username]);
+        $this->logger->info('Login attempt', ['username' => $username]);
 
-    $user = $this->user->findByUsername($username);
+        $user = $this->userService->authenticateUser($username, $password);
 
-    if ($user && $user->verifyPassword($password)) {
-        $_SESSION['user'] = $user->toArray();
-        $this->logger->info('Login successful', ['username' => $username]);
-        return $response->withHeader('Location', '/dashboard')->withStatus(302);
+        if ($user) {
+            $_SESSION['user'] = $user;
+            $this->logger->info('Login successful', ['username' => $username]);
+            return $response->withHeader('Location', '/dashboard')->withStatus(302);
+        }
+
+        $this->logger->warning('Login failed', ['username' => $username]);
+        return $this->view->render($response->withStatus(401), 'auth/login.twig', [
+            'error' => 'Invalid username or password'
+        ]);
     }
-
-    $this->logger->warning('Login failed', ['username' => $username]);
-    return $this->view->render($response->withStatus(401), 'auth/login.twig', [
-        'error' => 'Invalid username or password'
-    ]);
-}
-
 
     /**
      * Handle the logout process

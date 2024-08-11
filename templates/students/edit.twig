@@ -2,29 +2,42 @@
 
 {% block title %}Edit Student - {{ parent() }}{% endblock %}
 
-{% block header_title %}Edit Student : {{ student.firstName }} {{ student.lastName }}{% endblock %}
+{% block header_title %}Edit Student : {{ student.first_name }} {{ student.last_name }}{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">Edit {{ student.firstName }} {{ student.lastName }}'s informations</h2>
+    <h2 class="neumorphic-title-red">Edit {{ student.first_name }} {{ student.last_name }}'s information</h2>
     <form action="{{ url_for('students.edit', {'id': student.id}) }}" method="POST" class="neumorphic-form">
-		<div class="neumorphic-form-group">
-			<label for="name">First Name</label>
-			<input type="text" id="first_name" name="first_name" value="{{ student.firstName }}" required class="neumorphic-input">
+        <div class="neumorphic-form-group">
+            <label for="first_name">First Name</label>
+            <input type="text" id="first_name" name="first_name" value="{{ student.first_name }}" required class="neumorphic-input">
         </div>
-		<div class="neumorphic-form-group">
-            <label for="name">Name</label>
-            <input type="text" id="last_name" name="last_name" value="{{ student.lastName }}" required class="neumorphic-input">
+        <div class="neumorphic-form-group">
+            <label for="last_name">Last Name</label>
+            <input type="text" id="last_name" name="last_name" value="{{ student.last_name }}" required class="neumorphic-input">
         </div>
         <div class="neumorphic-form-group">
             <label for="email">Email</label>
             <input type="email" id="email" name="email" value="{{ student.email }}" required class="neumorphic-input">
         </div>
         <div class="neumorphic-form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ student.username }}" required class="neumorphic-input">
+        </div>
+		<div class="neumorphic-form-group">
+			<label for="role">Role</label>
+			<select id="role" name="role" required class="neumorphic-input">
+				<option value="student" {% if student.role == 'student' %}selected{% endif %}>Student</option>
+				<option value="ssm" {% if student.role == 'ssm' %}selected{% endif %}>SSM</option>
+				<option value="swe" {% if student.role == 'swe' %}selected{% endif %}>SWE</option>
+				<option value="directrice" {% if student.role == 'directrice' %}selected{% endif %}>Directrice</option>
+			</select>
+		</div>
+        <div class="neumorphic-form-group">
             <label for="cohort_id">Cohort</label>
             <select id="cohort_id" name="cohort_id" required class="neumorphic-input">
                 {% for cohort in cohorts %}
-                    <option value="{{ cohort.id }}" {% if cohort.id == student.cohort.id %}selected{% endif %}>{{ cohort.name }}</option>
+                    <option value="{{ cohort.id }}" {% if cohort.id == student.cohort_id %}selected{% endif %}>{{ cohort.name }}</option>
                 {% endfor %}
             </select>
         </div>

@@ -2,18 +2,31 @@
 
 {% block title %}Student Unavailability - {{ parent() }}{% endblock %}
 
-{% block header_title %}Manage Unavailability for {{ student.firstName }} {{ student.lastName }}{% endblock %}
+{% block header_title %}Manage Unavailability for {{ student.first_name }} {{ student.last_name }}{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">Manage Unavailability for {{ student.firstName }} {{ student.lastName }}</h2>
-	<form action="{{ url_for('students.unavailability', {'id': student.id}) }}" method="POST" class="neumorphic-form">
-		<div class="neumorphic-form-group">
-			<label for="unavailability">Unavailable Dates</label>
-			<input type="text" id="date-range" name="unavailability" placeholder="Select Date Range">
-		</div>
-		<button type="submit" class="neumorphic-button">Update Unavailability</button>
-	</form>
+    <h2 class="neumorphic-title-red">Manage Unavailability for {{ student.first_name }} {{ student.last_name }}</h2>
+    <form action="{{ url_for('students.unavailability', {'id': student.id}) }}" method="POST" class="neumorphic-form">
+        <div class="neumorphic-form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" class="neumorphic-input" required>
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" class="neumorphic-input" required>
+        </div>
+        <button type="submit" class="neumorphic-button">Update Unavailability</button>
+    </form>
+
+    <h3 class="neumorphic-subtitle">Current Unavailabilities</h3>
+    <ul class="neumorphic-list">
+    {% for unavailability in student.unavailabilities %}
+        <li>{{ unavailability.start_date|date('Y-m-d') }} to {{ unavailability.end_date|date('Y-m-d') }}</li>
+    {% else %}
+        <li>No unavailabilities set</li>
+    {% endfor %}
+    </ul>
 </div>
 {% endblock %}
 
@@ -21,19 +34,16 @@
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const dateRangeInput = document.getElementById('date-range');
-    if (dateRangeInput) {
-        flatpickr(dateRangeInput, {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 2) {
-                    document.getElementById('start_date').value = flatpickr.formatDate(selectedDates[0], "Y-m-d");
-                    document.getElementById('end_date').value = flatpickr.formatDate(selectedDates[1], "Y-m-d");
-                }
-            }
-        });
-    }
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    startDateInput.addEventListener('change', function() {
+        endDateInput.min = this.value;
+    });
+
+    endDateInput.addEventListener('change', function() {
+        startDateInput.max = this.value;
+    });
 });
 </script>
 {% endblock %}

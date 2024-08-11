@@ -16,24 +16,24 @@ class UserService
         $this->logger = $logger;
     }
 
-    public function createUser($username, $firstName, $lastName, $email, $password, $role)
+    public function createUser($data)
     {
         $this->logger->info('Creating new user', [
-            'username' => $username,
-            'email' => $email,
-            'role' => $role
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'role' => $data['role']
         ]);
 
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        return $this->userModel->create($username, $firstName, $lastName, $email, $hashedPassword, $role);
+        return $this->userModel->create($data);
     }
 
-    public function getUserById($id)
-    {
-        $this->logger->info('Fetching user by ID', ['id' => $id]);
-        return $this->userModel->findById($id);
-    }
+	public function getUserById($id)
+	{
+		$this->logger->info('Fetching user by ID', ['id' => $id]);
+		return $this->userModel->findById($id);
+	}
 
     public function getUserByUsername($username)
     {
@@ -47,16 +47,16 @@ class UserService
         return $this->userModel->findByEmail($email);
     }
 
-    public function updateUser($id, $username, $firstName, $lastName, $email, $role)
+    public function updateUser($id, $data)
     {
         $this->logger->info('Updating user', [
             'id' => $id,
-            'username' => $username,
-            'email' => $email,
-            'role' => $role
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'role' => $data['role']
         ]);
 
-        return $this->userModel->update($id, $username, $firstName, $lastName, $email, $role);
+        return $this->userModel->update($id, $data);
     }
 
     public function updatePassword($id, $newPassword)
@@ -90,8 +90,9 @@ class UserService
         $this->logger->info('Authenticating user', ['username' => $username]);
 
         $user = $this->userModel->findByUsername($username);
-        if ($user && password_verify($password, $user->getPassword())) {
+        if ($user && password_verify($password, $user['password'])) {
             $this->logger->info('User authenticated successfully', ['username' => $username]);
+            $this->userModel->updateLastLogin($user['id']);
             return $user;
         }
 
@@ -107,5 +108,16 @@ class UserService
     public function isEmailAvailable($email)
     {
         return $this->userModel->findByEmail($email) === null;
+    }
+
+    public function setUserActive($id, $isActive)
+    {
+        $this->logger->info('Setting user active status', ['id' => $id, 'is_active' => $isActive]);
+        return $this->userModel->setActive($id, $isActive);
+    }
+
+    public function getUsersCount()
+    {
+        return $this->userModel->getTotalCount();
     }
 }
