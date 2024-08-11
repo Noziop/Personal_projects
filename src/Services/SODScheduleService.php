@@ -91,4 +91,11 @@ class SODScheduleService
         ]);
         return $this->scheduleModel->isStudentScheduledOnDate($studentId, $date);
     }
+
+	public function getNextSODForStudent($studentId)
+	{
+		$this->logger->info('Fetching next SOD for student', ['student_id' => $studentId]);
+		$currentDate = new DateTime();
+		return $this->scheduleModel->findNextForStudent($studentId, $currentDate);
+	}
 }

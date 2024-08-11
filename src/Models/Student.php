@@ -139,6 +139,13 @@ class Student
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+	public function findByUserId($userId)
+	{
+		$stmt = $this->db->prepare("SELECT * FROM students WHERE user_id = :user_id");
+		$stmt->execute(['user_id' => $userId]);
+		return $stmt->fetch(PDO::FETCH_ASSOC);
+	}
+
     public function getTotalCount()
     {
         $stmt = $this->db->query("SELECT COUNT(*) FROM students");

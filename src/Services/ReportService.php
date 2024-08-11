@@ -93,4 +93,9 @@ class ReportService
 		return $this->reportModel->getRecentReports($limit);
 	}
 
+	public function getLastReportForStudent($studentId)
+	{
+		$this->logger->info('Fetching last report for student', ['student_id' => $studentId]);
+		return $this->reportModel->findLastByStudentId($studentId);
+	}
 }

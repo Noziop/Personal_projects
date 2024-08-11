@@ -123,6 +123,12 @@ class StudentService
         return $this->studentModel->findBySlackId($slackId);
     }
 
+	public function getStudentByUserId($userId)
+	{
+		$this->logger->info('Fetching student by user ID', ['user_id' => $userId]);
+		return $this->studentModel->findByUserId($userId);
+	}
+
     public function searchStudents($searchTerm)
     {
         $this->logger->info('Searching students', ['search_term' => $searchTerm]);

@@ -54,4 +54,11 @@ class VacationService
         $this->logger->info('Deleting vacation', ['id' => $id]);
         return $this->vacationModel->delete($id);
     }
+
+	public function getUpcomingVacationsForCohort($cohortId)
+	{
+		$this->logger->info('Fetching upcoming vacations for cohort', ['cohort_id' => $cohortId]);
+		$currentDate = new DateTime();
+		return $this->vacationModel->findUpcomingByCohortId($cohortId, $currentDate);
+	}
 }

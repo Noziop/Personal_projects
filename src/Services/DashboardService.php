@@ -82,20 +82,51 @@ class DashboardService
      * @param int $userId
      * @return array
      */
-    private function getStudentDashboardData($userId)
-    {
-        $student = $this->studentService->getStudentByUserId($userId);
-        $cohort = $this->cohortService->getCohortById($student['cohort_id']);
-        $upcomingSOD = $this->sodScheduleService->getNextScheduledStudent(new DateTime());
-        $latestReports = $this->reportService->getReportsByStudentId($student['id'], 5);
-
-        return [
-            'student' => $student,
-            'cohort' => $cohort,
-            'upcomingSOD' => $upcomingSOD,
-            'latestReports' => $latestReports,
-        ];
-    }
+	private function getStudentDashboardData($userId)
+	{
+		$student = $this->studentService->getStudentByUserId($userId);
+		if (!$student) {
+			$this->logger->error('Student not found for user', ['user_id' => $userId]);
+			return null;
+		}
+	
+		$cohort = $this->cohortService->getCohortById($student['cohort_id']);
+		$nextSOD = $this->sodScheduleService->getNextSODForStudent($student['id']);
+		$lastReport = $this->reportService->getLastReportForStudent($student['id']);
+		$unavailabilities = $this->studentService->getUnavailabilityForStudent($student['id']);
+		$upcomingVacations = $this->vacationService->getUpcomingVacationsForCohort($student['cohort_id']);
+	
+		return [
+			'student' => [
+				'id' => $student['id'],
+				'name' => $student['first_name'] . ' ' . $student['last_name'],
+				'email' => $student['email'],
+				'slack_id' => $student['slack_id'],
+				'cohort' => $cohort ? $cohort['name'] : 'N/A',
+			],
+			'nextSOD' => $nextSOD ? [
+				'date' => $nextSOD['date'],
+				'isPresenter' => $nextSOD['student_id'] === $student['id'],
+			] : null,
+			'lastReport' => $lastReport ? [
+				'type' => $lastReport['type'],
+				'date' => $lastReport['created_at'],
+				'content' => substr($lastReport['content'], 0, 100) . '...',
+			] : null,
+			'unavailabilities' => array_map(function($unavailability) {
+				return [
+					'start_date' => $unavailability['start_date'],
+					'end_date' => $unavailability['end_date'],
+				];
+			}, $unavailabilities),
+			'upcomingVacations' => array_map(function($vacation) {
+				return [
+					'start_date' => $vacation['start_date'],
+					'end_date' => $vacation['end_date'],
+				];
+			}, $upcomingVacations),
+		];
+	}
 
     /**
      * Get dashboard data for admin roles

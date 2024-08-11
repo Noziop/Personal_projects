@@ -100,4 +100,21 @@ class SODSchedule
         ]);
         return $stmt->fetchColumn() > 0;
     }
+
+	public function findNextForStudent($studentId, DateTime $fromDate)
+	{
+		$sql = "SELECT * FROM sod_schedule 
+				WHERE student_id = :student_id 
+				AND date >= :from_date 
+				ORDER BY date ASC 
+				LIMIT 1";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute([
+			'student_id' => $studentId,
+			'from_date' => $fromDate->format('Y-m-d')
+		]);
+
+		return $stmt->fetch(PDO::FETCH_ASSOC);
+	}
 }
