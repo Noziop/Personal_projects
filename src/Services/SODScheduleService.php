@@ -98,4 +98,6 @@ class SODScheduleService
 		$currentDate = new DateTime();
 		return $this->scheduleModel->findNextForStudent($studentId, $currentDate);
 	}
+
+	
 }

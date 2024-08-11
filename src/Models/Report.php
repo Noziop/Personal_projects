@@ -95,4 +95,16 @@ class Report
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 	
+	public function findLastByStudentId($studentId)
+	{
+		$sql = "SELECT * FROM reports 
+				WHERE student_id = :student_id 
+				ORDER BY created_at DESC 
+				LIMIT 1";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['student_id' => $studentId]);
+
+		return $stmt->fetch(PDO::FETCH_ASSOC);
+	}
 }

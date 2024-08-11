@@ -70,4 +70,20 @@ class Vacation
         $stmt = $this->db->prepare("DELETE FROM vacations WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
+
+	public function findUpcomingByCohortId($cohortId, DateTime $currentDate)
+	{
+		$sql = "SELECT * FROM vacations 
+				WHERE cohort_id = :cohort_id 
+				AND end_date >= :current_date 
+				ORDER BY start_date ASC";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute([
+			'cohort_id' => $cohortId,
+			'current_date' => $currentDate->format('Y-m-d')
+		]);
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
 }
