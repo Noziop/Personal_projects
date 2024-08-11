@@ -65,12 +65,13 @@ nav a {
     text-decoration: none;
     font-size: 16px;
     padding: 8px 15px;
-    border-radius: 20px;
+    border-radius: 10px;
     transition: var(--transition);
 }
 
 nav a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+	box-shadow: var(--neumorphic-btn-pressed);
+	font-weight: bolder;
 }
 
 /* Main content */
