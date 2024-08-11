@@ -63,7 +63,13 @@
             {% if unavailabilities %}
                 <ul>
                 {% for unavailability in unavailabilities %}
-                    <li>{{ unavailability.start_date }} to {{ unavailability.end_date }}</li>
+					{% if unavailabilities is not empty %}
+						{% for unavailability in unavailabilities %}
+							<li>{{ unavailability.start_date|date('Y-m-d') }} to {{ unavailability.end_date|date('Y-m-d') }}</li>
+						{% endfor %}
+					{% else %}
+						<p>Aucune indisponibilité enregistrée.</p>
+					{% endif %}
                 {% endfor %}
                 </ul>
             {% else %}

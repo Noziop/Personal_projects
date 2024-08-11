@@ -88,6 +88,10 @@ class DashboardService
 	private function getStudentDashboardData($userId)
 	{
 		$student = $this->studentService->getStudentByUserId($userId);
+		if (!is_array($student) || empty($student)) {
+			$this->logger->error('Invalid or empty student data', ['user_id' => $userId]);
+			return null;
+		}
 		if (!$student) {
 			$this->logger->error('Student not found for user', ['user_id' => $userId]);
 			return null;
@@ -120,6 +124,8 @@ class DashboardService
 			'upcomingVacations' => $upcomingVacations,
 		];
 	}
+
+
 
     /**
      * Get dashboard data for admin roles
