@@ -126,7 +126,18 @@ class StudentService
 	public function getStudentByUserId($userId)
 	{
 		$this->logger->info('Fetching student by user ID', ['user_id' => $userId]);
-		return $this->studentModel->findByUserId($userId);
+		$student = $this->studentModel->findByUserId($userId);
+		if ($student instanceof Student) {
+			return [
+				'id' => $student->getId(),
+				'first_name' => $student->getFirstName(),
+				'last_name' => $student->getLastName(),
+				'email' => $student->getEmail(),
+				'slack_id' => $student->getSlackId(),
+				'cohort_id' => $student->getCohortId()
+			];
+		}
+		return $student; // Si c'est déjà un tableau, retournez-le tel quel
 	}
 
     public function searchStudents($searchTerm)

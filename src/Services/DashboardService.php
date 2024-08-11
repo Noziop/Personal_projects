@@ -102,19 +102,19 @@ class DashboardService
 		return [
 			'student' => [
 				'id' => $student['id'],
-				'name' => $student['first_name'] . ' ' . $student['last_name'],
-				'email' => $student['email'],
+				'name' => ($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''),
+				'email' => $student['email'] ?? null,
 				'slack_id' => $student['slack_id'] ?? null,
-				'cohort' => $cohort ? $cohort['name'] : 'N/A',
+				'cohort' => is_array($cohort) ? $cohort['name'] : (is_object($cohort) ? $cohort->getName() : 'N/A'),
 			],
 			'nextSOD' => $nextSOD ? [
-				'date' => $nextSOD['date'],
-				'isPresenter' => $nextSOD['student_id'] === $student['id'],
+				'date' => is_array($nextSOD) ? $nextSOD['date'] : $nextSOD->getDate(),
+				'isPresenter' => is_array($nextSOD) ? ($nextSOD['student_id'] === $student['id']) : ($nextSOD->getStudentId() === $student['id']),
 			] : null,
 			'lastReport' => $lastReport ? [
-				'type' => $lastReport['type'],
-				'date' => $lastReport['created_at'],
-				'content' => substr($lastReport['content'], 0, 100) . '...',
+				'type' => is_array($lastReport) ? $lastReport['type'] : $lastReport->getType(),
+				'date' => is_array($lastReport) ? $lastReport['created_at'] : $lastReport->getCreatedAt(),
+				'content' => is_array($lastReport) ? substr($lastReport['content'], 0, 100) : substr($lastReport->getContent(), 0, 100) . '...',
 			] : null,
 			'unavailabilities' => $unavailabilities,
 			'upcomingVacations' => $upcomingVacations,
