@@ -135,16 +135,17 @@ return function (ContainerBuilder $containerBuilder) {
         VacationService::class => function (ContainerInterface $c) {
             return new VacationService($c->get(Vacation::class), $c->get(LoggerInterface::class));
         },
-        DashboardService::class => function (ContainerInterface $c) {
-            return new DashboardService(
-                $c->get(CohortService::class),
-                $c->get(StudentService::class),
-                $c->get(SODScheduleService::class),
-                $c->get(ReportService::class),
-                $c->get(UserService::class),
-                $c->get(LoggerInterface::class)
-            );
-        },
+		DashboardService::class => function (ContainerInterface $c) {
+			return new DashboardService(
+				$c->get(CohortService::class),
+				$c->get(StudentService::class),
+				$c->get(SODScheduleService::class),
+				$c->get(ReportService::class),
+				$c->get(UserService::class),
+				$c->get(VacationService::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {

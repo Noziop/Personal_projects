@@ -18,6 +18,7 @@ class DashboardService
     private $sodScheduleService;
     private $reportService;
     private $userService;
+	private $vacationService;
     private $logger;
 
     /**
@@ -36,6 +37,7 @@ class DashboardService
         SODScheduleService $sodScheduleService,
         ReportService $reportService,
         UserService $userService,
+		VacationService $vacationService,
         LoggerInterface $logger
     ) {
         $this->cohortService = $cohortService;
@@ -43,6 +45,7 @@ class DashboardService
         $this->sodScheduleService = $sodScheduleService;
         $this->reportService = $reportService;
         $this->userService = $userService;
+		$this->vacationService = $vacationService;
         $this->logger = $logger;
     }
 

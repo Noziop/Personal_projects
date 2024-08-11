@@ -83,7 +83,7 @@ class Vacation
 			'cohort_id' => $cohortId,
 			'current_date' => $currentDate->format('Y-m-d')
 		]);
-
+	
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 }
