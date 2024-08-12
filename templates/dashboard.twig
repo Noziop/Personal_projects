@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="neumorphic-container">
-    <h2 class="neumorphic-title-red">Welcome, {{ user.username }}</h2>
+   <h2 class="neumorphic-title-red">Welcome, {{ user.first_name }} {{ user.last_name }}</h2>
     <p>This is your dashboard. Here you can manage various aspects of the SOD system.</p>
 
     {% if user.role in ['directrice', 'swe', 'ssm'] %}
