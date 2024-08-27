@@ -26,6 +26,7 @@ use App\Models\SODSchedule;
 use App\Models\Unavailability;
 use App\Models\Vacation;
 use App\Models\SODFeedback;
+use App\Models\Feedback;
 
 // Controllers
 use App\Controllers\AuthController;
@@ -105,6 +106,7 @@ return function (ContainerBuilder $containerBuilder) {
 		SODFeedback::class => function (ContainerInterface $c) {
 			return new SODFeedback($c->get(PDO::class));
 		},
+		Feedback::class => fn(ContainerInterface $c) => new Feedback($c->get(PDO::class)),
 
         // Services
 		UserService::class => function (ContainerInterface $c) {
@@ -161,7 +163,11 @@ return function (ContainerBuilder $containerBuilder) {
 			);
 		},
 		FeedbackService::class => function (ContainerInterface $c) {
-			return new FeedbackService($c->get(Feedback::class), $c->get(Student::class), $c->get(LoggerInterface::class));
+			return new FeedbackService(
+				$c->get(Feedback::class),
+				$c->get(Student::class),
+				$c->get(LoggerInterface::class)
+			);
 		},
 
         // Controllers
@@ -203,7 +209,11 @@ return function (ContainerBuilder $containerBuilder) {
 			);
 		},
 		FeedbackController::class => function (ContainerInterface $c) {
-			return new FeedbackController($c->get(Twig::class), $c->get(FeedbackService::class), $c->get(LoggerInterface::class));
+			return new FeedbackController(
+				$c->get(Twig::class),
+				$c->get(FeedbackService::class),
+				$c->get(LoggerInterface::class)
+			);
 		},
 
         // Application

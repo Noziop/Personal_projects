@@ -18,6 +18,7 @@ use App\Controllers\StudentController;
 use App\Controllers\VacationController;
 use App\Controllers\HolidayController;
 use App\Controllers\SODFeedbackController;
+use App\Controllers\FeedbackController;
 
 
 return function (App $app) {
