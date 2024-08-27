@@ -1,0 +1,44 @@
+{% extends "layout.twig" %}
+
+{% block title %}View Feedback - {{ parent() }}{% endblock %}
+
+{% block header_title %}Feedback Details{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Feedback Details</h2>
+    
+    <div class="neumorphic-card">
+        <h3>General Information</h3>
+        <p><strong>Type:</strong> {{ feedback.type }}</p>
+        <p><strong>Date:</strong> {{ feedback.date|date('Y-m-d') }}</p>
+        <p><strong>Student:</strong> {{ feedback.student_name }}</p>
+    </div>
+
+    <div class="neumorphic-card">
+        <h3>Feedback Content</h3>
+        {% if feedback.type == 'SOD' %}
+            {% set content = feedback.content|json_decode %}
+            <table class="neumorphic-table">
+                {% for key, value in content %}
+                    <tr>
+                        <th>{{ key|replace({'_': ' '})|title }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% elseif feedback.type == 'Standup' %}
+            {% set content = feedback.content|json_decode %}
+            <p><strong>Achievements:</strong> {{ content.achievements }}</p>
+            <p><strong>Today's Goals:</strong> {{ content.today_goals }}</p>
+            <p><strong>Need Help:</strong> {{ content.need_help ? 'Yes' : 'No' }}</p>
+            {% if content.need_help %}
+                <p><strong>Problem Nature:</strong> {{ content.problem_nature }}</p>
+            {% endif %}
+            <p><strong>Other Remarks:</strong> {{ content.other_remarks }}</p>
+        {% elseif feedback.type == 'PLD' %}
+            <p>{{ feedback.content }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

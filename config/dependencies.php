@@ -13,6 +13,7 @@ use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
 use Slim\Psr7\Factory\ResponseFactory;
 use GuzzleHttp\Client;
+use App\Twig\AppExtension;
 
 // Models
 use App\Models\User;

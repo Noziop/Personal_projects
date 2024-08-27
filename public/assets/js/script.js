@@ -49,3 +49,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+//Feedback Manager Filter
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('type');
+    const dateInput = document.getElementById('date');
+    const studentSelect = document.getElementById('student_id');
+    const feedbackTable = document.getElementById('feedback-table');
+    const feedbackRows = feedbackTable.querySelectorAll('tbody tr');
+
+    function applyFilters() {
+        const selectedType = typeSelect.value;
+        const selectedDate = dateInput.value;
+        const selectedStudent = studentSelect.value;
+
+        feedbackRows.forEach(row => {
+            const rowType = row.getAttribute('data-type');
+            const rowDate = row.getAttribute('data-date');
+            const rowStudent = row.getAttribute('data-student');
+
+            const typeMatch = selectedType === '' || rowType === selectedType;
+            const dateMatch = selectedDate === '' || rowDate === selectedDate;
+            const studentMatch = selectedStudent === '' || rowStudent === selectedStudent;
+
+            if (typeMatch && dateMatch && studentMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    typeSelect.addEventListener('change', applyFilters);
+    dateInput.addEventListener('change', applyFilters);
+    studentSelect.addEventListener('change', applyFilters);
+
+    // Initial filter application
+    applyFilters();
+});

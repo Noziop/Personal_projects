@@ -7,11 +7,11 @@
 {% block content %}
 <div class="neumorphic-container">
     <h2 class="neumorphic-title-red">Manage Feedback</h2>
-
-    <form action="{{ url_for('feedback.manage') }}" method="GET" class="neumorphic-form">
+    
+    <form class="neumorphic-form">
         <div class="neumorphic-form-group">
-            <label for="event_type">Event Type</label>
-            <select name="event_type" id="event_type" class="neumorphic-input">
+            <label for="type">Event Type</label>
+            <select name="type" id="type" class="neumorphic-input">
                 <option value="">All</option>
                 {% for eventType in eventTypes %}
                     <option value="{{ eventType }}">{{ eventType }}</option>
@@ -31,28 +31,53 @@
                 {% endfor %}
             </select>
         </div>
-        <button type="submit" class="neumorphic-button">Filter</button>
     </form>
 
-    <table class="neumorphic-table">
+    <table class="neumorphic-table" id="feedback-table">
         <thead>
             <tr>
                 <th>Event Type</th>
                 <th>Date</th>
                 <th>Student</th>
-                <th>Content</th>
+                <th>Content Preview</th>
+                <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            {% for item in feedback %}
-                <tr>
-                    <td>{{ item.event_type }}</td>
-                    <td>{{ item.date|date('Y-m-d') }}</td>
-                    <td>{{ item.student_name }}</td>
-                    <td>{{ item.content }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+		<tbody>
+			{% for feedback in feedbacks %}
+				<tr data-type="{{ feedback.type }}" data-date="{{ feedback.date|date('Y-m-d') }}" data-student="{{ feedback.studentId }}">
+					<td>{{ feedback.type }}</td>
+					<td>{{ feedback.date|date('Y-m-d') }}</td>
+					<td>{{ feedback.studentName }}</td>
+					<td>
+						{% if feedback.content %}
+							<ul style="list-style-type: none; padding: 0;">
+								{% for key, value in feedback.content|slice(0, 3) %}
+									<li><strong>{{ key|replace({'_': ' '})|title }}:</strong> {{ value }}</li>
+								{% endfor %}
+								{% if feedback.content|length > 3 %}
+									<li>...</li>
+								{% endif %}
+							</ul>
+						{% else %}
+							{{ feedback.content|slice(0, 50)|escape }}{% if feedback.content|length > 50 %}...{% endif %}
+						{% endif %}
+					</td>
+					<td>
+						<a href="{{ url_for('feedback.view', {'id': feedback.id, 'type': feedback.type}) }}" class="neumorphic-button">View</a>
+					</td>
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="5">No feedbacks found</td>
+				</tr>
+			{% endfor %}
+		</tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="assets/js/script.js"></script>
 {% endblock %}

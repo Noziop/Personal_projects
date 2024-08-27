@@ -62,10 +62,19 @@ return function (App $app) {
 	$app->get('/holidays/sync', [HolidayController::class, 'sync'])->setName('holidays.sync');
 	$app->post('/holidays/{id}/delete', [HolidayController::class, 'delete'])->setName('holidays.delete');
 
-	//SODFeedback Form
+	// Feedback view (for admins)
+	$app->get('/feedback/{id}/{type}', [FeedbackController::class, 'view'])->setName('feedback.view');
+	$app->get('/feedback/manage', [FeedbackController::class, 'manage'])->setName('feedback.manage');
+
+	// SOD Feedback form (already exists, but included for completeness)
 	$app->get('/sod-feedback/{student_id}', [SODFeedbackController::class, 'showForm'])->setName('sod_feedback.form');
 	$app->post('/sod-feedback', [SODFeedbackController::class, 'submitFeedback'])->setName('sod_feedback.submit');
 
-	//Feedback Manager
-	$app->get('/feedback/manage', [FeedbackController::class, 'manage'])->setName('feedback.manage');
+	// Stand-up Feedback form
+	$app->get('/standup-feedback/{student_id}', [StandupFeedbackController::class, 'showForm'])->setName('standup_feedback.form');
+	$app->post('/standup-feedback', [StandupFeedbackController::class, 'submitFeedback'])->setName('standup_feedback.submit');
+
+	// PLD Submission form
+	$app->get('/pld-submission/{student_id}', [PLDSubmissionController::class, 'showForm'])->setName('pld_submission.form');
+	$app->post('/pld-submission', [PLDSubmissionController::class, 'submitSubmission'])->setName('pld_submission.submit');
 };

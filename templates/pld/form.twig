@@ -1,0 +1,26 @@
+{% extends "layout.twig" %}
+
+{% block title %}PLD Submission - {{ parent() }}{% endblock %}
+
+{% block header_title %}PLD Submission for {{ student.first_name }} {{ student.last_name }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">PLD Submission Form</h2>
+    <form action="{{ url_for('pld_submission.submit') }}" method="POST" class="neumorphic-form">
+        <input type="hidden" name="student_id" value="{{ student.id }}">
+        
+        <div class="neumorphic-form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="content">PLD Content:</label>
+            <textarea id="content" name="content" required class="neumorphic-input" rows="10"></textarea>
+        </div>
+
+        <button type="submit" class="neumorphic-button">Submit PLD</button>
+    </form>
+</div>
+{% endblock %}
