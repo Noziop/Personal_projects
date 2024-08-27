@@ -85,6 +85,7 @@ class CohortController
 			}
 		}
 	
+		$this->logger->info('Rendering edit form', ['cohort' => $cohort]);
 		return $this->view->render($response, 'cohorts/edit.twig', ['cohort' => $cohort]);
 	}
 

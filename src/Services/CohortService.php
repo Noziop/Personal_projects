@@ -34,13 +34,10 @@ class CohortService
 		$this->logger->info('Fetching cohort by ID', ['cohort_id' => $cohortId]);
 		$cohort = $this->cohortModel->findById($cohortId);
 		if ($cohort instanceof Cohort) {
-			return [
-				'id' => $cohort->getId(),
-				'name' => $cohort->getName(),
-				// Ajoutez d'autres propriétés si nécessaire
-			];
+			$cohort->setDrawingDays($this->drawingDayModel->findByCohort($cohort->getId()));
+			return $cohort;
 		}
-		return $cohort; // Si c'est déjà un tableau, retournez-le tel quel
+		return null;
 	}
 
 	public function createCohort($name, $startDate, $endDate, $drawingDays)
