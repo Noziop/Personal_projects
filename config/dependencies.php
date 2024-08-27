@@ -35,8 +35,7 @@ use App\Controllers\StudentController;
 use App\Controllers\CohortController;
 use App\Controllers\VacationController;
 use App\Controllers\SODFeedbackController;
-
-
+use App\Controllers\FeedbackController;
 
 // Services
 use App\Services\UserService;
@@ -50,6 +49,7 @@ use App\Services\UnavailabilityService;
 use App\Services\VacationService;
 use App\Services\DashboardService;
 use App\Services\SODFeedbackService;
+use App\Services\FeedbackService;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -160,6 +160,9 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
+		FeedbackService::class => function (ContainerInterface $c) {
+			return new FeedbackService($c->get(Feedback::class), $c->get(Student::class), $c->get(LoggerInterface::class));
+		},
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {
@@ -198,6 +201,9 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(UserService::class),
 				$c->get(LoggerInterface::class)
 			);
+		},
+		FeedbackController::class => function (ContainerInterface $c) {
+			return new FeedbackController($c->get(Twig::class), $c->get(FeedbackService::class), $c->get(LoggerInterface::class));
 		},
 
         // Application

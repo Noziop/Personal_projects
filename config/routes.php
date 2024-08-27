@@ -65,4 +65,6 @@ return function (App $app) {
 	$app->get('/sod-feedback/{student_id}', [SODFeedbackController::class, 'showForm'])->setName('sod_feedback.form');
 	$app->post('/sod-feedback', [SODFeedbackController::class, 'submitFeedback'])->setName('sod_feedback.submit');
 
+	//Feedback Manager
+	$app->get('/feedback/manage', [FeedbackController::class, 'manage'])->setName('feedback.manage');
 };

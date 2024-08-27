@@ -1,0 +1,58 @@
+{% extends "layout.twig" %}
+
+{% block title %}Manage Feedback - {{ parent() }}{% endblock %}
+
+{% block header_title %}Manage Feedback{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Manage Feedback</h2>
+
+    <form action="{{ url_for('feedback.manage') }}" method="GET" class="neumorphic-form">
+        <div class="neumorphic-form-group">
+            <label for="event_type">Event Type</label>
+            <select name="event_type" id="event_type" class="neumorphic-input">
+                <option value="">All</option>
+                {% for eventType in eventTypes %}
+                    <option value="{{ eventType }}">{{ eventType }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="date">Date</label>
+            <input type="date" name="date" id="date" class="neumorphic-input">
+        </div>
+        <div class="neumorphic-form-group">
+            <label for="student_id">Student</label>
+            <select name="student_id" id="student_id" class="neumorphic-input">
+                <option value="">All</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="neumorphic-button">Filter</button>
+    </form>
+
+    <table class="neumorphic-table">
+        <thead>
+            <tr>
+                <th>Event Type</th>
+                <th>Date</th>
+                <th>Student</th>
+                <th>Content</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in feedback %}
+                <tr>
+                    <td>{{ item.event_type }}</td>
+                    <td>{{ item.date|date('Y-m-d') }}</td>
+                    <td>{{ item.student_name }}</td>
+                    <td>{{ item.content }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
