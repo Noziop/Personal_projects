@@ -17,6 +17,7 @@ use App\Controllers\CohortController;
 use App\Controllers\StudentController;
 use App\Controllers\VacationController;
 use App\Controllers\HolidayController;
+use App\Controllers\SODFeedbackController;
 
 
 return function (App $app) {
@@ -60,5 +61,8 @@ return function (App $app) {
 	$app->get('/holidays/sync', [HolidayController::class, 'sync'])->setName('holidays.sync');
 	$app->post('/holidays/{id}/delete', [HolidayController::class, 'delete'])->setName('holidays.delete');
 
+	//SODFeedback Form
+	$app->get('/sod-feedback/{student_id}', [SODFeedbackController::class, 'showForm'])->setName('sod_feedback.form');
+	$app->post('/sod-feedback', [SODFeedbackController::class, 'submitFeedback'])->setName('sod_feedback.submit');
 
 };

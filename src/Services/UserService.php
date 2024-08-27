@@ -47,6 +47,7 @@ class UserService
         return $this->userModel->findByEmail($email);
     }
 
+
     public function updateUser($id, $data)
     {
         $this->logger->info('Updating user', [

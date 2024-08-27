@@ -18,16 +18,24 @@
 		<span></span>
 		<span></span>
 	</div>
-	<nav>
-		<ul>
-			<li><a href="{{ url_for('home') }}">Accueil</a></li>
-			{% if session.user %}
-				<li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
-			{% else %}
-				<li><a href="{{ url_for('auth.loginPage') }}">Connexion</a></li>
-			{% endif %}
-		</ul>
-	</nav>
+ <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Accueil</a></li>
+            {% if session.user %}
+                {% if session.user.role == 'student' %}
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Forms</a>
+                        <div class="dropdown-content">
+							<a href="{{ url_for('sod_feedback.form', {'student_id': session.user.id}) }}">SOD Feedback</a>
+                        </div>
+                    </li>
+                {% endif %}
+                <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.loginPage') }}">Connexion</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 </header>
 
 <main>
@@ -35,7 +43,7 @@
 </main>
 
 <footer>
-    <p>&copy; {{ "now"|date("Y") }} - Fassih Belmokhtar - Speaker Of The Day. Tous droits réservés.</p>
+    <p>&copy; {{ "now"|date("Y") }} - Fassih Belmokhtar - Hoblerton Ritual Manager. Tous droits réservés.</p>
 </footer>
 
 {% block javascripts %}

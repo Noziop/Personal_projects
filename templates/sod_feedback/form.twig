@@ -1,0 +1,86 @@
+{% extends "layout.twig" %}
+
+{% block title %}SOD Feedback - {{ parent() }}{% endblock %}
+
+{% block header_title %}SOD Feedback for {{ student.first_name }} {{ student.last_name }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">SOD Feedback Form for {{ student.first_name }} {{ student.last_name }}</h2>
+    <form action="{{ url_for('sod_feedback.submit') }}" method="POST" class="neumorphic-form">
+        <input type="hidden" name="evaluator_id" value="{{ evaluatorId }}">
+        
+        <div class="neumorphic-form-group">
+            <label for="student_id">Student Performing SOD:</label>
+            <select id="student_id" name="student_id" required class="neumorphic-input">
+                <option value="">Select a student</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="sod_date">SOD Date:</label>
+            <input type="date" id="sod_date" name="sod_date" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="time">Time (10-15 min): /10</label>
+            <input type="number" id="time" name="time" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="audience_engagement">Audience Engagement: /10</label>
+            <input type="number" id="audience_engagement" name="audience_engagement" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="spatial_position">Spatial Position: /10</label>
+            <input type="number" id="spatial_position" name="spatial_position" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="self_confidence">Self Confidence: /10</label>
+            <input type="number" id="self_confidence" name="self_confidence" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="audibility">Audibility and Comprehensibility: /10</label>
+            <input type="number" id="audibility" name="audibility" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="no_filler_words">No Filler Words: /5</label>
+            <input type="number" id="no_filler_words" name="no_filler_words" min="0" max="5" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="energy">Energy: /5</label>
+            <input type="number" id="energy" name="energy" min="0" max="5" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="english">English: /10</label>
+            <input type="number" id="english" name="english" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="presentation">Presentation: /10</label>
+            <input type="number" id="presentation" name="presentation" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="subject">Subject: /10</label>
+            <input type="number" id="subject" name="subject" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <div class="neumorphic-form-group">
+            <label for="question_responses">Response to Questions: /10</label>
+            <input type="number" id="question_responses" name="question_responses" min="0" max="10" required class="neumorphic-input">
+        </div>
+
+        <button type="submit" class="neumorphic-button">Submit Feedback</button>
+    </form>
+</div>
+{% endblock %}

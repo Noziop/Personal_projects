@@ -25,6 +25,7 @@ use App\Models\Report;
 use App\Models\SODSchedule;
 use App\Models\Unavailability;
 use App\Models\Vacation;
+use App\Models\SODFeedback;
 
 // Controllers
 use App\Controllers\AuthController;
@@ -33,6 +34,9 @@ use App\Controllers\UserController;
 use App\Controllers\StudentController;
 use App\Controllers\CohortController;
 use App\Controllers\VacationController;
+use App\Controllers\SODFeedbackController;
+
+
 
 // Services
 use App\Services\UserService;
@@ -45,6 +49,7 @@ use App\Services\SODScheduleService;
 use App\Services\UnavailabilityService;
 use App\Services\VacationService;
 use App\Services\DashboardService;
+use App\Services\SODFeedbackService;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -97,6 +102,9 @@ return function (ContainerBuilder $containerBuilder) {
         SODSchedule::class => fn(ContainerInterface $c) => new SODSchedule($c->get(PDO::class)),
         Unavailability::class => fn(ContainerInterface $c) => new Unavailability($c->get(PDO::class)),
         Vacation::class => fn(ContainerInterface $c) => new Vacation($c->get(PDO::class)),
+		SODFeedback::class => function (ContainerInterface $c) {
+			return new SODFeedback($c->get(PDO::class));
+		},
 
         // Services
 		UserService::class => function (ContainerInterface $c) {
@@ -146,6 +154,12 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
+		SODFeedbackService::class => function (ContainerInterface $c) {
+			return new SODFeedbackService(
+				$c->get(SODFeedback::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 
         // Controllers
         AuthController::class => function (ContainerInterface $c) {
@@ -174,6 +188,14 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(Twig::class),
 				$c->get(VacationService::class),
 				$c->get(CohortService::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
+		SODFeedbackController::class => function (ContainerInterface $c) {
+			return new SODFeedbackController(
+				$c->get(Twig::class),
+				$c->get(SODFeedbackService::class),
+				$c->get(UserService::class),
 				$c->get(LoggerInterface::class)
 			);
 		},
