@@ -30,33 +30,10 @@ class FeedbackController
 	
 		$feedbacks = $this->feedbackService->getFeedback($eventType, $date, $studentId);
 	
-		// Préparer les données pour la vue
-		$feedbacksData = [];
-		foreach ($feedbacks as $feedback) {
-			$feedbacksData[] = [
-				'id' => $feedback->getId(),
-				'type' => $feedback->getType(),
-				'date' => $feedback->getDate(),
-				'studentId' => $feedback->getStudentId(),
-				'studentName' => $feedback->getStudentName(),
-				'content' => json_decode($feedback->getContent(), true)
-			];
-		}
-	
-		$students = $this->feedbackService->getAllStudents();
-		$studentsData = [];
-		foreach ($students as $student) {
-			$studentsData[] = [
-				'id' => $student['id'],
-				'first_name' => $student['first_name'],
-				'last_name' => $student['last_name']
-			];
-		}
-	
 		return $this->view->render($response, 'feedback/manage.twig', [
-			'feedbacks' => $feedbacksData,
+			'feedbacks' => $feedbacks,
 			'eventTypes' => ['SOD', 'Stand up', 'PLD'],
-			'students' => $studentsData,
+			'students' => $this->feedbackService->getAllStudents(),
 		]);
 	}
 

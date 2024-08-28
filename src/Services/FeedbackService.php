@@ -21,32 +21,16 @@ class FeedbackService
 
 	public function getFeedback($eventType = null, $date = null, $studentId = null)
 	{
-		$feedbacks = $this->feedbackModel->findAll($eventType, $date, $studentId);
+		$feedbacks = $this->feedbackModel->findAllWithStudentInfo($eventType, $date, $studentId);
 		
 		foreach ($feedbacks as &$feedback) {
-			$studentData = $this->studentModel->findById($feedback->getStudentId());
-			if ($studentData) {
-				$feedback->setStudentName($studentData['first_name'] . ' ' . $studentData['last_name']);
-			} else {
-				$feedback->setStudentName('N/A');
-				$this->logger->warning('Student not found', ['student_id' => $feedback->getStudentId()]);
-			}
+			$feedback['student_name'] = $feedback['first_name'] . ' ' . $feedback['last_name'];
+			$feedback['evaluator_name'] = $feedback['evaluator_first_name'] && $feedback['evaluator_last_name'] 
+				? $feedback['evaluator_first_name'] . ' ' . $feedback['evaluator_last_name']
+				: null;
 		}
 	
 		return $feedbacks;
-	}
-
-	public function getFeedbackById($id, $type)
-	{
-		$feedback = $this->feedbackModel->findById($id, $type);
-		if ($feedback) {
-			$student = $this->studentModel->findById($feedback->getStudentId());
-			if ($student) {
-				$feedback->setStudentName($student['first_name'] . ' ' . $student['last_name']);
-			}
-			return $feedback->toArray();
-		}
-		return null;
 	}
 
     public function createFeedback($data, $eventType)

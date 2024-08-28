@@ -135,6 +135,98 @@ class Feedback
 		}
 	}
 
+	public function findAllWithStudentInfo($type = null, $date = null, $studentId = null)
+	{
+		$sql = "
+		SELECT 
+			'SOD' as type,
+			f.id,
+			f.student_id,
+			f.evaluator_id,
+			f.sod_date as date,
+			f.content,
+			f.created_at,
+			s.user_id,
+			u.first_name,
+			u.last_name,
+			e.user_id as evaluator_user_id,
+			eu.first_name as evaluator_first_name,
+			eu.last_name as evaluator_last_name
+		FROM sod_feedback f
+		JOIN students s ON f.student_id = s.id
+		JOIN users u ON s.user_id = u.id
+		LEFT JOIN students e ON f.evaluator_id = e.id
+		LEFT JOIN users eu ON e.user_id = eu.id
+		
+		UNION ALL
+		
+		SELECT 
+			'Standup' as type,
+			f.id,
+			f.student_id,
+			NULL as evaluator_id,
+			f.date,
+			f.content,
+			f.created_at,
+			s.user_id,
+			u.first_name,
+			u.last_name,
+			NULL as evaluator_user_id,
+			NULL as evaluator_first_name,
+			NULL as evaluator_last_name
+		FROM standup_feedback f
+		JOIN students s ON f.student_id = s.id
+		JOIN users u ON s.user_id = u.id
+		
+		UNION ALL
+		
+		SELECT 
+			'PLD' as type,
+			f.id,
+			f.student_id,
+			NULL as evaluator_id,
+			f.date,
+			f.content,
+			f.created_at,
+			s.user_id,
+			u.first_name,
+			u.last_name,
+			NULL as evaluator_user_id,
+			NULL as evaluator_first_name,
+			NULL as evaluator_last_name
+		FROM pld_submissions f
+		JOIN students s ON f.student_id = s.id
+		JOIN users u ON s.user_id = u.id
+		";
+	
+		$conditions = [];
+		$params = [];
+	
+		if ($type) {
+			$conditions[] = "type = :type";
+			$params[':type'] = $type;
+		}
+		if ($date) {
+			$conditions[] = "DATE(date) = :date";
+			$params[':date'] = $date;
+		}
+		if ($studentId) {
+			$conditions[] = "student_id = :student_id";
+			$params[':student_id'] = $studentId;
+		}
+	
+		if (!empty($conditions)) {
+			$sql .= " WHERE " . implode(" AND ", $conditions);
+		}
+	
+		$sql .= " ORDER BY date DESC";
+	
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute($params);
+	
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 	public function toArray()
 	{
 		return [
