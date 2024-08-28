@@ -21,14 +21,14 @@ class Feedback
         $this->db = $db;
     }
 
-    public function findById($id, $type)
-    {
-        $table = $this->getTableName($type);
-        $stmt = $this->db->prepare("SELECT * FROM $table WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $feedbackData = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $feedbackData ? $this->hydrate($feedbackData, $type) : null;
-    }
+	public function findById($id, $type)
+	{
+		$table = $this->getTableName($type);
+		$stmt = $this->db->prepare("SELECT * FROM $table WHERE id = :id");
+		$stmt->execute(['id' => $id]);
+		$feedbackData = $stmt->fetch(PDO::FETCH_ASSOC);
+		return $feedbackData ? $this->hydrate($feedbackData, $type) : null;
+	}
 
 	public function findAll($type = null, $date = null, $studentId = null)
 {
@@ -89,29 +89,29 @@ class Feedback
         return $stmt->execute(['id' => $id]);
     }
 
-    private function hydrate($data)
+	private function hydrate($data)
 	{
-		$this->id = $data['id'];
-		$this->studentId = $data['student_id'];
-		$this->type = $data['type'];
-		$this->date = new DateTime($data['date']);
-		$this->content = $data['content'];
-		$this->createdAt = new DateTime($data['created_at']);
+		$this->id = $data['id'] ?? null;
+		$this->studentId = $data['student_id'] ?? null;
+		$this->type = $data['type'] ?? null;
+		$this->date = isset($data['date']) ? new DateTime($data['date']) : null;
+		$this->content = $data['content'] ?? null;
+		$this->createdAt = isset($data['created_at']) ? new DateTime($data['created_at']) : null;
 		
 		// Hydrate specific fields based on type
 		switch ($this->type) {
 			case 'SOD':
-				$this->evaluatorId = $data['evaluator_id'];
+				$this->evaluatorId = $data['evaluator_id'] ?? null;
 				break;
 			case 'Standup':
-				$this->cohortId = $data['cohort_id'];
-				$this->absent = $data['absent'];
-				$this->onSite = $data['on_site'];
-				$this->achievements = $data['achievements'];
-				$this->todayGoals = $data['today_goals'];
-				$this->needHelp = $data['need_help'];
-				$this->problemNature = $data['problem_nature'];
-				$this->otherRemarks = $data['other_remarks'];
+				$this->cohortId = $data['cohort_id'] ?? null;
+				$this->absent = $data['absent'] ?? null;
+				$this->onSite = $data['on_site'] ?? null;
+				$this->achievements = $data['achievements'] ?? null;
+				$this->todayGoals = $data['today_goals'] ?? null;
+				$this->needHelp = $data['need_help'] ?? null;
+				$this->problemNature = $data['problem_nature'] ?? null;
+				$this->otherRemarks = $data['other_remarks'] ?? null;
 				break;
 			case 'PLD':
 				// No specific fields for PLD
@@ -121,19 +121,32 @@ class Feedback
 		return $this;
 	}
 
-    private function getTableName($type)
-    {
-        switch ($type) {
-            case 'SOD':
-                return 'sod_feedback';
-            case 'Standup':
-                return 'standup_feedback';
-            case 'PLD':
-                return 'pld_submissions';
-            default:
-                throw new \InvalidArgumentException("Invalid feedback type: $type");
-        }
-    }
+	private function getTableName($type)
+	{
+		switch ($type) {
+			case 'SOD':
+				return 'sod_feedback';
+			case 'Standup':
+				return 'standup_feedback';
+			case 'PLD':
+				return 'pld_submissions';
+			default:
+				throw new \InvalidArgumentException("Invalid feedback type: $type");
+		}
+	}
+
+	public function toArray()
+	{
+		return [
+			'id' => $this->id,
+			'type' => $this->type,
+			'date' => $this->date ? $this->date->format('Y-m-d') : null,
+			'studentId' => $this->studentId,
+			'studentName' => $this->studentName,
+			'content' => $this->content,
+			// Ajoutez d'autres propriétés si nécessaire
+		];
+	}
 
 	public function setStudentName($name)
     {

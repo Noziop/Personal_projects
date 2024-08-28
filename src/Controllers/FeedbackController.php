@@ -60,23 +60,22 @@ class FeedbackController
 		]);
 	}
 
-    public function view(Request $request, Response $response, array $args): Response
-    {
-        $id = $args['id'];
-        $eventType = $args['event_type'];
-
-        $feedback = $this->feedbackService->getFeedbackById($id, $eventType);
-
-        if (!$feedback) {
-            $this->logger->warning('Feedback not found', ['id' => $id, 'event_type' => $eventType]);
-            // Rediriger vers une page d'erreur ou la liste des feedbacks
-            return $response->withHeader('Location', '/feedback/manage')->withStatus(302);
-        }
-
-        return $this->view->render($response, 'feedback/view.twig', [
-            'feedback' => $feedback
-        ]);
-    }
+	public function view(Request $request, Response $response, array $args): Response
+	{
+		$id = $args['id'];
+		$type = $args['type'];
+	
+		$feedback = $this->feedbackService->getFeedbackById($id, $type);
+	
+		if (!$feedback) {
+			$this->logger->warning('Feedback not found', ['id' => $id, 'type' => $type]);
+			return $response->withHeader('Location', '/feedback/manage')->withStatus(302);
+		}
+	
+		return $this->view->render($response, 'feedback/view.twig', [
+			'feedback' => $feedback
+		]);
+	}
 
     public function create(Request $request, Response $response): Response
     {

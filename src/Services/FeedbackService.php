@@ -36,10 +36,18 @@ class FeedbackService
 		return $feedbacks;
 	}
 
-    public function getFeedbackById($id, $eventType)
-    {
-        return $this->feedbackModel->findById($id, $eventType);
-    }
+	public function getFeedbackById($id, $type)
+	{
+		$feedback = $this->feedbackModel->findById($id, $type);
+		if ($feedback) {
+			$student = $this->studentModel->findById($feedback->getStudentId());
+			if ($student) {
+				$feedback->setStudentName($student['first_name'] . ' ' . $student['last_name']);
+			}
+			return $feedback->toArray();
+		}
+		return null;
+	}
 
     public function createFeedback($data, $eventType)
     {

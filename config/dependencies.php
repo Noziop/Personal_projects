@@ -72,13 +72,20 @@ return function (ContainerBuilder $containerBuilder) {
             return $c->get(LoggerInterface::class);
         },
 
-        Twig::class => function (ContainerInterface $c) {
-            $settings = $c->get('settings');
-            $twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
-            $environment = $twig->getEnvironment();
-            $environment->addGlobal('session', $_SESSION);
-            return $twig;
-        },
+		Twig::class => function (ContainerInterface $c) {
+			$settings = $c->get('settings');
+			$twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
+			$environment = $twig->getEnvironment();
+			$environment->addGlobal('session', $_SESSION);
+			
+			$environment->addFilter(new \Twig\TwigFilter('json_decode', function ($string) {
+				return json_decode($string, true);
+			}));
+		
+			return $twig;
+		},
+		
+		
         
         'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
 
