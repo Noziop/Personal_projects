@@ -22,14 +22,15 @@
         <ul>
             <li><a href="{{ url_for('home') }}">Accueil</a></li>
             {% if session.user %}
-                {% if session.user.role == 'student' %}
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Forms</a>
-                        <div class="dropdown-content">
-							<a href="{{ url_for('sod_feedback.form', {'student_id': session.user.id}) }}">SOD Feedback</a>
-                        </div>
-                    </li>
-                {% endif %}
+			{% if session.user.role == 'student' %}
+				<li class="dropdown">
+					<a href="#" class="dropbtn">Forms</a>
+					<div class="dropdown-content">
+						<a href="{{ url_for('sod_feedback.form', {'student_id': session.user.id}) }}">SOD Feedback</a>
+						<a href="{{ url_for('standup_feedback.form') }}">Stand-up Feedback</a>
+					</div>
+				</li>
+			{% endif %}
                 <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
             {% else %}
                 <li><a href="{{ url_for('auth.loginPage') }}">Connexion</a></li>

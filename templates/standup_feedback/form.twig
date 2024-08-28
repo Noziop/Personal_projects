@@ -1,0 +1,72 @@
+{% extends "layout.twig" %}
+
+{% block title %}Standup Feedback - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red">Standup Feedback Form for {{ cohort.name }}</h2>
+    <form action="{{ url_for('standup_feedback.submit') }}" method="POST" class="neumorphic-form">
+        <input type="hidden" name="date" value="{{ currentDate }}">
+        <input type="hidden" name="cohort_id" value="{{ cohort.id }}">
+
+        <table class="neumorphic-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Absent</th>
+                    <th>On-site</th>
+                    <th>Achievement</th>
+                    <th>Today's Goal</th>
+                    <th>Need Help</th>
+                    <th>Nature of Problem</th>
+                    <th>Other Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in cohortStudents %}
+                <tr>
+                    <td>{{ student.first_name }} {{ student.last_name }}</td>
+                    <td><input type="checkbox" name="students[{{ student.id }}][absent]"></td>
+                    <td><input type="checkbox" name="students[{{ student.id }}][on_site]"></td>
+                    <td><input type="text" name="students[{{ student.id }}][achievement]"></td>
+                    <td><input type="text" name="students[{{ student.id }}][today_goal]"></td>
+                    <td><input type="checkbox" name="students[{{ student.id }}][need_help]"></td>
+                    <td><input type="text" name="students[{{ student.id }}][problem_nature]"></td>
+                    <td><input type="text" name="students[{{ student.id }}][other_remarks]"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Cohort Summary</h3>
+        <table class="neumorphic-table">
+            <tr>
+                <td>SCRUM MASTER NAME(S):</td>
+                <td><input type="text" name="summary[scrum_master]"></td>
+            </tr>
+            <tr>
+                <td>BUGS REPORT TO THE SWE:</td>
+                <td><input type="text" name="summary[bugs_report]"></td>
+            </tr>
+            <tr>
+                <td>COMMON COHORT DIFFICULTIES:</td>
+                <td><input type="text" name="summary[cohort_difficulties]"></td>
+            </tr>
+            <tr>
+                <td>BEST SHARED TIPS OF THE DAY:</td>
+                <td><input type="text" name="summary[shared_tips]"></td>
+            </tr>
+            <tr>
+                <td>CONCLUSION:</td>
+                <td><input type="text" name="summary[conclusion]"></td>
+            </tr>
+            <tr>
+                <td>ANYTHING ELSE TO REPORT (NOT PRIORITY):</td>
+                <td><input type="text" name="summary[other_reports]"></td>
+            </tr>
+        </table>
+
+        <button type="submit" class="neumorphic-button">Submit Feedback</button>
+    </form>
+</div>
+{% endblock %}

@@ -28,6 +28,7 @@ use App\Models\Unavailability;
 use App\Models\Vacation;
 use App\Models\SODFeedback;
 use App\Models\Feedback;
+use App\Models\StandupFeedback;
 
 // Controllers
 use App\Controllers\AuthController;
@@ -38,6 +39,7 @@ use App\Controllers\CohortController;
 use App\Controllers\VacationController;
 use App\Controllers\SODFeedbackController;
 use App\Controllers\FeedbackController;
+use App\Controllers\StandupFeedbackController;
 
 // Services
 use App\Services\UserService;
@@ -52,6 +54,7 @@ use App\Services\VacationService;
 use App\Services\DashboardService;
 use App\Services\SODFeedbackService;
 use App\Services\FeedbackService;
+use App\Services\StandupFeedbackService;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -114,7 +117,7 @@ return function (ContainerBuilder $containerBuilder) {
 		SODFeedback::class => function (ContainerInterface $c) {
 			return new SODFeedback($c->get(PDO::class));
 		},
-		Feedback::class => fn(ContainerInterface $c) => new Feedback($c->get(PDO::class)),
+		StandupFeedback::class => fn(ContainerInterface $c) => new StandupFeedback($c->get(PDO::class)),
 
         // Services
 		UserService::class => function (ContainerInterface $c) {
@@ -174,10 +177,9 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
-		FeedbackService::class => function (ContainerInterface $c) {
-			return new FeedbackService(
-				$c->get(Feedback::class),
-				$c->get(Student::class),
+		StandupFeedbackService::class => function (ContainerInterface $c) {
+			return new StandupFeedbackService(
+				$c->get(StandupFeedback::class),
 				$c->get(LoggerInterface::class)
 			);
 		},
@@ -220,10 +222,12 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
-		FeedbackController::class => function (ContainerInterface $c) {
-			return new FeedbackController(
+		StandupFeedbackController::class => function (ContainerInterface $c) {
+			return new StandupFeedbackController(
 				$c->get(Twig::class),
-				$c->get(FeedbackService::class),
+				$c->get(StandupFeedbackService::class),
+				$c->get(StudentService::class),
+				$c->get(CohortService::class),
 				$c->get(LoggerInterface::class)
 			);
 		},

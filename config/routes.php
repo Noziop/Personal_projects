@@ -19,6 +19,7 @@ use App\Controllers\VacationController;
 use App\Controllers\HolidayController;
 use App\Controllers\SODFeedbackController;
 use App\Controllers\FeedbackController;
+use App\Controllers\StandupFeedbackController;
 
 
 return function (App $app) {
@@ -71,7 +72,7 @@ return function (App $app) {
 	$app->post('/sod-feedback', [SODFeedbackController::class, 'submitFeedback'])->setName('sod_feedback.submit');
 
 	// Stand-up Feedback form
-	$app->get('/standup-feedback/{student_id}', [StandupFeedbackController::class, 'showForm'])->setName('standup_feedback.form');
+	$app->get('/standup-feedback', [StandupFeedbackController::class, 'showForm'])->setName('standup_feedback.form');
 	$app->post('/standup-feedback', [StandupFeedbackController::class, 'submitFeedback'])->setName('standup_feedback.submit');
 
 	// PLD Submission form
