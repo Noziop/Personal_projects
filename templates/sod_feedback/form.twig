@@ -12,12 +12,12 @@
         
         <div class="neumorphic-form-group">
             <label for="student_id">Student Performing SOD:</label>
-            <select id="student_id" name="student_id" required class="neumorphic-input">
-                <option value="">Select a student</option>
-                {% for student in students %}
-                    <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
-                {% endfor %}
-            </select>
+		<select id="student_id" name="student_id" required class="neumorphic-input">
+			<option value="">Select a student</option>
+			{% for student in students %}
+				<option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+			{% endfor %}
+		</select>
         </div>
 
         <div class="neumorphic-form-group">

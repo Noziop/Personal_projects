@@ -40,44 +40,66 @@ class SODFeedbackController
 	}
 	
 
-    public function submitFeedback(Request $request, Response $response): Response
-    {
-        $data = $request->getParsedBody();
-        $evaluatorId = $_SESSION['user']['id'] ?? null;
-
-        if (!$evaluatorId) {
-            $this->logger->error('Unauthorized access to SOD feedback submission');
-            return $response->withStatus(401);
-        }
-
-        $feedback = [
-            'student_id' => $data['student_id'],
-            'evaluator_id' => $evaluatorId,
-            'sod_date' => $data['sod_date'],
-            'content' => json_encode([
-                'time' => $data['time'],
-                'audience_engagement' => $data['audience_engagement'],
-                'spatial_position' => $data['spatial_position'],
-                'self_confidence' => $data['self_confidence'],
-                'audibility' => $data['audibility'],
-                'no_filler_words' => $data['no_filler_words'],
-                'energy' => $data['energy'],
-                'english' => $data['english'],
-                'presentation' => $data['presentation'],
-                'subject' => $data['subject'],
-                'question_responses' => $data['question_responses'],
-                'total' => array_sum($data) - $data['student_id'] - strtotime($data['sod_date'])
-            ])
-        ];
-
-        $result = $this->sodFeedbackService->createFeedback($feedback);
-
-        if ($result) {
-            $this->logger->info('SOD feedback submitted successfully', ['student_id' => $data['student_id']]);
-            return $response->withHeader('Location', '/dashboard')->withStatus(302);
-        } else {
-            $this->logger->error('Failed to submit SOD feedback', ['student_id' => $data['student_id']]);
-            return $response->withStatus(500);
-        }
-    }
+	public function submitFeedback(Request $request, Response $response): Response
+	{
+		$data = $request->getParsedBody();
+		$evaluatorUserId = $_SESSION['user']['id'] ?? null;
+	
+		$this->logger->info('Submitting SOD feedback', [
+			'evaluator_user_id' => $evaluatorUserId,
+			'student_id' => $data['student_id'] ?? 'Not provided'
+		]);
+	
+		if (!$evaluatorUserId) {
+			$this->logger->error('Unauthorized access to SOD feedback submission');
+			return $response->withStatus(401);
+		}
+	
+		$evaluatorStudent = $this->userService->getStudentByUserId($evaluatorUserId);
+		if (!$evaluatorStudent) {
+			$this->logger->error('Evaluator is not a student', ['user_id' => $evaluatorUserId]);
+			return $response->withStatus(400);
+		}
+	
+		if (empty($data['student_id'])) {
+			$this->logger->error('No student selected for evaluation');
+			return $response->withStatus(400);
+		}
+	
+		$evaluatedStudent = $this->userService->getStudentByUserId($data['student_id']);
+		if (!$evaluatedStudent) {
+			$this->logger->error('Evaluated user is not a student', ['user_id' => $data['student_id']]);
+			return $response->withStatus(400);
+		}
+	
+		$feedback = [
+			'student_id' => $evaluatedStudent['id'],
+			'evaluator_id' => $evaluatorStudent['id'],
+			'sod_date' => $data['sod_date'],
+			'content' => json_encode([
+				'time' => $data['time'],
+				'audience_engagement' => $data['audience_engagement'],
+				'spatial_position' => $data['spatial_position'],
+				'self_confidence' => $data['self_confidence'],
+				'audibility' => $data['audibility'],
+				'no_filler_words' => $data['no_filler_words'],
+				'energy' => $data['energy'],
+				'english' => $data['english'],
+				'presentation' => $data['presentation'],
+				'subject' => $data['subject'],
+				'question_responses' => $data['question_responses'],
+				'total' => array_sum($data) - $data['student_id'] - strtotime($data['sod_date'])
+			])
+		];
+	
+		$result = $this->sodFeedbackService->createFeedback($feedback);
+	
+		if ($result) {
+			$this->logger->info('SOD feedback submitted successfully', ['student_id' => $evaluatedStudent['id']]);
+			return $response->withHeader('Location', '/dashboard')->withStatus(302);
+		} else {
+			$this->logger->error('Failed to submit SOD feedback', ['student_id' => $evaluatedStudent['id']]);
+			return $response->withStatus(500);
+		}
+	}
 }

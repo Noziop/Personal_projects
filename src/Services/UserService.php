@@ -3,16 +3,19 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Student;
 use Psr\Log\LoggerInterface;
 
 class UserService
 {
     private $userModel;
+	private $studentModel;
     private $logger;
 
-    public function __construct(User $userModel, LoggerInterface $logger)
+    public function __construct(User $userModel, Student $studentModel, LoggerInterface $logger)
     {
         $this->userModel = $userModel;
+		$this->studentModel = $studentModel;
         $this->logger = $logger;
     }
 
@@ -120,5 +123,16 @@ class UserService
     public function getUsersCount()
     {
         return $this->userModel->getTotalCount();
+    }
+
+	public function getStudentByUserId($userId)
+	{
+		$this->logger->info("Getting student by user ID", ['user_id' => $userId]);
+		return $this->studentModel->findByUserId($userId);
+	}
+	public function getStudentIdByUserId($userId)
+    {
+        $student = $this->getStudentByUserId($userId);
+        return $student ? $student['id'] : null;
     }
 }

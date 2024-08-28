@@ -118,7 +118,11 @@ return function (ContainerBuilder $containerBuilder) {
 
         // Services
 		UserService::class => function (ContainerInterface $c) {
-			return new UserService($c->get(User::class), $c->get(LoggerInterface::class));
+			return new UserService(
+				$c->get(User::class),
+				$c->get(Student::class),
+				$c->get(LoggerInterface::class)
+			);
 		},
         StudentService::class => function (ContainerInterface $c) {
             return new StudentService(
