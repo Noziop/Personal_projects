@@ -2,35 +2,40 @@
 
 namespace App\Controllers;
 
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Views\Twig;
 use App\Services\StandupFeedbackService;
 use App\Services\StudentService;
+use App\Services\UserService;
 use App\Services\CohortService;
 use Psr\Log\LoggerInterface;
+use Slim\Views\Twig;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 class StandupFeedbackController
 {
     private $view;
     private $standupFeedbackService;
-    private $studentService;  // Changez UserService en StudentService
+    private $studentService;
+    private $userService;  // Ajoutez cette ligne
     private $cohortService;
     private $logger;
 
     public function __construct(
-        Twig $view, 
-        StandupFeedbackService $standupFeedbackService, 
-        StudentService $studentService,  // Changez UserService en StudentService
+        Twig $view,
+        StandupFeedbackService $standupFeedbackService,
+        StudentService $studentService,
+        UserService $userService,  // Ajoutez ce paramètre
         CohortService $cohortService,
         LoggerInterface $logger
     ) {
         $this->view = $view;
         $this->standupFeedbackService = $standupFeedbackService;
         $this->studentService = $studentService;
+        $this->userService = $userService;  // Initialisez la propriété
         $this->cohortService = $cohortService;
         $this->logger = $logger;
     }
+
 
 	public function showForm(Request $request, Response $response): Response
 	{
@@ -54,30 +59,38 @@ class StandupFeedbackController
 		]);
 	}
 
-    public function submitFeedback(Request $request, Response $response): Response
-    {
-        $data = $request->getParsedBody();
-        $userId = $_SESSION['user']['id'] ?? null;
-
-        if (!$userId) {
-            $this->logger->error('Unauthorized access to standup feedback submission');
-            return $response->withStatus(401);
-        }
-
-        $student = $this->userService->getStudentByUserId($userId);
-        if (!$student) {
-            $this->logger->error('User is not a student', ['user_id' => $userId]);
-            return $response->withStatus(400);
-        }
-
-        $result = $this->standupFeedbackService->createFeedback($data);
-
-        if ($result) {
-            $this->logger->info('Standup feedback submitted successfully', ['cohort_id' => $student['cohort_id']]);
-            return $response->withHeader('Location', '/dashboard')->withStatus(302);
-        } else {
-            $this->logger->error('Failed to submit standup feedback', ['cohort_id' => $student['cohort_id']]);
-            return $response->withStatus(500);
-        }
-    }
+	public function submitFeedback(Request $request, Response $response): Response
+	{
+		$data = $request->getParsedBody();
+		$userId = $_SESSION['user']['id'] ?? null;
+	
+		if (!$userId) {
+			$this->logger->error('Unauthorized access to standup feedback submission');
+			return $response->withStatus(401);
+		}
+	
+		$student = $this->studentService->getStudentByUserId($userId);
+		if (!$student) {
+			$this->logger->error('User is not a student', ['user_id' => $userId]);
+			return $response->withStatus(400);
+		}
+	
+		$feedbackData = [
+			'student_id' => $student['id'],
+			'cohort_id' => $student['cohort_id'],
+			'date' => $data['date'],
+			'content' => json_encode($data['students']),
+			'summary' => json_encode($data['summary'])
+		];
+	
+		$result = $this->standupFeedbackService->createFeedback($feedbackData);
+	
+		if ($result) {
+			$this->logger->info('Standup feedback submitted successfully', ['cohort_id' => $student['cohort_id']]);
+			return $response->withHeader('Location', '/dashboard')->withStatus(302);
+		} else {
+			$this->logger->error('Failed to submit standup feedback', ['cohort_id' => $student['cohort_id']]);
+			return $response->withStatus(500);
+		}
+	}
 }

@@ -227,6 +227,7 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(Twig::class),
 				$c->get(StandupFeedbackService::class),
 				$c->get(StudentService::class),
+				$c->get(UserService::class),  // Ajoutez cette ligne
 				$c->get(CohortService::class),
 				$c->get(LoggerInterface::class)
 			);

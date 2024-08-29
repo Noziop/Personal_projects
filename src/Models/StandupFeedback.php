@@ -13,13 +13,24 @@ class StandupFeedback
         $this->db = $db;
     }
 
-    public function create(array $data)
-    {
-        $sql = "INSERT INTO standup_feedback (student_id, cohort_id, date, absent, on_site, achievements, today_goals, need_help, problem_nature, other_remarks, content) 
-                VALUES (:student_id, :cohort_id, :date, :absent, :on_site, :achievements, :today_goals, :need_help, :problem_nature, :other_remarks, :content)";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($data);
-    }
+	public function create(array $data)
+	{
+		$sql = "INSERT INTO standup_feedback (student_id, cohort_id, date, content, summary) 
+				VALUES (:student_id, :cohort_id, :date, :content, :summary)";
+		$stmt = $this->db->prepare($sql);
+		$result = $stmt->execute([
+			'student_id' => $data['student_id'],
+			'cohort_id' => $data['cohort_id'],
+			'date' => $data['date'],
+			'content' => $data['content'],
+			'summary' => $data['summary']
+		]);
+		
+		if ($result) {
+			return $this->db->lastInsertId();
+		}
+		return false;
+	}
 
     public function findById($id)
     {
