@@ -119,6 +119,7 @@ return function (ContainerBuilder $containerBuilder) {
 		},
 		StandupFeedback::class => fn(ContainerInterface $c) => new StandupFeedback($c->get(PDO::class)),
 
+
         // Services
 		UserService::class => function (ContainerInterface $c) {
 			return new UserService(
@@ -177,6 +178,13 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
+		FeedbackService::class => function (ContainerInterface $c) {
+			return new FeedbackService(
+				$c->get(Feedback::class),
+				$c->get(Student::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 		StandupFeedbackService::class => function (ContainerInterface $c) {
 			return new StandupFeedbackService(
 				$c->get(StandupFeedback::class),
@@ -222,12 +230,20 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(LoggerInterface::class)
 			);
 		},
+		FeedbackController::class => function (ContainerInterface $c) {
+			return new FeedbackController(
+				$c->get(Twig::class),
+				$c->get(FeedbackService::class),
+				$c->get(StandupFeedbackService::class),
+				$c->get(LoggerInterface::class)
+			);
+		},
 		StandupFeedbackController::class => function (ContainerInterface $c) {
 			return new StandupFeedbackController(
 				$c->get(Twig::class),
 				$c->get(StandupFeedbackService::class),
 				$c->get(StudentService::class),
-				$c->get(UserService::class),  // Ajoutez cette ligne
+				$c->get(UserService::class),
 				$c->get(CohortService::class),
 				$c->get(LoggerInterface::class)
 			);

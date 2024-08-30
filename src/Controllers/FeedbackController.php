@@ -6,36 +6,50 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use App\Services\FeedbackService;
+use App\Services\StandupFeedbackService;
 use Psr\Log\LoggerInterface;
 
 class FeedbackController
 {
     private $view;
     private $feedbackService;
+    private $standupFeedbackService;
     private $logger;
 
-    public function __construct(Twig $view, FeedbackService $feedbackService, LoggerInterface $logger)
-    {
+    public function __construct(
+        Twig $view,
+        FeedbackService $feedbackService,
+        StandupFeedbackService $standupFeedbackService,
+        LoggerInterface $logger
+    ) {
         $this->view = $view;
         $this->feedbackService = $feedbackService;
+        $this->standupFeedbackService = $standupFeedbackService;
         $this->logger = $logger;
     }
 
-	public function manage(Request $request, Response $response): Response
-	{
-		$queryParams = $request->getQueryParams();
-		$eventType = $queryParams['event_type'] ?? null;
-		$date = $queryParams['date'] ?? null;
-		$studentId = $queryParams['student_id'] ?? null;
-	
-		$feedbacks = $this->feedbackService->getFeedback($eventType, $date, $studentId);
-	
-		return $this->view->render($response, 'feedback/manage.twig', [
-			'feedbacks' => $feedbacks,
-			'eventTypes' => ['SOD', 'Stand up', 'PLD'],
-			'students' => $this->feedbackService->getAllStudents(),
-		]);
-	}
+    public function manage(Request $request, Response $response): Response
+    {
+        $queryParams = $request->getQueryParams();
+        $eventType = $queryParams['event_type'] ?? null;
+        $date = $queryParams['date'] ?? null;
+        $studentId = $queryParams['student_id'] ?? null;
+
+        $feedbacks = $this->feedbackService->getFeedback($eventType, $date, $studentId);
+        
+        // Si le type d'événement est 'standup' ou non spécifié, récupérer également les stand-ups
+        if ($eventType === 'standup' || $eventType === null) {
+            $standupFeedbacks = $this->standupFeedbackService->getFeedbackByDateRange($date, $date);
+            $feedbacks = array_merge($feedbacks, $standupFeedbacks);
+        }
+
+        return $this->view->render($response, 'feedback/manage.twig', [
+            'feedbacks' => $feedbacks,
+            'eventTypes' => ['SOD', 'Stand up', 'PLD'],
+            'students' => $this->feedbackService->getAllStudents(),
+        ]);
+    }
+
 
 	public function view(Request $request, Response $response, array $args): Response
 	{
