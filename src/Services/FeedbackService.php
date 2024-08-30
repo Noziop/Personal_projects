@@ -19,11 +19,14 @@ class FeedbackService
         $this->logger = $logger;
     }
 
-    public function getAllFeedbacks($eventType = null, $date = null, $studentId = null)
-    {
-        $this->logger->info('Fetching all feedbacks', ['event_type' => $eventType, 'date' => $date, 'student_id' => $studentId]);
-        return $this->feedbackModel->findAllWithStudentInfo($eventType, $date, $studentId);
-    }
+	public function getAllFeedbacks($eventType = null, $date = null, $studentId = null)
+	{
+		$this->logger->info('Fetching all feedbacks', ['event_type' => $eventType, 'date' => $date, 'student_id' => $studentId]);
+		$feedbacks = $this->feedbackModel->findAllWithStudentInfo($eventType, $date, $studentId);
+		$this->logger->info('Retrieved feedbacks', ['count' => count($feedbacks), 'types' => array_column($feedbacks, 'type')]);
+		return $feedbacks;
+	}
+		
 
     public function getFeedbackById($id, $type)
     {

@@ -21,21 +21,20 @@ class FeedbackController
         $this->logger = $logger;
     }
 
-    public function manage(Request $request, Response $response): Response
-    {
-        $queryParams = $request->getQueryParams();
-        $eventType = $queryParams['event_type'] ?? null;
-        $date = $queryParams['date'] ?? null;
-        $studentId = $queryParams['student_id'] ?? null;
+	public function manage(Request $request, Response $response): Response
+	{
+		$queryParams = $request->getQueryParams();
+		$eventType = $queryParams['event_type'] ?? null;
+		$date = $queryParams['date'] ?? null;
+		$studentId = $queryParams['student_id'] ?? null;
+	
+		$feedbacks = $this->feedbackService->getAllFeedbacks($eventType, $date, $studentId);
+	
+		return $this->view->render($response, 'feedback/manage.twig', [
+			'feedbacks' => $feedbacks,
+			'eventTypes' => ['SOD', 'Stand-up'],
+			'students' => $this->feedbackService->getAllStudents(),
+		]);
+	}
 
-        $feedbacks = $this->feedbackService->getAllFeedbacks($eventType, $date, $studentId);
-
-        return $this->view->render($response, 'feedback/manage.twig', [
-            'feedbacks' => $feedbacks,
-            'eventTypes' => ['SOD', 'Stand-up'],
-            'students' => $this->feedbackService->getAllStudents(),
-        ]);
-    }
-
-    // Autres méthodes...
 }

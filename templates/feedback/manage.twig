@@ -45,36 +45,42 @@
             </tr>
         </thead>
 		<tbody>
-			{% for feedback in feedbacks %}
-				<tr>
-					<td>{{ feedback.type }}</td>
-					<td>{{ feedback.date }}</td>
-					<td>{{ feedback.first_name }} {{ feedback.last_name }}</td>
-					<td>
+		{% for feedback in feedbacks %}
+			<tr data-type="{{ feedback.type }}" data-date="{{ feedback.date|date('Y-m-d') }}" data-student="{{ feedback.student_id }}">
+				<td>{{ feedback.type }}</td>
+				<td>{{ feedback.date|date('Y-m-d') }}</td>
+				<td>
+					{% if feedback.type == 'SOD' %}
+						{{ feedback.first_name }} {{ feedback.last_name }}
+					{% else %}
+						{{ feedback.first_name }} (Cohort)
+					{% endif %}
+				</td>
+				<td>
+					{% if feedback.type == 'SOD' %}
+						{{ feedback.evaluator_first_name }} {{ feedback.evaluator_last_name }}
+					{% else %}
+						N/A
+					{% endif %}
+				</td>
+				<td>
+					{% if feedback.content %}
+						{% set content = feedback.content|json_decode %}
 						{% if feedback.type == 'SOD' %}
-							{{ feedback.evaluator_first_name }} {{ feedback.evaluator_last_name }}
+							{% for key, value in content|slice(0, 3) %}
+								<strong>{{ key|replace({'_': ' '})|title }}:</strong> {{ value }}<br>
+							{% endfor %}
 						{% else %}
-							N/A
+							<strong>Scrum Master:</strong> {{ content.scrum_master_names }}<br>
+							<strong>Bugs Report:</strong> {{ content.bugs_report|slice(0, 50) }}...
 						{% endif %}
-					</td>
-					<td>
-						{% if feedback.content %}
-							{% set content = feedback.content|json_decode %}
-							{% if feedback.type == 'SOD' %}
-								{% for key, value in content|slice(0, 3) %}
-									<strong>{{ key|replace({'_': ' '})|title }}:</strong> {{ value }}<br>
-								{% endfor %}
-							{% else %}
-								<strong>Scrum Master:</strong> {{ content.scrum_master_names }}<br>
-								<strong>Bugs Report:</strong> {{ content.bugs_report|slice(0, 50) }}...
-							{% endif %}
-						{% endif %}
-					</td>
-					<td>
-						<a href="{{ url_for('feedback.view', {'id': feedback.id, 'type': feedback.type}) }}" class="neumorphic-button">View</a>
-					</td>
-				</tr>
-			{% endfor %}
+					{% endif %}
+				</td>
+				<td>
+					<a href="{{ url_for('feedback.view', {'id': feedback.id, 'type': feedback.type}) }}" class="neumorphic-button">View</a>
+				</td>
+			</tr>
+		{% endfor %}
 		</tbody>
     </table>
 </div>
