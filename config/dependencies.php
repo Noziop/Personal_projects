@@ -234,7 +234,6 @@ return function (ContainerBuilder $containerBuilder) {
 			return new FeedbackController(
 				$c->get(Twig::class),
 				$c->get(FeedbackService::class),
-				$c->get(StandupFeedbackService::class),
 				$c->get(LoggerInterface::class)
 			);
 		},

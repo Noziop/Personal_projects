@@ -19,33 +19,16 @@ class FeedbackService
         $this->logger = $logger;
     }
 
-	public function getFeedback($eventType = null, $date = null, $studentId = null)
-	{
-		$feedbacks = $this->feedbackModel->findAllWithStudentInfo($eventType, $date, $studentId);
-		
-		foreach ($feedbacks as &$feedback) {
-			$feedback['student_name'] = $feedback['first_name'] . ' ' . $feedback['last_name'];
-			$feedback['evaluator_name'] = $feedback['evaluator_first_name'] && $feedback['evaluator_last_name'] 
-				? $feedback['evaluator_first_name'] . ' ' . $feedback['evaluator_last_name']
-				: null;
-		}
-	
-		return $feedbacks;
-	}
-
-    public function createFeedback($data, $eventType)
+    public function getAllFeedbacks($eventType = null, $date = null, $studentId = null)
     {
-        return $this->feedbackModel->create($data, $eventType);
+        $this->logger->info('Fetching all feedbacks', ['event_type' => $eventType, 'date' => $date, 'student_id' => $studentId]);
+        return $this->feedbackModel->findAllWithStudentInfo($eventType, $date, $studentId);
     }
 
-    public function updateFeedback($id, $data, $eventType)
+    public function getFeedbackById($id, $type)
     {
-        return $this->feedbackModel->update($id, $data, $eventType);
-    }
-
-    public function deleteFeedback($id, $eventType)
-    {
-        return $this->feedbackModel->delete($id, $eventType);
+        $this->logger->info('Fetching feedback by ID', ['id' => $id, 'type' => $type]);
+        return $this->feedbackModel->findById($id, $type);
     }
 
     public function getAllStudents()
@@ -53,8 +36,5 @@ class FeedbackService
         return $this->studentModel->findAll();
     }
 
-    public function getEventTypes()
-    {
-        return ['SOD', 'Stand up', 'PLD'];
-    }
+    // Ajoutez d'autres méthodes si nécessaire
 }

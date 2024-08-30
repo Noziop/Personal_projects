@@ -46,6 +46,68 @@ class StandupFeedback
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+	public function findAll($date = null, $studentId = null)
+	{
+		$sql = "SELECT sf.*, c.name as cohort_name 
+				FROM standup_feedback sf
+				JOIN cohorts c ON sf.cohort_id = c.id
+				WHERE 1=1";
+		
+		$params = [];
+		
+		if ($date) {
+			$sql .= " AND sf.date = :date";
+			$params['date'] = $date;
+		}
+		
+		if ($studentId) {
+			$sql .= " AND sf.student_id = :student_id";
+			$params['student_id'] = $studentId;
+		}
+		
+		$sql .= " ORDER BY sf.date DESC";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute($params);
+		
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	public function findAllWithStudentInfo($date = null, $studentId = null)
+	{
+		$sql = "
+		SELECT 
+			sf.*,
+			s.user_id,
+			u.first_name,
+			u.last_name
+		FROM standup_feedback sf
+		JOIN students s ON sf.student_id = s.id
+		JOIN users u ON s.user_id = u.id
+		WHERE 1=1";
+
+		$params = [];
+
+		if ($date) {
+			$sql .= " AND DATE(sf.date) = :date";
+			$params[':date'] = $date;
+		}
+
+		if ($studentId) {
+			$sql .= " AND sf.student_id = :student_id";
+			$params[':student_id'] = $studentId;
+		}
+
+		$sql .= " ORDER BY sf.date DESC";
+
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute($params);
+
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+
+
     public function update($id, array $data)
     {
         $sql = "UPDATE standup_feedback SET 
