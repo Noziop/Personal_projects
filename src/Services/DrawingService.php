@@ -64,46 +64,56 @@ class DrawingService
         return $selectedStudent;
     }
 
-    private function isDrawingAllowed($date, $cohortIds)
-    {
-        $isDrawingDay = $this->drawingDayModel->isDrawingDayForCohorts($date, $cohortIds);
-        $isHoliday = $this->holidayModel->isHoliday($date);
-        $isVacation = $this->vacationModel->isVacationForAnyCohort($date, $cohortIds);
+	private function isDrawingAllowed($date, $cohortIds)
+	{
+		$isDrawingDay = $this->drawingDayModel->isDrawingDayForCohorts($date, $cohortIds);
+		$isHoliday = $this->holidayModel->isHoliday($date);
+		$isVacation = $this->vacationModel->isVacationForAnyCohort($date, $cohortIds);
+	
+		$this->logger->info("Date: {$date}, IsDrawingDay: " . ($isDrawingDay ? 'Yes' : 'No') . 
+							", IsHoliday: " . ($isHoliday ? 'Yes' : 'No') . 
+							", IsVacation: " . ($isVacation ? 'Yes' : 'No'));
+	
+		return $isDrawingDay && !$isHoliday && !$isVacation;
+	}
 
-        return $isDrawingDay && !$isHoliday && !$isVacation;
-    }
+	private function getEligibleStudents($date, $cohortIds)
+	{
+		$allStudents = $this->studentModel->getStudentsByCohorts($cohortIds);
+		$eligibleStudents = [];
+	
+		foreach ($allStudents as $student) {
+			if ($this->isStudentEligible($student, $date)) {
+				$eligibleStudents[] = $student;
+			} else {
+				$this->logger->info("Student {$student['id']} not eligible for date {$date}");
+			}
+		}
+	
+		return $eligibleStudents;
+	}
 
-    private function getEligibleStudents($date, $cohortIds)
-    {
-        $allStudents = $this->studentModel->getStudentsByCohorts($cohortIds);
-        $eligibleStudents = [];
-
-        foreach ($allStudents as $student) {
-            if ($this->isStudentEligible($student, $date)) {
-                $eligibleStudents[] = $student;
-            }
-        }
-
-        return $eligibleStudents;
-    }
-
-    private function isStudentEligible($student, $date)
-    {
-        if ($this->unavailabilityModel->isStudentUnavailable($student['id'], $date)) {
-            return false;
-        }
-
-        $lastDrawing = $this->drawingModel->getLastDrawingForStudent($student['id']);
-        if ($lastDrawing && $this->isDrawingTooRecent($lastDrawing, $date)) {
-            return false;
-        }
-
-        $drawingsCount = $this->drawingModel->getDrawingsCountForStudent($student['id']);
-        $studentCohort = $this->cohortModel->getCohortById($student['cohort_id']);
-        $expectedDrawings = $this->calculateExpectedDrawings($studentCohort, $date);
-
-        return $drawingsCount < $expectedDrawings;
-    }
+	private function isStudentEligible($student, $date)
+	{
+		if ($this->unavailabilityModel->isStudentUnavailable($student['id'], $date)) {
+			$this->logger->info("Student {$student['id']} unavailable on {$date}");
+			return false;
+		}
+	
+		$lastDrawing = $this->drawingModel->getLastDrawingForStudent($student['id']);
+		if ($lastDrawing && $this->isDrawingTooRecent($lastDrawing, $date)) {
+			$this->logger->info("Last drawing for student {$student['id']} too recent");
+			return false;
+		}
+	
+		$drawingsCount = $this->drawingModel->getDrawingsCountForStudent($student['id']);
+		$studentCohort = $this->cohortModel->getCohortById($student['cohort_id']);
+		$expectedDrawings = $this->calculateExpectedDrawings($studentCohort, $date);
+	
+		$this->logger->info("Student {$student['id']}: Drawings count: {$drawingsCount}, Expected: {$expectedDrawings}");
+	
+		return $drawingsCount < $expectedDrawings;
+	}
 
     private function selectStudent($eligibleStudents)
     {
@@ -137,11 +147,14 @@ class DrawingService
         ]);
     }
 
-    private function isDrawingTooRecent($lastDrawing, $currentDate)
-    {
-        $daysSinceLastDrawing = (strtotime($currentDate) - strtotime($lastDrawing['drawing_date'])) / (60 * 60 * 24);
-        return $daysSinceLastDrawing < 14; // Pas plus d'un tirage toutes les 2 semaines
-    }
+	private function isDrawingTooRecent($lastDrawing, $currentDate)
+	{
+		if (!$lastDrawing) {
+			return false;
+		}
+		$daysSinceLastDrawing = (strtotime($currentDate) - strtotime($lastDrawing['drawing_date'])) / (60 * 60 * 24);
+		return $daysSinceLastDrawing < 14; // Pas plus d'un tirage toutes les 2 semaines
+	}
 
     private function calculateExpectedDrawings($cohort, $currentDate)
     {
@@ -163,24 +176,43 @@ class DrawingService
 	{
 		$drawingResults = [];
 		$currentDate = new DateTime($startDate);
-		$endDate = (new DateTime($startDate))->modify('+3 months'); // Par exemple, on tire au sort pour les 3 prochains mois
-
+		$endDate = (new DateTime($startDate))->modify('+3 months');
+	
+		$this->logger->info("Starting multiple day drawing from {$startDate} to {$endDate->format('Y-m-d')}");
+	
 		while ($currentDate <= $endDate) {
 			$dateString = $currentDate->format('Y-m-d');
 			
+			$this->logger->info("Checking date: {$dateString}");
+			
 			if ($this->isDrawingAllowed($dateString, $cohortIds)) {
+				$this->logger->info("Drawing allowed for {$dateString}");
 				$eligibleStudents = $this->getEligibleStudents($dateString, $cohortIds);
+				
+				$this->logger->info("Eligible students count: " . count($eligibleStudents));
 				
 				if (!empty($eligibleStudents)) {
 					$selectedStudent = $this->selectStudent($eligibleStudents);
 					$drawingResults[$dateString] = $selectedStudent;
 					$this->saveDrawingResult($dateString, $selectedStudent);
+					$this->logger->info("Selected student for {$dateString}: {$selectedStudent['id']}");
+				} else {
+					$this->logger->info("No eligible students for {$dateString}");
 				}
+			} else {
+				$this->logger->info("Drawing not allowed for {$dateString}");
 			}
 			
 			$currentDate->modify('+1 day');
 		}
-
+	
+		$this->logger->info("Drawing results count: " . count($drawingResults));
+	
 		return $drawingResults;
+	}
+
+	public function getDrawingHistory()
+	{
+		return $this->drawingModel->getAllDrawings();
 	}
 }

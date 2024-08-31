@@ -138,15 +138,19 @@ class Drawing
         return (new Cohort($this->db))->findById($this->cohortId);
     }
 
-	public function getLastDrawingForStudent($studentId)
+	public function getLastDrawingForStudent($studentId, $startDate)
 	{
 		$sql = "SELECT * FROM drawings 
 				WHERE student_id = :student_id 
+				AND drawing_date >= :start_date
 				ORDER BY drawing_date DESC 
 				LIMIT 1";
 		
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute(['student_id' => $studentId]);
+		$stmt->execute([
+			'student_id' => $studentId,
+			'start_date' => $startDate
+		]);
 		
 		return $stmt->fetch(PDO::FETCH_ASSOC);
 	}
@@ -178,6 +182,19 @@ class Drawing
 		}
 
 		return false;
+	}
+
+	public function getAllDrawings()
+	{
+		$sql = "SELECT d.*, u.first_name, u.last_name, c.name as cohort_name 
+				FROM drawings d
+				JOIN students s ON d.student_id = s.id
+				JOIN users u ON s.user_id = u.id
+				JOIN cohorts c ON s.cohort_id = c.id
+				ORDER BY d.drawing_date ASC";
+		
+		$stmt = $this->db->query($sql);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
     /**

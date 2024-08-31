@@ -15,17 +15,17 @@
             </tr>
         </thead>
         <tbody>
-            {% for drawing in drawings %}
-                <tr>
-                    <td>{{ drawing.drawing_date|date('d/m/Y') }}</td>
-                    <td>{{ drawing.student.first_name }} {{ drawing.student.last_name }}</td>
-                    <td>{{ drawing.student.cohort.name }}</td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="3">Aucun tirage effectué pour le moment.</td>
-                </tr>
-            {% endfor %}
+		{% for drawing in drawings %}
+			<tr>
+				<td>{{ drawing.drawing_date|date('d/m/Y') }}</td>
+				<td>{{ drawing.first_name }} {{ drawing.last_name }}</td>
+				<td>{{ drawing.cohort_name }}</td>
+			</tr>
+		{% else %}
+			<tr>
+				<td colspan="3">Aucun tirage effectué pour le moment.</td>
+			</tr>
+		{% endfor %}
         </tbody>
     </table>
 </div>
