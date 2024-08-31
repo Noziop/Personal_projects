@@ -1,0 +1,51 @@
+{% extends "layout.twig" %}
+
+{% block title %}User Management Dashboard - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h1 class="neumorphic-title-red">User Management Dashboard</h1>
+
+    <div class="neumorphic-card">
+        <h2>Overview</h2>
+        <p>Total Users: {{ users|length }}</p>
+        <p>Total Cohorts: {{ cohorts|length }}</p>
+        <p>Total Students: {{ students|length }}</p>
+        <p>Active SOD Feedbacks: {{ sod_feedbacks|length }}</p>
+        <p>Active Stand-up Feedbacks: {{ standup_feedbacks|length }}</p>
+    </div>
+
+    <div class="neumorphic-card">
+        <h2>Quick Actions</h2>
+        <a href="{{ url_for('user_management.users.list') }}" class="neumorphic-button">Manage Users</a>
+        <a href="{{ url_for('user_management.cohorts.list') }}" class="neumorphic-button">Manage Cohorts</a>
+        <a href="{{ url_for('user_management.students.list') }}" class="neumorphic-button">Manage Students</a>
+        <a href="{{ url_for('user_management.feedbacks.list') }}" class="neumorphic-button">View Feedbacks</a>
+        <a href="{{ url_for('user_management.vacations.list') }}" class="neumorphic-button">Manage Vacations</a>
+        <a href="{{ url_for('user_management.holidays.list') }}" class="neumorphic-button">Manage Holidays</a>
+        <a href="{{ url_for('user_management.unavailabilities.list') }}" class="neumorphic-button">Manage Unavailabilities</a>
+    </div>
+
+    <div class="neumorphic-card">
+        <h2>Upcoming Events</h2>
+        <ul>
+            {% for event in upcoming_events %}
+                <li>{{ event.date|date('Y-m-d') }} - {{ event.type }}: {{ event.description }}</li>
+            {% else %}
+                <li>No upcoming events</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="neumorphic-card">
+        <h2>Recent Activities</h2>
+        <ul>
+            {% for activity in recent_activities %}
+                <li>{{ activity.date|date('Y-m-d H:i') }} - {{ activity.description }}</li>
+            {% else %}
+                <li>No recent activities</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

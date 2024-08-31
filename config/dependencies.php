@@ -34,6 +34,7 @@ use App\Models\StandupFeedback;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\UserController;
+use App\Controllers\DrawingController;
 use App\Controllers\StudentController;
 use App\Controllers\CohortController;
 use App\Controllers\VacationController;
@@ -144,7 +145,16 @@ return function (ContainerBuilder $containerBuilder) {
             );
         },
         DrawingService::class => function (ContainerInterface $c) {
-            return new DrawingService($c->get(Drawing::class), $c->get(LoggerInterface::class));
+            return new DrawingService(
+				$c->get(Drawing::class),
+				$c->get(Student::class),
+				$c->get(Cohort::class),
+				$c->get(DrawingDay::class),
+				$c->get(Vacation::class),
+				$c->get(Holiday::class),
+				$c->get(Unavailability::class),
+				$c->get('logger')
+			);
         },
         HolidayService::class => function (ContainerInterface $c) {
             return new HolidayService($c->get(Holiday::class), $c->get(LoggerInterface::class), new Client());
@@ -205,6 +215,14 @@ return function (ContainerBuilder $containerBuilder) {
         UserController::class => function (ContainerInterface $c) {
             return new UserController($c->get(Twig::class), $c->get(LoggerInterface::class), $c->get(UserService::class));
         },
+		DrawingController::class => function (ContainerInterface $c) {
+			return new DrawingController(
+				$c->get('view'),
+				$c->get(DrawingService::class),
+				$c->get(CohortService::class),
+				$c->get('logger')
+			);
+		},
         StudentController::class => function (ContainerInterface $c) {
             return new StudentController(
                 $c->get(Twig::class),

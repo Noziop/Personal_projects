@@ -86,4 +86,18 @@ class Vacation
 	
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
+
+	public function isVacationForAnyCohort($date, $cohortIds)
+    {
+        $placeholders = implode(',', array_fill(0, count($cohortIds), '?'));
+        $sql = "SELECT COUNT(*) FROM vacations 
+                WHERE cohort_id IN ($placeholders) 
+                AND :date BETWEEN start_date AND end_date";
+        
+        $stmt = $this->db->prepare($sql);
+        $params = array_merge($cohortIds, [$date]);
+        $stmt->execute($params);
+        
+        return $stmt->fetchColumn() > 0;
+    }
 }

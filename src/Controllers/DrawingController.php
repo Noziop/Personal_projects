@@ -2,146 +2,64 @@
 
 namespace App\Controllers;
 
-use App\Services\DrawingService;
-use App\Exceptions\HttpException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Log\LoggerInterface;
+use App\Services\DrawingService;
+use App\Services\CohortService;
 use Slim\Views\Twig;
+use Psr\Log\LoggerInterface;
 
 class DrawingController
 {
-    private $drawingService;
-    private $logger;
     private $view;
+    private $drawingService;
+    private $cohortService;
+    private $logger;
 
-    public function __construct(DrawingService $drawingService, LoggerInterface $logger, Twig $view)
+    public function __construct(Twig $view, DrawingService $drawingService, CohortService $cohortService, LoggerInterface $logger)
     {
-        $this->drawingService = $drawingService;
-        $this->logger = $logger;
         $this->view = $view;
+        $this->drawingService = $drawingService;
+        $this->cohortService = $cohortService;
+        $this->logger = $logger;
     }
 
-    public function index(Request $request, Response $response): Response
-    {
-        $this->logger->info('Accessing drawing page');
-        return $this->view->render($response, 'tirage/index.twig');
-    }
+	public function index(Request $request, Response $response): Response
+	{
+		$cohorts = $this->cohortService->getAllCohorts();
+		return $this->view->render($response, 'drawing/index.twig', ['cohorts' => $cohorts]);
+	}
+	
+	public function viewDrawingHistory(Request $request, Response $response): Response
+	{
+		$drawings = $this->drawingService->getDrawingHistory();
+		return $this->view->render($response, 'drawing/history.twig', ['drawings' => $drawings]);
+	}
 
-    /**
-     * Perform a drawing for Speaker of the Day
-     * 
-     * @param Request $request The request object
-     * @param Response $response The response object
-     * @return Response
-     * @throws HttpException
-     */
-    public function performDrawing(Request $request, Response $response): Response
-    {
-        $this->logger->info('Request received for performing a drawing');
-        try {
-            $data = $request->getParsedBody();
-            $this->logger->debug('Received data for drawing', ['data' => $data]);
+	public function performDrawing(Request $request, Response $response): Response
+	{
+		try {
+			$data = $request->getParsedBody();
+			$date = $data['date'] ?? date('Y-m-d');
+			$cohortIds = $data['cohort_ids'] ?? [];
+	
+			$result = $this->drawingService->performSODDrawing($date, $cohortIds);
+	
+			if ($result) {
+				$payload = json_encode(['success' => true, 'student' => $result]);
+				$response->getBody()->write($payload);
+				return $response->withHeader('Content-Type', 'application/json');
+			} else {
+				$payload = json_encode(['success' => false, 'message' => 'Aucun étudiant éligible pour le tirage au sort.']);
+				$response->getBody()->write($payload);
+				return $response->withHeader('Content-Type', 'application/json');
+			}
+		} catch (\Exception $e) {
+			$this->logger->error('Error during drawing', ['error' => $e->getMessage()]);
+			$payload = json_encode(['success' => false, 'message' => 'Une erreur est survenue lors du tirage au sort.']);
+			$response->getBody()->write($payload);
+			return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+		}
+	}
 
-            if (!isset($data['cohort_ids']) || !isset($data['start_date']) || !isset($data['end_date'])) {
-                $this->logger->warning('Invalid data for drawing', ['data' => $data]);
-                throw new HttpException('Données invalides pour le tirage au sort', 400);
-            }
-
-            $cohortIds = $data['cohort_ids'];
-            $startDate = new \DateTime($data['start_date']);
-            $endDate = new \DateTime($data['end_date']);
-
-            $drawingResult = $this->drawingService->performDrawing($cohortIds, $startDate, $endDate);
-            $this->logger->info('Drawing performed successfully', ['result_count' => count($drawingResult)]);
-
-            $response->getBody()->write(json_encode($drawingResult));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (HttpException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            $this->logger->error('Error performing drawing', ['error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors du tirage au sort', 500);
-        }
-    }
-
-    /**
-     * Get all drawings
-     * 
-     * @param Request $request The request object
-     * @param Response $response The response object
-     * @return Response
-     * @throws HttpException
-     */
-    public function getAllDrawings(Request $request, Response $response): Response
-    {
-        $this->logger->info('Request received for getting all drawings');
-        try {
-            $drawings = $this->drawingService->getAllDrawings();
-            $this->logger->info('Successfully retrieved all drawings', ['count' => count($drawings)]);
-            $response->getBody()->write(json_encode($drawings));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (\Exception $e) {
-            $this->logger->error('Error retrieving all drawings', ['error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la récupération des tirages au sort', 500);
-        }
-    }
-
-    /**
-     * Get a specific drawing by ID
-     * 
-     * @param Request $request The request object
-     * @param Response $response The response object
-     * @param array $args Route arguments
-     * @return Response
-     * @throws HttpException
-     */
-    public function getDrawing(Request $request, Response $response, array $args): Response
-    {
-        $id = (int)$args['id'];
-        $this->logger->info('Request received for getting drawing', ['id' => $id]);
-        try {
-            $drawing = $this->drawingService->getDrawingById($id);
-            if (!$drawing) {
-                $this->logger->warning('Drawing not found', ['id' => $id]);
-                throw new HttpException('Tirage au sort non trouvé', 404);
-            }
-            $this->logger->info('Successfully retrieved drawing', ['id' => $id]);
-            $response->getBody()->write(json_encode($drawing));
-            return $response->withHeader('Content-Type', 'application/json');
-        } catch (HttpException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            $this->logger->error('Error retrieving drawing', ['id' => $id, 'error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la récupération du tirage au sort', 500);
-        }
-    }
-
-    /**
-     * Delete a drawing
-     * 
-     * @param Request $request The request object
-     * @param Response $response The response object
-     * @param array $args Route arguments
-     * @return Response
-     * @throws HttpException
-     */
-    public function deleteDrawing(Request $request, Response $response, array $args): Response
-    {
-        $id = (int)$args['id'];
-        $this->logger->info('Request received for deleting drawing', ['id' => $id]);
-        try {
-            $success = $this->drawingService->deleteDrawing($id);
-            $this->logger->info('Drawing deletion attempt completed', ['id' => $id, 'success' => $success]);
-            if (!$success) {
-                throw new HttpException('Le tirage au sort n\'a pas pu être supprimé', 500);
-            }
-            return $response->withJson(['success' => $success]);
-        } catch (HttpException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            $this->logger->error('Error deleting drawing', ['id' => $id, 'error' => $e->getMessage()]);
-            throw new HttpException('Une erreur est survenue lors de la suppression du tirage au sort', 500);
-        }
-    }
 }

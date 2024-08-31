@@ -13,6 +13,7 @@ use PDO;
 
 class DrawingDay
 {
+	private $table = 'drawing_days';
     /**
      * @var int The unique identifier for the drawing day
      */
@@ -101,10 +102,26 @@ class DrawingDay
     }
 
 	public function deleteByCohort(int $cohortId): bool
-{
-    $stmt = $this->db->prepare("DELETE FROM drawing_days WHERE cohort_id = :cohort_id");
-    return $stmt->execute(['cohort_id' => $cohortId]);
-}
+	{
+		$stmt = $this->db->prepare("DELETE FROM drawing_days WHERE cohort_id = :cohort_id");
+		return $stmt->execute(['cohort_id' => $cohortId]);
+	}
+
+	public function isDrawingDayForCohorts($date, $cohortIds)
+	{
+		$dayOfWeek = strtolower(date('l', strtotime($date)));
+		$placeholders = implode(',', array_fill(0, count($cohortIds), '?'));
+		
+		$sql = "SELECT COUNT(*) FROM {$this->table} 
+				WHERE cohort_id IN ($placeholders) 
+				AND day = ?";
+		
+		$params = array_merge($cohortIds, [$dayOfWeek]);
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute($params);
+		
+		return $stmt->fetchColumn() > 0;
+	}
 
     /**
      * Hydrate a DrawingDay object from an array of data.

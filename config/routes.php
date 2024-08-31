@@ -20,6 +20,7 @@ use App\Controllers\HolidayController;
 use App\Controllers\SODFeedbackController;
 use App\Controllers\FeedbackController;
 use App\Controllers\StandupFeedbackController;
+use App\Controllers\DrawingController;
 
 
 return function (App $app) {
@@ -79,4 +80,8 @@ return function (App $app) {
 	// PLD Submission form
 	$app->get('/pld-submission/{student_id}', [PLDSubmissionController::class, 'showForm'])->setName('pld_submission.form');
 	$app->post('/pld-submission', [PLDSubmissionController::class, 'submitSubmission'])->setName('pld_submission.submit');
+
+	$app->get('/drawing', [DrawingController::class, 'index'])->setName('drawing.index');
+	$app->post('/drawing/perform', [DrawingController::class, 'performDrawing'])->setName('drawing.perform');
+	$app->get('/drawing/history', [DrawingController::class, 'viewDrawingHistory'])->setName('drawing.history');
 };

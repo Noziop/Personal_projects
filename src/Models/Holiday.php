@@ -68,4 +68,11 @@ class Holiday
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+	public function isHoliday($date)
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM public_holidays WHERE date = :date");
+        $stmt->execute(['date' => $date]);
+        return $stmt->fetchColumn() > 0;
+    }
 }

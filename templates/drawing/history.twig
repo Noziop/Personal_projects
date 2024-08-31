@@ -1,0 +1,32 @@
+{% extends "layout.twig" %}
+
+{% block title %}Historique des tirages SOD - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h1 class="neumorphic-title-red">Historique des tirages Speaker of the Day</h1>
+
+    <table class="neumorphic-table">
+        <thead>
+            <tr>
+                <th>Date du tirage</th>
+                <th>Étudiant sélectionné</th>
+                <th>Cohorte</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for drawing in drawings %}
+                <tr>
+                    <td>{{ drawing.drawing_date|date('d/m/Y') }}</td>
+                    <td>{{ drawing.student.first_name }} {{ drawing.student.last_name }}</td>
+                    <td>{{ drawing.student.cohort.name }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3">Aucun tirage effectué pour le moment.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
