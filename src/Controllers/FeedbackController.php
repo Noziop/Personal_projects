@@ -37,4 +37,28 @@ class FeedbackController
 		]);
 	}
 
+	public function view(Request $request, Response $response, array $args): Response
+	{
+		$id = $args['id'];
+		$type = $args['type'] ?? null; // Utilisez l'opérateur de fusion null
+	
+		if (!$type) {
+			$this->logger->error('Feedback type not specified');
+			return $response->withStatus(400)->withHeader('Location', '/feedback/manage');
+		}
+	
+		$feedback = $this->feedbackService->getFeedbackById($id, $type);
+	
+		if (!$feedback) {
+			$this->logger->warning('Feedback not found', ['id' => $id, 'type' => $type]);
+			return $response->withStatus(404)->withHeader('Location', '/feedback/manage');
+		}
+	
+		$template = $type === 'SOD' ? 'feedback/view_sod.twig' : 'feedback/view_standup.twig';
+	
+		return $this->view->render($response, $template, [
+			'feedback' => $feedback
+		]);
+	}
+
 }

@@ -66,6 +66,7 @@ return function (App $app) {
 	// Feedback view (for admins)
 	$app->get('/feedback/{id}/{type}', [FeedbackController::class, 'view'])->setName('feedback.view');
 	$app->get('/feedback/manage', [FeedbackController::class, 'manage'])->setName('feedback.manage');
+	
 
 	// SOD Feedback form (already exists, but included for completeness)
 	$app->get('/sod-feedback/{student_id}', [SODFeedbackController::class, 'showForm'])->setName('sod_feedback.form');

@@ -51,7 +51,7 @@ class StandupFeedbackController
         $cohort = $this->cohortService->getCohortById($student['cohort_id']);
         $cohortStudents = $this->studentService->getStudentsByCohort($student['cohort_id']);
 
-        return $this->view->render($response, 'standup_feedback/form.twig', [
+        return $this->view->render($response, 'stand-up/form.twig', [
             'currentDate' => date('Y-m-d'),
             'cohort' => $cohort,
             'cohortStudents' => $cohortStudents

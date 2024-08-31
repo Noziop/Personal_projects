@@ -84,13 +84,25 @@ class Feedback
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-    public function findById($id, $type)
+    public function findById($id, $type = null)
     {
-        $table = $type === 'SOD' ? 'sod_feedback' : 'standup_feedback';
+        $table = $this->getTableName($type);
         $sql = "SELECT * FROM $table WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function getTableName($type)
+    {
+        switch ($type) {
+            case 'SOD':
+                return 'sod_feedback';
+            case 'Stand-up':
+                return 'standup_feedback';
+            default:
+                throw new \InvalidArgumentException("Invalid feedback type: $type");
+        }
     }
 
     // Ajoutez d'autres méthodes si nécessaire

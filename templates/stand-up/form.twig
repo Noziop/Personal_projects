@@ -2,6 +2,8 @@
 
 {% block title %}Standup Feedback - {{ parent() }}{% endblock %}
 
+{% block header_title %}{{ cohort.name }}'s - {{ currentDate | date('d/m/Y')}} Standup Feedback{% endblock %}
+
 {% block content %}
 <div class="neumorphic-container">
     <h2 class="neumorphic-title-red">Standup Feedback Form for {{ cohort.name }}</h2>

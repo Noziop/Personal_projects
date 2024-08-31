@@ -182,6 +182,9 @@ return function (ContainerBuilder $containerBuilder) {
 			return new FeedbackService(
 				$c->get(Feedback::class),
 				$c->get(Student::class),
+				$c->get(User::class),
+				$c->get(StandupFeedback::class),
+				$c->get(Cohort::class),
 				$c->get(LoggerInterface::class)
 			);
 		},

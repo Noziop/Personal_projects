@@ -1,0 +1,29 @@
+{% extends "layout.twig" %}
+
+{% block title %}View SOD Feedback - {{ parent() }}{% endblock %}
+
+{% block header_title %}{{ feedback.student_name }}'s SOD Feedback Details{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container" style="min-width:80%">
+    <h2 class="neumorphic-title-red">SOD Feedback Details : {{ feedback.student_name }}</h2>
+    
+    <div class="neumorphic-card" style="min-width:95%; margin:15px 0">
+        <h3>General Information</h3>
+        <p><strong>Date:</strong> {{ feedback.sod_date|date('Y-m-d') }}</p>
+        <p><strong>Student:</strong> {{ feedback.student_name }}</p>
+        <p><strong>Evaluator:</strong> {{ feedback.evaluator_name }}</p>
+    </div>
+
+    <div class="neumorphic-card" style="min-width:95%; margin:15px 0">
+        <h3>Feedback Content</h3>
+        {% for key, value in feedback.content %}
+            {% if key != 'total' %}
+                <p><strong>{{ key|replace({'_': ' '})|title }}:</strong> {{ value }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <a href="{{ url_for('feedback.manage') }}" class="neumorphic-button" style="min-width:96%">Back to Feedback List</a>
+</div>
+{% endblock %}

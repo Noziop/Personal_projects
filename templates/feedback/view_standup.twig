@@ -1,0 +1,61 @@
+{% extends "layout.twig" %}
+
+{% block title %}View Stand-up Feedback - {{ parent() }}{% endblock %}
+
+{% block header_title %}Stand-up Feedback for {{ feedback.cohort_name }}{% endblock %}
+
+{% block content %}
+<div class="neumorphic-container">
+    <h2 class="neumorphic-title-red"> {{ feedback.cohort_name }}'s Stand-up Feedback Details</h2>
+
+	<h3>General Information</h3>
+	<p><strong>Date:</strong> {{ feedback.date|date('Y-m-d') }}</p>
+	<p><strong>Cohort:</strong> {{ feedback.cohort_name }}</p>
+
+
+        <h3>Student Details</h3>
+        <table class="neumorphic-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Absent</th>
+                    <th>On Site</th>
+                    <th>Achievement</th>
+                    <th>Today's Goal</th>
+                    <th>Need Help</th>
+                    <th>Problem Nature</th>
+                    <th>Other Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_id, student_data in feedback.content %}
+                    {% if student_id != 'scrum_master_names' and student_id != 'bugs_report' and student_id != 'cohort_difficulties' and student_id != 'shared_tips' and student_id != 'conclusion' and student_id != 'other_reports' %}
+                        <tr>
+                            <td>{{ student_data.student_name|default('Unknown') }}</td>
+                            <td>{{ student_data.absent ? 'Yes' : 'No' }}</td>
+                            <td>{{ student_data.on_site ? 'Yes' : 'No' }}</td>
+                            <td>{{ student_data.achievement }}</td>
+                            <td>{{ student_data.today_goal }}</td>
+                            <td>{{ student_data.need_help ? 'Yes' : 'No' }}</td>
+                            <td>{{ student_data.problem_nature }}</td>
+                            <td>{{ student_data.other_remarks }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+    <div class="neumorphic-card" style="min-width:95%; margin: 15px 0">
+		<h3>Feedback Content</h3>
+		<p><strong>Scrum Master:</strong> {{ feedback.general_info.scrum_master_names }}</p>
+		<p><strong>Bugs Report:</strong> {{ feedback.general_info.bugs_report }}</p>
+		<p><strong>Cohort Difficulties:</strong> {{ feedback.general_info.cohort_difficulties }}</p>
+		<p><strong>Shared Tips:</strong> {{ feedback.general_info.shared_tips }}</p>
+		<p><strong>Conclusion:</strong> {{ feedback.general_info.conclusion }}</p>
+		<p><strong>Other Reports:</strong> {{ feedback.general_info.other_reports }}</p>	
+    </div>
+
+    <a href="{{ url_for('feedback.manage') }}" class="neumorphic-button">Back to Feedback List</a>
+</div>
+{% endblock %}
