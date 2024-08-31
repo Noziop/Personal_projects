@@ -151,4 +151,19 @@ class Student
         $stmt = $this->db->query("SELECT COUNT(*) FROM students");
         return $stmt->fetchColumn();
     }
+
+	public function getStudentsByCohorts($cohortIds)
+	{
+		$placeholders = implode(',', array_fill(0, count($cohortIds), '?'));
+		
+		$sql = "SELECT s.*, u.first_name, u.last_name, u.email 
+				FROM students s
+				JOIN users u ON s.user_id = u.id
+				WHERE s.cohort_id IN ($placeholders)";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute($cohortIds);
+		
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
 }

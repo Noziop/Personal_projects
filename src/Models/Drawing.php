@@ -138,6 +138,48 @@ class Drawing
         return (new Cohort($this->db))->findById($this->cohortId);
     }
 
+	public function getLastDrawingForStudent($studentId)
+	{
+		$sql = "SELECT * FROM drawings 
+				WHERE student_id = :student_id 
+				ORDER BY drawing_date DESC 
+				LIMIT 1";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['student_id' => $studentId]);
+		
+		return $stmt->fetch(PDO::FETCH_ASSOC);
+	}
+
+	public function getDrawingsCountForStudent($studentId)
+	{
+		$sql = "SELECT COUNT(*) FROM drawings WHERE student_id = :student_id";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['student_id' => $studentId]);
+		
+		return $stmt->fetchColumn();
+	}
+
+	public function createDrawing(array $data)
+	{
+		$sql = "INSERT INTO drawings (student_id, drawing_date, presentation_date) 
+				VALUES (:student_id, :drawing_date, :presentation_date)";
+		
+		$stmt = $this->db->prepare($sql);
+		$result = $stmt->execute([
+			'student_id' => $data['student_id'],
+			'drawing_date' => $data['drawing_date'],
+			'presentation_date' => $data['presentation_date']
+		]);
+
+		if ($result) {
+			return $this->db->lastInsertId();
+		}
+
+		return false;
+	}
+
     /**
      * Hydrate the drawing object with data
      *

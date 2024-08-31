@@ -187,6 +187,21 @@ class Unavailability
         return $stmt->fetchColumn() == 0;
     }
 
+	public function isStudentUnavailable($studentId, $date)
+	{
+		$sql = "SELECT COUNT(*) FROM unavailabilities 
+				WHERE student_id = :student_id 
+				AND :date BETWEEN start_date AND end_date";
+		
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute([
+			'student_id' => $studentId,
+			'date' => $date
+		]);
+		
+		return $stmt->fetchColumn() > 0;
+	}
+
     /**
      * Get available students for a specific date
      *

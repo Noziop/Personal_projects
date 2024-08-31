@@ -45,6 +45,15 @@ class Cohort
         return $cohortData ? $this->hydrate($cohortData) : null;
     }
 
+	public function getCohortById($id)
+	{
+		$sql = "SELECT * FROM cohorts WHERE id = :id";
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute(['id' => $id]);
+		
+		return $stmt->fetch(PDO::FETCH_ASSOC);
+	}
+
     /**
      * Find a cohort by its name
      *

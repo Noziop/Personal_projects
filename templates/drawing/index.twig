@@ -25,17 +25,16 @@
         <button type="submit" class="neumorphic-button">Effectuer le tirage</button>
     </form>
 
-    <div id="result" class="neumorphic-card" style="display: none;">
-        <h2>Résultat du tirage</h2>
-        <p id="selected-student"></p>
-    </div>
+   <div id="result" class="neumorphic-card" style="display: none; min-width: 90%; margin: 15px 0">
+    <h2>Résultats des tirages</h2>
+    <ul id="drawing-results"></ul>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const drawingForm = document.getElementById('drawing-form');
     const resultDiv = document.getElementById('result');
-    const selectedStudentP = document.getElementById('selected-student');
+    const drawingResultsList = document.getElementById('drawing-results');
 
     if (drawingForm) {
         drawingForm.addEventListener('submit', function(e) {
@@ -46,24 +45,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur réseau ou serveur');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    selectedStudentP.textContent = `Étudiant sélectionné : ${data.student.first_name} ${data.student.last_name}`;
+                    drawingResultsList.innerHTML = '';
+                    for (const [date, student] of Object.entries(data.drawings)) {
+                        const li = document.createElement('li');
+                        li.textContent = `${date}: ${student.first_name} ${student.last_name}`;
+                        drawingResultsList.appendChild(li);
+                    }
                     resultDiv.style.display = 'block';
                 } else {
-                    selectedStudentP.textContent = data.message || 'Une erreur est survenue lors du tirage au sort.';
+                    drawingResultsList.innerHTML = `<li>${data.message}</li>`;
                     resultDiv.style.display = 'block';
                 }
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                selectedStudentP.textContent = 'Une erreur est survenue lors du tirage au sort.';
+                drawingResultsList.innerHTML = '<li>Une erreur est survenue lors du tirage au sort.</li>';
                 resultDiv.style.display = 'block';
             });
         });

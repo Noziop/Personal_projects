@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use DateTime;
 use App\Models\Drawing;
 use App\Models\Student;
 use App\Models\Cohort;
@@ -157,4 +158,29 @@ class DrawingService
             return 3;
         }
     }
+
+	public function performMultipleDayDrawing($startDate, $cohortIds)
+	{
+		$drawingResults = [];
+		$currentDate = new DateTime($startDate);
+		$endDate = (new DateTime($startDate))->modify('+3 months'); // Par exemple, on tire au sort pour les 3 prochains mois
+
+		while ($currentDate <= $endDate) {
+			$dateString = $currentDate->format('Y-m-d');
+			
+			if ($this->isDrawingAllowed($dateString, $cohortIds)) {
+				$eligibleStudents = $this->getEligibleStudents($dateString, $cohortIds);
+				
+				if (!empty($eligibleStudents)) {
+					$selectedStudent = $this->selectStudent($eligibleStudents);
+					$drawingResults[$dateString] = $selectedStudent;
+					$this->saveDrawingResult($dateString, $selectedStudent);
+				}
+			}
+			
+			$currentDate->modify('+1 day');
+		}
+
+		return $drawingResults;
+	}
 }

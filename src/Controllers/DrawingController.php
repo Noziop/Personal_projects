@@ -38,28 +38,22 @@ class DrawingController
 
 	public function performDrawing(Request $request, Response $response): Response
 	{
-		try {
-			$data = $request->getParsedBody();
-			$date = $data['date'] ?? date('Y-m-d');
-			$cohortIds = $data['cohort_ids'] ?? [];
+		$data = $request->getParsedBody();
+		$startDate = $data['start_date'] ?? date('Y-m-d');
+		$cohortIds = $data['cohort_ids'] ?? [];
 	
-			$result = $this->drawingService->performSODDrawing($date, $cohortIds);
+		$drawingResults = $this->drawingService->performMultipleDayDrawing($startDate, $cohortIds);
 	
-			if ($result) {
-				$payload = json_encode(['success' => true, 'student' => $result]);
-				$response->getBody()->write($payload);
-				return $response->withHeader('Content-Type', 'application/json');
-			} else {
-				$payload = json_encode(['success' => false, 'message' => 'Aucun étudiant éligible pour le tirage au sort.']);
-				$response->getBody()->write($payload);
-				return $response->withHeader('Content-Type', 'application/json');
-			}
-		} catch (\Exception $e) {
-			$this->logger->error('Error during drawing', ['error' => $e->getMessage()]);
-			$payload = json_encode(['success' => false, 'message' => 'Une erreur est survenue lors du tirage au sort.']);
-			$response->getBody()->write($payload);
-			return $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+		if (!empty($drawingResults)) {
+			$this->logger->info('Multiple day SOD Drawing performed successfully', ['start_date' => $startDate, 'cohorts' => $cohortIds]);
+			$payload = json_encode(['success' => true, 'drawings' => $drawingResults]);
+		} else {
+			$this->logger->warning('SOD Drawing failed', ['start_date' => $startDate, 'cohorts' => $cohortIds]);
+			$payload = json_encode(['success' => false, 'message' => 'Aucun tirage possible pour la période donnée.']);
 		}
+	
+		$response->getBody()->write($payload);
+		return $response->withHeader('Content-Type', 'application/json');
 	}
 
 }
