@@ -197,6 +197,55 @@ class Drawing
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	public function archiveDrawings()
+	{
+		try {
+			$this->db->beginTransaction();
+			
+			// Copier les données de 'drawings' vers 'drawing_history'
+			$sql = "INSERT INTO drawing_history (student_id, drawing_date, presentation_date)
+					SELECT student_id, drawing_date, presentation_date
+					FROM drawings";
+			$this->db->exec($sql);
+			
+			// Obtenir le nombre de lignes copiées
+			$rowsCopied = $this->db->query("SELECT ROW_COUNT()")->fetchColumn();
+			
+			// Vider la table 'drawings'
+			$this->db->exec("TRUNCATE TABLE drawings");
+			
+			$this->db->commit();
+			
+			return $rowsCopied;
+		} catch (\Exception $e) {
+			$this->db->rollBack();
+			throw $e;
+		}
+	}
+	
+	private function createDrawingHistoryTableIfNotExists()
+	{
+		$sql = "CREATE TABLE IF NOT EXISTS drawing_history (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			student_id INT NOT NULL,
+			drawing_date DATE NOT NULL,
+			presentation_date DATE NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)";
+		$this->db->exec($sql);
+	}
+
+    public function resetDrawings()
+    {
+        try {
+            $this->db->exec("TRUNCATE TABLE drawings");
+            return true;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
     /**
      * Hydrate the drawing object with data
      *

@@ -4,30 +4,48 @@
 
 {% block content %}
 <div class="neumorphic-container">
-    <h1 class="neumorphic-title-red">Tirage au sort Speaker of the Day</h1>
+    <h2 class="neumorphic-title-red">Tirage au sort Speaker of the Day</h2>
 
-    <form id="drawing-form" class="neumorphic-form">
-        <div class="form-group">
-            <label for="date">Date du tirage :</label>
-            <input type="date" id="date" name="date" class="neumorphic-input" required>
-        </div>
+    <div class="neumorphic-card">
+        <h3>Effectuer un tirage</h3>
+        <form id="drawing-form" class="neumorphic-form">
+            <div class="form-group">
+                <label for="start_date">Date de début :</label>
+                <input type="date" id="start_date" name="start_date" class="neumorphic-input" required>
+            </div>
+            <div class="form-group">
+                <label>Cohortes participantes :</label>
+                {% for cohort in cohorts %}
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="cohort-{{ cohort.id }}" name="cohort_ids[]" value="{{ cohort.id }}">
+                        <label for="cohort-{{ cohort.id }}">{{ cohort.name }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="neumorphic-button">Effectuer le tirage</button>
+        </form>
+    </div>
 
-        <div class="form-group">
-            <label>Cohortes participantes :</label>
-            {% for cohort in cohorts %}
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" id="cohort-{{ cohort.id }}" name="cohort_ids[]" value="{{ cohort.id }}">
-                    <label for="cohort-{{ cohort.id }}">{{ cohort.name }}</label>
-                </div>
-            {% endfor %}
-        </div>
+    <div id="result" class="neumorphic-card" style="display: none;">
+        <h3>Résultats du tirage</h3>
+        <ul id="drawing-results"></ul>
+    </div>
 
-        <button type="submit" class="neumorphic-button">Effectuer le tirage</button>
-    </form>
+    <div class="neumorphic-card">
+        <h3>Tirages récents</h3>
+        <ul>
+        {% for drawing in recentDrawings %}
+            <li>{{ drawing.drawing_date|date('Y-m-d') }} : {{ drawing.student.first_name }} {{ drawing.student.last_name }} ({{ drawing.student.cohort.name }})</li>
+        {% endfor %}
+        </ul>
+        <a href="{{ url_for('drawing.history') }}" class="neumorphic-button">Voir l'historique complet</a>
+    </div>
 
-   <div id="result" class="neumorphic-card" style="display: none; min-width: 90%; margin: 15px 0">
-    <h2>Résultats des tirages</h2>
-    <ul id="drawing-results"></ul>
+    <div class="neumorphic-card">
+        <h3>Gestion des tirages</h3>
+        <button id="archive-drawings" class="neumorphic-button">Archiver les tirages</button>
+        <button id="reset-drawings" class="neumorphic-button">Réinitialiser les tirages</button>
+    </div>
 </div>
 
 <script>
@@ -35,13 +53,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawingForm = document.getElementById('drawing-form');
     const resultDiv = document.getElementById('result');
     const drawingResultsList = document.getElementById('drawing-results');
+    const archiveButton = document.getElementById('archive-drawings');
+    const resetButton = document.getElementById('reset-drawings');
 
     if (drawingForm) {
         drawingForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             
-            fetch('/drawing/perform', {
+            fetch('{{ url_for("drawing.perform") }}', {
                 method: 'POST',
                 body: formData
             })
@@ -51,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     drawingResultsList.innerHTML = '';
                     for (const [date, student] of Object.entries(data.drawings)) {
                         const li = document.createElement('li');
-                        li.textContent = `${date}: ${student.first_name} ${student.last_name}`;
+                        li.textContent = `${date}: ${student.first_name} ${student.last_name} (${student.cohort.name})`;
                         drawingResultsList.appendChild(li);
                     }
                     resultDiv.style.display = 'block';
@@ -65,6 +85,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 drawingResultsList.innerHTML = '<li>Une erreur est survenue lors du tirage au sort.</li>';
                 resultDiv.style.display = 'block';
             });
+        });
+    }
+
+    if (archiveButton) {
+        archiveButton.addEventListener('click', function() {
+            if (confirm('Êtes-vous sûr de vouloir archiver tous les tirages actuels ?')) {
+                fetch('{{ url_for("drawing.archive") }}', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Tirages archivés avec succès !');
+                            location.reload();
+                        } else {
+                            alert('Erreur lors de l\'archivage des tirages.');
+                        }
+                    });
+            }
+        });
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener('click', function() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser tous les tirages ? Cette action est irréversible.')) {
+                fetch('{{ url_for("drawing.reset") }}', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Tirages réinitialisés avec succès !');
+                            location.reload();
+                        } else {
+                            alert('Erreur lors de la réinitialisation des tirages.');
+                        }
+                    });
+            }
         });
     }
 });

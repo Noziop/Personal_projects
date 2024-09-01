@@ -81,7 +81,10 @@ return function (App $app) {
 	$app->get('/pld-submission/{student_id}', [PLDSubmissionController::class, 'showForm'])->setName('pld_submission.form');
 	$app->post('/pld-submission', [PLDSubmissionController::class, 'submitSubmission'])->setName('pld_submission.submit');
 
+	//SOD Drawing
 	$app->get('/drawing', [DrawingController::class, 'index'])->setName('drawing.index');
 	$app->post('/drawing/perform', [DrawingController::class, 'performDrawing'])->setName('drawing.perform');
 	$app->get('/drawing/history', [DrawingController::class, 'viewDrawingHistory'])->setName('drawing.history');
+	$app->post('/drawing/archive', [DrawingController::class, 'archiveDrawings'])->setName('drawing.archive');
+	$app->post('/drawing/reset', [DrawingController::class, 'resetDrawings'])->setName('drawing.reset');
 };

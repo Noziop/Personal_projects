@@ -39,6 +39,11 @@
 			<p>Manage and view feedback from SOD, Stand up, and PLD.</p>
 			<a href="{{ url_for('feedback.manage') }}" class="neumorphic-button">Manage Feedback</a>
 		</div>
+		        <div class="neumorphic-card">
+            <h3 class="neumorphic-card-title">Drawing Management</h3>
+            <p>Manage Speaker of the Day drawings.</p>
+            <a href="{{ url_for('drawing.index') }}" class="neumorphic-button">Manage SOD Drawings</a>
+        </div>
     </div>
     {% else %}
     <div class="dashboard-grid">

@@ -29,6 +29,25 @@ class DrawingController
 		$cohorts = $this->cohortService->getAllCohorts();
 		return $this->view->render($response, 'drawing/index.twig', ['cohorts' => $cohorts]);
 	}
+
+	public function archiveDrawings(Request $request, Response $response): Response
+	{
+		$result = $this->drawingService->archiveDrawings();
+		return $this->jsonResponse($response, ['success' => $result]);
+	}
+
+	public function resetDrawings(Request $request, Response $response): Response
+	{
+		$result = $this->drawingService->resetDrawings();
+		return $this->jsonResponse($response, ['success' => $result]);
+	}
+
+	private function jsonResponse(Response $response, array $data): Response
+	{
+		$payload = json_encode($data);
+		$response->getBody()->write($payload);
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 	
 	public function viewDrawingHistory(Request $request, Response $response): Response
 	{

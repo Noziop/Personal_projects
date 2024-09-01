@@ -100,7 +100,7 @@ class DrawingService
 			return false;
 		}
 	
-		$lastDrawing = $this->drawingModel->getLastDrawingForStudent($student['id']);
+		$lastDrawing = $this->drawingModel->getLastDrawingForStudent($date, $student['id']);
 		if ($lastDrawing && $this->isDrawingTooRecent($lastDrawing, $date)) {
 			$this->logger->info("Last drawing for student {$student['id']} too recent");
 			return false;
@@ -215,4 +215,28 @@ class DrawingService
 	{
 		return $this->drawingModel->getAllDrawings();
 	}
+
+	public function archiveDrawings()
+    {
+        try {
+            $result = $this->drawingModel->archiveDrawings();
+            $this->logger->info('Drawings archived successfully');
+            return $result;
+        } catch (\Exception $e) {
+            $this->logger->error('Error archiving drawings: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function resetDrawings()
+    {
+        try {
+            $result = $this->drawingModel->resetDrawings();
+            $this->logger->info('Drawings reset successfully');
+            return $result;
+        } catch (\Exception $e) {
+            $this->logger->error('Error resetting drawings: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
