@@ -25,6 +25,10 @@ body, html {
     line-height: 1.6;
 }
 
+::-webkit-scrollbar-thumb {
+	background: var(--primary-color);
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -94,7 +98,9 @@ main {
     background-color: var(--background-color);
     border-radius: 20px;
     padding: 30px;
-    max-width: 100%;
+    max-width: 95vw;
+	flex-wrap: wrap;
+	text-align: center;
     box-shadow: var(--neumorphic-flat);
     transition: var(--transition);
 }
@@ -170,8 +176,9 @@ main {
 /* Dashboard grid */
 .dashboard-grid {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     overflow-x: auto;
+	justify-content: space-evenly;
     gap: 30px;
     margin-top: 30px;
     padding: 20px 20px;
@@ -181,12 +188,13 @@ main {
     background: var(--glass-bg);
     border-radius: 20px;
     padding: 25px;
+	margin: 15px 0;
     box-shadow: var(--neumorphic-flat);
     transition: var(--transition);
     backdrop-filter: blur(10px);
+	text-align: center;
     border: 1px solid var(--glass-border);
     flex: 0 0 auto;
-    width: 250px;
 }
 
 .neumorphic-card:hover {

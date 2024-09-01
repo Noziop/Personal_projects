@@ -1,6 +1,8 @@
 {% extends "layout.twig" %}
 
-{% block title %}Tirage au sort SOD - {{ parent() }}{% endblock %}
+{% block title %}SOD - Drawing Manager - {{ parent() }}{% endblock %}
+
+{% block header_title %}SOD - Drawing Manager{% endblock %}
 
 {% block content %}
 <div class="neumorphic-container">
@@ -26,10 +28,19 @@
         </form>
     </div>
 
-    <div id="result" class="neumorphic-card" style="display: none;">
-        <h3>Résultats du tirage</h3>
-        <ul id="drawing-results"></ul>
+	{% if flash.getMessage('success') %}
+    <div class="alert alert-success">
+        {{ flash.getMessage('success') | first }}
     </div>
+{% endif %}
+
+{% if flash.getMessage('error') %}
+    <div class="alert alert-danger">
+        {{ flash.getMessage('error') | first }}
+    </div>
+{% endif %}
+
+	<div id="confirmation-message" class="neumorphic-card" style="display: none; color: green; margin-bottom: 10px;"></div>
 
     <div class="neumorphic-card">
         <h3>Tirages récents</h3>
@@ -55,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawingResultsList = document.getElementById('drawing-results');
     const archiveButton = document.getElementById('archive-drawings');
     const resetButton = document.getElementById('reset-drawings');
+    const confirmationMessage = document.getElementById('confirmation-message');
 
     if (drawingForm) {
         drawingForm.addEventListener('submit', function(e) {
@@ -68,6 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Afficher le message de confirmation
+                    confirmationMessage.textContent = 'Tirage au sort effectué avec succès !';
+                    confirmationMessage.style.display = 'block';
+                    setTimeout(() => {
+                        confirmationMessage.style.display = 'none';
+                    }, 3000);
+
                     drawingResultsList.innerHTML = '';
                     for (const [date, student] of Object.entries(data.drawings)) {
                         const li = document.createElement('li');

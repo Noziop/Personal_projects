@@ -12,6 +12,7 @@ use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Views\Twig;
 use Slim\Psr7\Factory\ResponseFactory;
+use Slim\Flash\Messages;
 use GuzzleHttp\Client;
 use App\Twig\AppExtension;
 
@@ -96,9 +97,6 @@ return function (ContainerBuilder $containerBuilder) {
 		
 			return $twig;
 		},
-		
-		
-        
         'view' => fn(ContainerInterface $c) => $c->get(Twig::class),
 
         PDO::class => function (ContainerInterface $c) {
@@ -111,6 +109,9 @@ return function (ContainerBuilder $containerBuilder) {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         },
+		'flash' => function () {
+			return new Messages();
+		},
 
         // Models
         User::class => fn(ContainerInterface $c) => new User($c->get(PDO::class)),
@@ -228,7 +229,8 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get('view'),
 				$c->get(DrawingService::class),
 				$c->get(CohortService::class),
-				$c->get('logger')
+				$c->get('drawingLogger'),
+				$c->get('flash')
 			);
 		},
         StudentController::class => function (ContainerInterface $c) {
