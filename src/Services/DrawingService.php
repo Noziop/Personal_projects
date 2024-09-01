@@ -66,15 +66,24 @@ class DrawingService
 
 	private function isDrawingAllowed($date, $cohortIds)
 	{
+		$this->drawingLogger->info("Checking if drawing is allowed", ['date' => $date, 'cohort_ids' => $cohortIds]);
+	
 		$isDrawingDay = $this->drawingDayModel->isDrawingDayForCohorts($date, $cohortIds);
+		$this->drawingLogger->info("Is drawing day", ['result' => $isDrawingDay]);
+	
 		$isHoliday = $this->holidayModel->isHoliday($date);
-		$isVacation = $this->vacationModel->isVacationForAnyCohort($date, $cohortIds);
+		$this->drawingLogger->info("Is holiday", ['result' => $isHoliday]);
 	
-		$this->drawingLogger->info("Date: {$date}, IsDrawingDay: " . ($isDrawingDay ? 'Yes' : 'No') . 
-							", IsHoliday: " . ($isHoliday ? 'Yes' : 'No') . 
-							", IsVacation: " . ($isVacation ? 'Yes' : 'No'));
+		$vacationCohorts = $this->vacationModel->isVacationForAnyCohort($date, $cohortIds);
+		$this->drawingLogger->info("Vacation cohorts", ['cohorts' => $vacationCohorts]);
 	
-		return $isDrawingDay && !$isHoliday && !$isVacation;
+		$availableCohorts = array_diff($cohortIds, $vacationCohorts);
+		$this->drawingLogger->info("Available cohorts", ['cohorts' => $availableCohorts]);
+	
+		$isAllowed = $isDrawingDay && !$isHoliday && !empty($availableCohorts);
+		$this->drawingLogger->info("Drawing allowed", ['result' => $isAllowed]);
+	
+		return $isAllowed;
 	}
 
 	private function getEligibleStudents($date, $cohortIds)
@@ -174,39 +183,41 @@ class DrawingService
 
 	public function performMultipleDayDrawing($startDate, $cohortIds)
 	{
-		$drawingResults = [];
-		$currentDate = new DateTime($startDate);
-		$endDate = (new DateTime($startDate))->modify('+3 months');
+		$this->drawingLogger->info("Starting multiple day drawing", ['start_date' => $startDate, 'cohort_ids' => $cohortIds]);
 	
-		$this->drawingLogger->info("Starting multiple day drawing from {$startDate} to {$endDate->format('Y-m-d')}");
+		$drawingResults = [];
+		$currentDate = new \DateTime($startDate);
+		$endDate = (new \DateTime($startDate))->modify('+3 months');
 	
 		while ($currentDate <= $endDate) {
 			$dateString = $currentDate->format('Y-m-d');
-			
-			$this->drawingLogger->info("Checking date: {$dateString}");
-			
-			if ($this->isDrawingAllowed($dateString, $cohortIds)) {
-				$this->drawingLogger->info("Drawing allowed for {$dateString}");
-				$eligibleStudents = $this->getEligibleStudents($dateString, $cohortIds);
-				
-				$this->drawingLogger->info("Eligible students count: " . count($eligibleStudents));
-				
+			$this->drawingLogger->info("Processing date", ['date' => $dateString]);
+	
+			$vacationCohorts = $this->vacationModel->isVacationForAnyCohort($dateString, $cohortIds);
+			$availableCohorts = array_diff($cohortIds, $vacationCohorts);
+	
+			$this->drawingLogger->info("Available cohorts", ['cohorts' => $availableCohorts]);
+	
+			if (!empty($availableCohorts) && $this->isDrawingAllowed($dateString, $availableCohorts)) {
+				$eligibleStudents = $this->getEligibleStudents($dateString, $availableCohorts);
+				$this->drawingLogger->info("Eligible students count", ['count' => count($eligibleStudents)]);
+	
 				if (!empty($eligibleStudents)) {
 					$selectedStudent = $this->selectStudent($eligibleStudents);
 					$drawingResults[$dateString] = $selectedStudent;
 					$this->saveDrawingResult($dateString, $selectedStudent);
-					$this->drawingLogger->info("Selected student for {$dateString}: {$selectedStudent['id']}");
+					$this->drawingLogger->info("Selected student", ['student_id' => $selectedStudent['id'], 'date' => $dateString]);
 				} else {
-					$this->drawingLogger->info("No eligible students for {$dateString}");
+					$this->drawingLogger->info("No eligible students for date", ['date' => $dateString]);
 				}
 			} else {
-				$this->drawingLogger->info("Drawing not allowed for {$dateString}");
+				$this->drawingLogger->info("Drawing not allowed or no available cohorts", ['date' => $dateString]);
 			}
-			
+	
 			$currentDate->modify('+1 day');
 		}
 	
-		$this->drawingLogger->info("Drawing results count: " . count($drawingResults));
+		$this->drawingLogger->info("Multiple day drawing completed", ['results_count' => count($drawingResults)]);
 	
 		return $drawingResults;
 	}

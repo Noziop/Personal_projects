@@ -90,7 +90,7 @@ class Vacation
 	public function isVacationForAnyCohort($date, $cohortIds)
 	{
 		$placeholders = implode(',', array_fill(0, count($cohortIds), '?'));
-		$sql = "SELECT COUNT(*) FROM vacations 
+		$sql = "SELECT cohort_id FROM vacations 
 				WHERE cohort_id IN ($placeholders) 
 				AND ? BETWEEN start_date AND end_date";
 		
@@ -98,6 +98,8 @@ class Vacation
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute($params);
 		
-		return $stmt->fetchColumn() > 0;
+		$vacationCohorts = $stmt->fetchAll(PDO::FETCH_COLUMN);
+	
+		return $vacationCohorts;
 	}
 }
