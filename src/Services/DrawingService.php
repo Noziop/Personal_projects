@@ -21,7 +21,7 @@ class DrawingService
     private $vacationModel;
     private $holidayModel;
     private $unavailabilityModel;
-    private $logger;
+    private $drawingLogger;
 
     public function __construct(
         Drawing $drawingModel,
@@ -31,7 +31,7 @@ class DrawingService
         Vacation $vacationModel,
         Holiday $holidayModel,
         Unavailability $unavailabilityModel,
-        LoggerInterface $logger
+        LoggerInterface $drawingLogger
     ) {
         $this->drawingModel = $drawingModel;
         $this->studentModel = $studentModel;
@@ -40,20 +40,20 @@ class DrawingService
         $this->vacationModel = $vacationModel;
         $this->holidayModel = $holidayModel;
         $this->unavailabilityModel = $unavailabilityModel;
-        $this->logger = $logger;
+		$this->drawingLogger = $drawingLogger;
     }
 
     public function performSODDrawing($date, $cohortIds)
     {
         if (!$this->isDrawingAllowed($date, $cohortIds)) {
-            $this->logger->info("Drawing not allowed for date: $date");
+            $this->drawingLogger->info("Drawing not allowed for date: $date");
             return false;
         }
 
         $eligibleStudents = $this->getEligibleStudents($date, $cohortIds);
 
         if (empty($eligibleStudents)) {
-            $this->logger->info("No eligible students found for drawing on date: $date");
+            $this->drawingLogger->info("No eligible students found for drawing on date: $date");
             return false;
         }
 
@@ -70,7 +70,7 @@ class DrawingService
 		$isHoliday = $this->holidayModel->isHoliday($date);
 		$isVacation = $this->vacationModel->isVacationForAnyCohort($date, $cohortIds);
 	
-		$this->logger->info("Date: {$date}, IsDrawingDay: " . ($isDrawingDay ? 'Yes' : 'No') . 
+		$this->drawingLogger->info("Date: {$date}, IsDrawingDay: " . ($isDrawingDay ? 'Yes' : 'No') . 
 							", IsHoliday: " . ($isHoliday ? 'Yes' : 'No') . 
 							", IsVacation: " . ($isVacation ? 'Yes' : 'No'));
 	
@@ -86,7 +86,7 @@ class DrawingService
 			if ($this->isStudentEligible($student, $date)) {
 				$eligibleStudents[] = $student;
 			} else {
-				$this->logger->info("Student {$student['id']} not eligible for date {$date}");
+				$this->drawingLogger->info("Student {$student['id']} not eligible for date {$date}");
 			}
 		}
 	
@@ -96,13 +96,13 @@ class DrawingService
 	private function isStudentEligible($student, $date)
 	{
 		if ($this->unavailabilityModel->isStudentUnavailable($student['id'], $date)) {
-			$this->logger->info("Student {$student['id']} unavailable on {$date}");
+			$this->drawingLogger->info("Student {$student['id']} unavailable on {$date}");
 			return false;
 		}
 	
 		$lastDrawing = $this->drawingModel->getLastDrawingForStudent($date, $student['id']);
 		if ($lastDrawing && $this->isDrawingTooRecent($lastDrawing, $date)) {
-			$this->logger->info("Last drawing for student {$student['id']} too recent");
+			$this->drawingLogger->info("Last drawing for student {$student['id']} too recent");
 			return false;
 		}
 	
@@ -110,7 +110,7 @@ class DrawingService
 		$studentCohort = $this->cohortModel->getCohortById($student['cohort_id']);
 		$expectedDrawings = $this->calculateExpectedDrawings($studentCohort, $date);
 	
-		$this->logger->info("Student {$student['id']}: Drawings count: {$drawingsCount}, Expected: {$expectedDrawings}");
+		$this->drawingLogger->info("Student {$student['id']}: Drawings count: {$drawingsCount}, Expected: {$expectedDrawings}");
 	
 		return $drawingsCount < $expectedDrawings;
 	}
@@ -178,35 +178,35 @@ class DrawingService
 		$currentDate = new DateTime($startDate);
 		$endDate = (new DateTime($startDate))->modify('+3 months');
 	
-		$this->logger->info("Starting multiple day drawing from {$startDate} to {$endDate->format('Y-m-d')}");
+		$this->drawingLogger->info("Starting multiple day drawing from {$startDate} to {$endDate->format('Y-m-d')}");
 	
 		while ($currentDate <= $endDate) {
 			$dateString = $currentDate->format('Y-m-d');
 			
-			$this->logger->info("Checking date: {$dateString}");
+			$this->drawingLogger->info("Checking date: {$dateString}");
 			
 			if ($this->isDrawingAllowed($dateString, $cohortIds)) {
-				$this->logger->info("Drawing allowed for {$dateString}");
+				$this->drawingLogger->info("Drawing allowed for {$dateString}");
 				$eligibleStudents = $this->getEligibleStudents($dateString, $cohortIds);
 				
-				$this->logger->info("Eligible students count: " . count($eligibleStudents));
+				$this->drawingLogger->info("Eligible students count: " . count($eligibleStudents));
 				
 				if (!empty($eligibleStudents)) {
 					$selectedStudent = $this->selectStudent($eligibleStudents);
 					$drawingResults[$dateString] = $selectedStudent;
 					$this->saveDrawingResult($dateString, $selectedStudent);
-					$this->logger->info("Selected student for {$dateString}: {$selectedStudent['id']}");
+					$this->drawingLogger->info("Selected student for {$dateString}: {$selectedStudent['id']}");
 				} else {
-					$this->logger->info("No eligible students for {$dateString}");
+					$this->drawingLogger->info("No eligible students for {$dateString}");
 				}
 			} else {
-				$this->logger->info("Drawing not allowed for {$dateString}");
+				$this->drawingLogger->info("Drawing not allowed for {$dateString}");
 			}
 			
 			$currentDate->modify('+1 day');
 		}
 	
-		$this->logger->info("Drawing results count: " . count($drawingResults));
+		$this->drawingLogger->info("Drawing results count: " . count($drawingResults));
 	
 		return $drawingResults;
 	}
@@ -220,10 +220,10 @@ class DrawingService
     {
         try {
             $result = $this->drawingModel->archiveDrawings();
-            $this->logger->info('Drawings archived successfully');
+            $this->drawingLogger->info('Drawings archived successfully');
             return $result;
         } catch (\Exception $e) {
-            $this->logger->error('Error archiving drawings: ' . $e->getMessage());
+            $this->drawingLogger->error('Error archiving drawings: ' . $e->getMessage());
             return false;
         }
     }
@@ -232,10 +232,10 @@ class DrawingService
     {
         try {
             $result = $this->drawingModel->resetDrawings();
-            $this->logger->info('Drawings reset successfully');
+            $this->drawingLogger->info('Drawings reset successfully');
             return $result;
         } catch (\Exception $e) {
-            $this->logger->error('Error resetting drawings: ' . $e->getMessage());
+            $this->drawingLogger->error('Error resetting drawings: ' . $e->getMessage());
             return false;
         }
     }

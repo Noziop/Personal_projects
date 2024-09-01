@@ -29,6 +29,11 @@ return function (ContainerBuilder $containerBuilder) {
                 'charset' => 'utf8mb4',
                 'collation' => 'utf8mb4_unicode_ci',
             ],
+			'drawingLogger' => [
+				'name' => 'drawing',
+				'path' => __DIR__ . '/../logs/drawing.log',
+				'level' => \Monolog\Logger::DEBUG,
+			],
         ],
     ]);
 };

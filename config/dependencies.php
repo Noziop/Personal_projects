@@ -75,7 +75,15 @@ return function (ContainerBuilder $containerBuilder) {
         'logger' => function (ContainerInterface $c) {
             return $c->get(LoggerInterface::class);
         },
-
+		'drawingLogger' => function (ContainerInterface $c) {
+			$settings = $c->get('settings');
+			$loggerSettings = $settings['drawingLogger'];
+			$logger = new Logger($loggerSettings['name']);
+			$logger->pushProcessor(new UidProcessor());
+			$handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+			$logger->pushHandler($handler);
+			return $logger;
+		},
 		Twig::class => function (ContainerInterface $c) {
 			$settings = $c->get('settings');
 			$twig = Twig::create($settings['view']['template_path'], $settings['view']['twig']);
@@ -144,8 +152,8 @@ return function (ContainerBuilder $containerBuilder) {
                 $c->get(LoggerInterface::class)
             );
         },
-        DrawingService::class => function (ContainerInterface $c) {
-            return new DrawingService(
+		DrawingService::class => function (ContainerInterface $c) {
+			return new DrawingService(
 				$c->get(Drawing::class),
 				$c->get(Student::class),
 				$c->get(Cohort::class),
@@ -153,9 +161,9 @@ return function (ContainerBuilder $containerBuilder) {
 				$c->get(Vacation::class),
 				$c->get(Holiday::class),
 				$c->get(Unavailability::class),
-				$c->get('logger')
+				$c->get('drawingLogger')
 			);
-        },
+		},
         HolidayService::class => function (ContainerInterface $c) {
             return new HolidayService($c->get(Holiday::class), $c->get(LoggerInterface::class), new Client());
         },
