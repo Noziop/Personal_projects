@@ -1,9 +1,16 @@
-/vendor
+# Python
+__pycache__/
+*.py[cod]
+venv/
 .env
-/logs/*
-!/logs/.gitkeep
-/var/cache/*
-!/var/cache/.gitkeep
-.idea/
+
+# Node
+node_modules/
+dist/
+
+# IDE
 .vscode/
-test_api.php
+.idea/
+
+# Docker
+.docker/
