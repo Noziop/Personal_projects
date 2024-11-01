@@ -14,3 +14,4 @@ dist/
 
 # Docker
 .docker/
+frontend_old/

@@ -6,6 +6,7 @@ COPY package*.json ./
 
 # Installation des dépendances
 RUN npm install
+RUN npm install @vitejs/plugin-vue
 
 # Copie du reste des fichiers
 COPY . .

@@ -47,3 +47,4 @@ async def read_users_me(
 ) -> UserResponse:
     """Get current user info"""
     return current_user
+
