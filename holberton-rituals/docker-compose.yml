@@ -29,7 +29,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=dbname
+      - POSTGRES_DB=holberton_rituals
     ports:
       - "5432:5432"
 

@@ -167,6 +167,10 @@ CREATE INDEX idx_standup_assignments_date ON standup_assignments(assignment_date
 CREATE INDEX idx_student_unavailability_dates ON student_unavailability(start_date, end_date);
 CREATE INDEX idx_public_holidays_date ON public_holidays(date);
 
+-- Admin par défaut
+INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES
+('fassih.belmokhtar@gmail.com', 'V3ry$ecure_pwd', 'admin', 'Fassih', 'Superstar');
+
 -- À ajouter à la fin du fichier
 INSERT INTO configurations (key, value, description) VALUES
 ('sod_notification_delays', '{"before_days": [7, 3, 1]}', 'Délais de notification avant un SOD'),
