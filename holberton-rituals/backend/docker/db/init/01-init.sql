@@ -1,6 +1,6 @@
 -- Types ENUM
 CREATE TYPE curriculum_type AS ENUM ('fundamentals', 'specialization');
-CREATE TYPE user_role AS ENUM ('admin', 'staff', 'student');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'STAFF', 'STUDENT');
 CREATE TYPE day_of_week AS ENUM ('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
 CREATE TYPE unavailability_status AS ENUM ('pending', 'validated', 'rejected');
 CREATE TYPE ritual_type AS ENUM ('sod', 'standup');
@@ -166,10 +166,6 @@ CREATE INDEX idx_sod_drawings_date ON sod_drawings(presentation_date);
 CREATE INDEX idx_standup_assignments_date ON standup_assignments(assignment_date);
 CREATE INDEX idx_student_unavailability_dates ON student_unavailability(start_date, end_date);
 CREATE INDEX idx_public_holidays_date ON public_holidays(date);
-
--- Admin par défaut
-INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES
-('fassih.belmokhtar@gmail.com', 'V3ry$ecure_pwd', 'admin', 'Fassih', 'Superstar');
 
 -- À ajouter à la fin du fichier
 INSERT INTO configurations (key, value, description) VALUES

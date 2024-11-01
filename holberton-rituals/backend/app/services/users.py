@@ -16,19 +16,33 @@ class UserService:
     @staticmethod
     def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
         """Authentifie un utilisateur"""
-        user = db.query(User).filter(User.email == email).first()
+        print(f"🔍 Tentative de connexion pour: {email}")
+        print(f"🔑 Mot de passe reçu: {password}")
         
+        user = db.query(User).filter(User.email == email).first()
         if not user:
+            print("❌ Utilisateur non trouvé")
             return None
-            
-        if not bcrypt.checkpw(password.encode('utf-8'), 
-                            user.password_hash.encode('utf-8')):
+        
+        print(f"✨ Utilisateur trouvé: {user.email}")
+        print(f"🔐 Hash stocké: {user.password_hash}")
+        
+        # Debug de la vérification
+        try:
+            is_valid = bcrypt.checkpw(
+                password.encode('utf-8'),
+                user.password_hash.encode('utf-8')
+            )
+            print(f"🎯 Résultat de la vérification: {is_valid}")
+        except Exception as e:
+            print(f"💥 Erreur lors de la vérification: {str(e)}")
             return None
 
-        # Mise à jour du last_login
-        user.last_login = datetime.utcnow()
-        db.commit()
-            
+        if not is_valid:
+            print("❌ Mot de passe incorrect")
+            return None
+
+        print("✅ Authentification réussie!")
         return user
 
     @staticmethod
@@ -270,8 +284,6 @@ class UserService:
         target.is_active = False
         db.commit()
         return True
-    
-    # ... [Code précédent reste identique jusqu'à la fin de deactivate_user] ...
 
     @staticmethod
     def get_staff_members(db: Session, requester_id: int) -> List[User]:
@@ -445,3 +457,8 @@ class UserService:
             return False
 
         return True
+    
+    @staticmethod
+    def get_user_by_email(db: Session, email: str) -> Optional[User]:
+        """Récupère un utilisateur par son email"""
+        return db.query(User).filter(User.email == email).first()

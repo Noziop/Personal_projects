@@ -4,9 +4,9 @@ import enum
 from ..core.database import Base
 
 class UserRole(str, enum.Enum):
-    ADMIN = "admin"
-    STAFF = "staff"
-    STUDENT = "student"
+    ADMIN = "ADMIN"
+    STAFF = "STAFF"
+    STUDENT = "STUDENT"
 
 class User(Base):
     __tablename__ = "users"
