@@ -8,6 +8,8 @@ from ...models.rituals import SODDrawing
 from ...models.unavailability import StudentUnavailability, UnavailabilityStatus
 from ..drawing.rules import DrawingRules
 from ..notifications.slack import SlackNotificationService
+from ..statistics import StatisticsService
+from ...models.statistics import StatisticsType
 
 class SODService:
     """Service gérant les tirages et la logique des Speaker of the Day"""
@@ -239,62 +241,14 @@ class SODService:
         end_date: Optional[datetime] = None
     ) -> Dict:
         """Récupère les statistiques des SOD"""
-        query = db.query(SODDrawing).join(Student).filter(
-            Student.current_cohort_id == cohort_id
+        return StatisticsService.calculate_ritual_statistics(
+            db=db,
+            cohort_id=cohort_id,
+            ritual_type=StatisticsType.SOD,
+            start_date=start_date,
+            end_date=end_date,
+            save_results=False
         )
-
-        if start_date:
-            query = query.filter(SODDrawing.presentation_date >= start_date)
-        if end_date:
-            query = query.filter(SODDrawing.presentation_date <= end_date)
-
-        drawings = query.all()
-        students = db.query(Student).filter(
-            Student.current_cohort_id == cohort_id
-        ).all()
-
-        stats = {
-            'total_presentations': len(drawings),
-            'fairness_score': DrawingRules.calculate_fairness_score(
-                students, "sod"
-            ),
-            'student_stats': {},
-            'replacement_rate': 0
-        }
-
-        # Stats par étudiant
-        for student in students:
-            stats['student_stats'][student.id] = {
-                'presentations': student.sod_count,
-                'evaluations': len([d for d in drawings if d.evaluator_id == student.id]),
-                'last_presentation': None,
-                'last_evaluation': None
-            }
-            
-            # Dernière présentation
-            last_pres = next(
-                (d for d in drawings if d.student_id == student.id),
-                None
-            )
-            if last_pres:
-                stats['student_stats'][student.id]['last_presentation'] = \
-                    last_pres.presentation_date
-
-            # Dernière évaluation
-            last_eval = next(
-                (d for d in drawings if d.evaluator_id == student.id),
-                None
-            )
-            if last_eval:
-                stats['student_stats'][student.id]['last_evaluation'] = \
-                    last_eval.presentation_date
-
-        # Taux de remplacement
-        replacements = len([d for d in drawings if d.is_replacement])
-        if drawings:
-            stats['replacement_rate'] = replacements / len(drawings)
-
-        return stats
     
     @staticmethod
     async def notify_replacement(

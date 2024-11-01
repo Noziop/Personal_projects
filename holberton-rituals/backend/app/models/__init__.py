@@ -7,3 +7,5 @@ from .unavailability import StudentUnavailability, UnavailabilityStatus
 from .configurations import Configuration
 from .student_cohort_history import StudentCohortHistory
 from .public_holidays import PublicHoliday
+from .statistics import RitualStatistics, StatisticsType
+from .notifications import InAppNotification, NotificationType

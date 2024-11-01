@@ -6,6 +6,8 @@ from ...models.students import Student
 from ...models.rituals import StandupAssignment
 from ...models.unavailability import StudentUnavailability, UnavailabilityStatus
 from ..drawing.rules import DrawingRules
+from ..statistics import StatisticsService
+from ...models.statistics import StatisticsType
 
 class StandupService:
     """Service gérant les tirages et la logique des Stand-ups"""
@@ -148,41 +150,12 @@ class StandupService:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
     ) -> Dict:
-        """Récupère les statistiques des Stand-ups"""
-        query = db.query(StandupAssignment).join(Student).filter(
-            Student.current_cohort_id == cohort_id
+        """Récupère les statistiques des SOD"""
+        return StatisticsService.calculate_ritual_statistics(
+            db=db,
+            cohort_id=cohort_id,
+            ritual_type=StatisticsType.STANDUP,
+            start_date=start_date,
+            end_date=end_date,
+            save_results=False
         )
-
-        if start_date:
-            query = query.filter(StandupAssignment.assignment_date >= start_date)
-        if end_date:
-            query = query.filter(StandupAssignment.assignment_date <= end_date)
-
-        assignments = query.all()
-        students = db.query(Student).filter(
-            Student.current_cohort_id == cohort_id
-        ).all()
-
-        stats = {
-            'total_assignments': len(assignments),
-            'fairness_score': DrawingRules.calculate_fairness_score(
-                students, "standup"
-            ),
-            'student_stats': {}
-        }
-
-        # Stats par étudiant
-        for student in students:
-            stats['student_stats'][student.id] = {
-                'count': student.standup_count,
-                'last_assignment': None
-            }
-            last_assignment = next(
-                (a for a in assignments if a.student_id == student.id),
-                None
-            )
-            if last_assignment:
-                stats['student_stats'][student.id]['last_assignment'] = \
-                    last_assignment.assignment_date
-
-        return stats
