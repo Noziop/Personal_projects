@@ -4,4 +4,6 @@ from .students import Student
 from .rituals import CohortRitualDay, SODDrawing, RitualType, DayOfWeek
 from .feedbacks import FeedbackTemplate, Feedback
 from .unavailability import StudentUnavailability, UnavailabilityStatus
-from .configurations import Configurationsummo
+from .configurations import Configuration
+from .student_cohort_history import StudentCohortHistory
+from .public_holidays import PublicHoliday

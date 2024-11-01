@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .users import UserResponse
+    from .cohorts import CohortInDB
 
 class StudentBase(BaseModel):
     user_id: int
@@ -24,5 +29,12 @@ class StudentInDB(StudentBase):
         from_attributes = True
 
 class StudentResponse(StudentInDB):
-    user: 'UserResponse'
-    cohort: 'CohortInDB'
+    if TYPE_CHECKING:
+        user: 'UserResponse'
+        cohort: 'CohortInDB'
+    else:
+        user: dict
+        cohort: dict
+
+    class Config:
+        from_attributes = True
