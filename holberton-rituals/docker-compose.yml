@@ -2,36 +2,80 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    build: 
+      context: ./backend
+      target: development
+    container_name: holberton_rituals_api
     volumes:
       - ./backend:/app
+      - ./backend/logs:/app/logs
     ports:
-      - "8000:8000"
+      - "8000:8000"  # On expose le port pour le reverse proxy
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/dbname
+      - ENVIRONMENT=development
+      - DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      - SECRET_KEY=${JWT_SECRET_KEY}
+      - CORS_ORIGINS=https://stellarstudio.fassih.ch
+      - TZ=UTC
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - holberton_rituals_network
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
-    ports:
-      - "5173:5173"
+    build: 
+      context: ./frontend
+      target: development
+    container_name: holberton_rituals_ui
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    ports:
+      - "5173:5173"  # On expose le port pour le reverse proxy
+    environment:
+      - VITE_API_URL=https://api.stellarstudio.fassih.ch  # URL du reverse proxy
+      - VITE_APP_ENV=development
+      - TZ=UTC
+    depends_on:
+      - backend
+    networks:
+      - holberton_rituals_network
+    restart: unless-stopped
 
   db:
-    image: postgres:15
+    image: mariadb:10.5
+    container_name: holberton_rituals_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/docker/db/init:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+      - ./backend/docker/init/db/00-config.sql:/docker-entrypoint-initdb.d/00-config.sql
+      - ./backend/docker/init/db/01-enums.sql:/docker-entrypoint-initdb.d/01-enums.sql
+      - ./backend/docker/init/db/02-tables.sql:/docker-entrypoint-initdb.d/02-tables.sql
+      - ./backend/docker/init/db/03-constraints.sql:/docker-entrypoint-initdb.d/03-constraints.sql
+      - ./backend/docker/init/db/04-initial-data.sql:/docker-entrypoint-initdb.d/04-initial-data.sql
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=holberton_rituals
-    ports:
-      - "5432:5432"
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - TZ=UTC
+    networks:
+      - holberton_rituals_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  db_data:
+    name: holberton_rituals_db_data
+    driver: local
+
+networks:
+  holberton_rituals_network:
+    name: holberton_rituals_network
+    driver: bridge

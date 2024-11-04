@@ -1,0 +1,28 @@
+{
+    "version": 1,
+    "types": [
+        {
+            "value": "school_holiday",
+            "label": "Vacances scolaires",
+            "duration_min": 7,
+            "duration_max": 30
+        },
+        {
+            "value": "group_project",
+            "label": "Projet de groupe",
+            "duration_min": 3,
+            "duration_max": 14
+        },
+        {
+            "value": "special_event",
+            "label": "Événement spécial",
+            "duration_min": 1,
+            "duration_max": 7
+        }
+    ],
+    "validation_rules": {
+        "require_dates": true,
+        "require_type": true,
+        "allow_overlap": false
+    }
+}

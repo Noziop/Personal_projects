@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "metrics": {
+        "sod_participation": {
+            "total_sessions": 20,
+            "attended_sessions": 18,
+            "total_presentations": 15,
+            "total_score": 1350,
+            "average_score": 90,
+            "participation_rate": 90
+        },
+        "standup_master": {
+            "total_sessions": 60,
+            "facilitated_sessions": 3,
+            "participation_rate": 100,
+            "helpful_contributions": 45
+        },
+        "participation_by_student": {
+            "student_id_1": {
+                "attended": 15,
+                "missed": 5,
+                "rate": 75
+            },
+            "student_id_2": {
+                "attended": 18,
+                "missed": 2,
+                "rate": 90
+            }
+        }
+    }
+}

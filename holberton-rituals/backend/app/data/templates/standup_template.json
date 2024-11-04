@@ -1,0 +1,43 @@
+{
+    "version": 1,
+    "title": "Rapport de Stand-up",
+    "fields": {
+        "attendance": {
+            "type": "boolean",
+            "label": "Présence",
+            "required": true
+        },
+        "location": {
+            "type": "select",
+            "label": "Localisation",
+            "required": true,
+            "options": ["Sur site", "En distanciel"]
+        },
+        "achievements": {
+            "type": "text",
+            "label": "Réalisations",
+            "required": true
+        },
+        "goals": {
+            "type": "text",
+            "label": "Objectifs du jour",
+            "required": true
+        },
+        "needs_help": {
+            "type": "boolean",
+            "label": "Besoin d'aide",
+            "required": true
+        },
+        "problem_description": {
+            "type": "text",
+            "label": "Description du problème",
+            "required": false,
+            "conditional": "needs_help"
+        },
+        "remarks": {
+            "type": "text",
+            "label": "Remarques additionnelles",
+            "required": false
+        }
+    }
+}

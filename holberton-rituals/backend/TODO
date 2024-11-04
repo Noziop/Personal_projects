@@ -1,0 +1,28 @@
+# 👑 TODO LIST ROYALE 👑
+
+## Phase 1 : MVP (Minimum Viable QUEEN)
+- [x] Configuration de base
+- [x] Enums ultra-détaillés
+- [ ] Models/Schemas
+- [ ] Services
+- [ ] Routes
+- [ ] Tests unitaires QUEEN-style
+
+## Phase 2 : Features QUEEN
+- [ ] Intégration Google Calendar 📅
+  - [ ] Service de génération de liens Calendar
+  - [ ] Templates d'emails avec boutons Calendar
+  - [ ] Synchronisation automatique des rituels
+  - [ ] Notifications Google Calendar
+
+## Phase 3 : Multi-instances SAAS
+- [ ] Architecture multi-écoles
+- [ ] DNS automatique
+- [ ] Docker/K8s
+- [ ] Mode démo/achat
+
+## Phase 4 : Intégrations Bonus ✨
+- [ ] Slack
+- [ ] Discord
+- [ ] Microsoft Teams
+- [ ] Notion

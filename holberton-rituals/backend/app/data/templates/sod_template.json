@@ -1,0 +1,84 @@
+{
+    "version": 1,
+    "title": "Grille d'évaluation SOD",
+    "total_points": 100,
+    "fields": {
+        "exercise_requirements": {
+            "type": "boolean",
+            "label": "Consigne de l'exercice respectée ?",
+            "required": true
+        },
+        "timing": {
+            "type": "rating",
+            "label": "Temps (10/15 min questions comprises)",
+            "required": true,
+            "max_points": 10
+        },
+        "audience_engagement": {
+            "type": "rating",
+            "label": "Engagement du public",
+            "required": true,
+            "max_points": 10
+        },
+        "space_position": {
+            "type": "rating",
+            "label": "Position dans l'espace",
+            "required": true,
+            "max_points": 10
+        },
+        "self_confidence": {
+            "type": "rating",
+            "label": "Confiance en soi",
+            "required": true,
+            "max_points": 10
+        },
+        "clarity": {
+            "type": "rating",
+            "label": "Audible & compréhensible",
+            "required": true,
+            "max_points": 10
+        },
+        "filler_words": {
+            "type": "rating",
+            "label": "Pas de mot parasite",
+            "required": true,
+            "max_points": 5
+        },
+        "energy": {
+            "type": "rating",
+            "label": "Énergie",
+            "required": true,
+            "max_points": 5
+        },
+        "english": {
+            "type": "rating",
+            "label": "Anglais",
+            "required": true,
+            "max_points": 10
+        },
+        "slides": {
+            "type": "rating",
+            "label": "Présentation",
+            "required": true,
+            "max_points": 10,
+            "description": "Slides de présentation efficaces"
+        },
+        "subject": {
+            "type": "rating",
+            "label": "Sujet",
+            "required": true,
+            "max_points": 10
+        },
+        "qa_handling": {
+            "type": "rating",
+            "label": "Réponses aux questions",
+            "required": true,
+            "max_points": 10
+        },
+        "next_sod_advice": {
+            "type": "text",
+            "label": "Un conseil pour le prochain SOD",
+            "required": true
+        }
+    }
+}
